@@ -18,11 +18,11 @@ public class OneOrMoreExpression extends AbstractExpression implements Expressio
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
-        if (!matcher.consume(stream, tokens)) {
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
+        if (!matcher.consume(stream, visitor)) {
             return false;
         }
-        while (matcher.consume(stream, tokens)) {
+        while (matcher.consume(stream, visitor)) {
         }
         return true;
     }

@@ -17,9 +17,9 @@ public class AnyOfExpression extends AbstractExpression implements Expression, M
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
         for (Matcher matcher : matchers) {
-            if (matcher.consume(stream, tokens)) {
+            if (matcher.consume(stream, visitor)) {
                 return true;
             }
         }

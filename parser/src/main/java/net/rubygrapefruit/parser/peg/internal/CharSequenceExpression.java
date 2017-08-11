@@ -22,9 +22,9 @@ public class CharSequenceExpression implements Expression, Matcher {
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
         if (stream.consume(str)) {
-            tokens.add(str);
+            visitor.token(str);
             return true;
         }
         return false;

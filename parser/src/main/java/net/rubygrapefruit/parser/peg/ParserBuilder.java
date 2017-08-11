@@ -17,17 +17,10 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches a single character.
+     * Matches the given character, case sensitive.
      */
     public Expression singleChar(char ch) {
         return new CharSequenceExpression(Character.toString(ch));
-    }
-
-    /**
-     * Matches one of the given expressions.
-     */
-    public Expression anyOf(Expression... expressions) {
-        return new AnyOfExpression(matchers(expressions));
     }
 
     /**
@@ -35,6 +28,13 @@ public class ParserBuilder {
      */
     public Expression letter() {
         return new LetterExpression();
+    }
+
+    /**
+     * Matches one of the given expressions. Selection is ordered, so that the first matching expression is selected.
+     */
+    public Expression anyOf(Expression... expressions) {
+        return new AnyOfExpression(matchers(expressions));
     }
 
     /**

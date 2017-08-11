@@ -2,8 +2,6 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.List;
-
 public class ZeroOrMoreExpression extends AbstractExpression implements Expression, Matcher {
     private final Matcher matcher;
 
@@ -17,8 +15,8 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Expressi
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
-        while (matcher.consume(stream, tokens)) {
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
+        while (matcher.consume(stream, visitor)) {
         }
         return true;
     }

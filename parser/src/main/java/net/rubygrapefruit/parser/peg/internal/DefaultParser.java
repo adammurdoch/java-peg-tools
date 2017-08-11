@@ -3,9 +3,6 @@ package net.rubygrapefruit.parser.peg.internal;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class DefaultParser implements Parser {
     private final Matcher rootExpression;
 
@@ -14,13 +11,14 @@ public class DefaultParser implements Parser {
     }
 
     @Override
-    public <T extends TokenVisitor> T parse(String input, T visitor) {
+    public <T extends TokenVisitor> T parse(String input, final T visitor) {
         CharStream stream = new CharStream(input);
-        List<String> result = new ArrayList<>();
-        rootExpression.consume(stream, result);
-        for (String token : result) {
-            visitor.token(token);
-        }
+        rootExpression.consume(stream, new MatchVisitor() {
+            @Override
+            public void token(String token) {
+                visitor.token(token);
+            }
+        });
         visitor.end();
         return visitor;
     }

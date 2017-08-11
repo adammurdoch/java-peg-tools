@@ -12,16 +12,48 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc") == ["abc"]
     }
 
+    def "reports failure to match string token"() {
+        expect:
+        def parser = builder.newParser(builder.chars("abc"))
+        parse(parser, "") == []
+        parse(parser, "ab") == []
+        parse(parser, "abd") == []
+        parse(parser, "ABC") == []
+        parse(parser, "abc1") == ["abc"]
+        parse(parser, "123") == []
+        parse(parser, "1abc") == []
+    }
+
     def "can parse a string character"() {
         expect:
         def parser = builder.newParser(builder.singleChar(";" as char))
         parse(parser, ";") == [";"]
     }
 
+    def "reports failure to match a string character"() {
+        expect:
+        def parser = builder.newParser(builder.singleChar("x" as char))
+        parse(parser, "") == []
+        parse(parser, "X") == []
+        parse(parser, "y") == []
+        parse(parser, "yx") == []
+        parse(parser, "xy") == ["x"]
+    }
+
     def "can parse a sequence of tokens"() {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
         parse(parser, "abc123") == ["abc", "123"]
+    }
+
+    def "reports failure to match a sequence of tokens"() {
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
+        parse(parser, "") == []
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "abc124") == ["abc"]
+        parse(parser, "1abc123") == []
+        parse(parser, "abc123x") == ["abc", "123"]
     }
 
     def "can parse optional token"() {

@@ -2,9 +2,6 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GroupingExpression implements Expression, Matcher {
     private final Matcher matcher;
 
@@ -23,19 +20,31 @@ public class GroupingExpression implements Expression, Matcher {
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
-        List<String> nested = new ArrayList<>();
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
+        MergingMatchVisitor nested = new MergingMatchVisitor();
         if (!matcher.consume(stream, nested)) {
             return false;
         }
-        if (nested.isEmpty()) {
-            return true;
-        }
-        StringBuilder builder = new StringBuilder();
-        for (String token : nested) {
+        nested.forward(visitor);
+        return true;
+    }
+
+    private static class MergingMatchVisitor implements MatchVisitor {
+        StringBuilder builder;
+
+        @Override
+        public void token(String token) {
+            if (builder == null) {
+                builder = new StringBuilder();
+            }
             builder.append(token);
         }
-        tokens.add(builder.toString());
-        return true;
+
+        void forward(MatchVisitor visitor) {
+            if (builder == null || builder.length() == 0) {
+                return;
+            }
+            visitor.token(builder.toString());
+        }
     }
 }

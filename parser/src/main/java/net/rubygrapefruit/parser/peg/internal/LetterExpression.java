@@ -2,8 +2,6 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.List;
-
 public class LetterExpression implements Expression, Matcher {
     @Override
     public Expression group() {
@@ -16,10 +14,10 @@ public class LetterExpression implements Expression, Matcher {
     }
 
     @Override
-    public boolean consume(CharStream stream, List<String> tokens) {
+    public boolean consume(CharStream stream, MatchVisitor visitor) {
         String token = stream.consumeLetter();
         if (token != null) {
-            tokens.add(token);
+            visitor.token(token);
             return true;
         }
         return false;

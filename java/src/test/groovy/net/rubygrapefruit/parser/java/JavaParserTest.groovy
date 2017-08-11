@@ -18,6 +18,13 @@ class JavaParserTest extends Specification {
 """) == ["\n\n  ", "class", "  ", "Thing", "\n  ", "{", "\n\n  ", "}", "\n"]
     }
 
+    def "can parse optional package declaration"() {
+        expect:
+        parser.parse("package thing; class Thing { }") == ["package", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parser.parse("package a.b.c; class Thing { }") == ["package", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parser.parse("  package   a.b.c   ; class Thing { }") == ["  ", "package", "   ", "a.b.c", "   ", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+    }
+
     def "stops parsing on first error"() {
         expect:
         parser.parse(" Thing { }") == [" "]

@@ -16,14 +16,27 @@ public class JavaParser {
 
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
-        Expression classKeyword = builder.chars("class");
+
         Expression whitespace = builder.anyOf(' ', '\n');
-        Expression separator = builder.oneOrMore(whitespace).group();
+        Expression whitespaceSeparator = builder.oneOrMore(whitespace).group();
         Expression optionalWhitespace = builder.zeroOrMore(whitespace).group();
-        Expression word = builder.oneOrMore(builder.letter()).group();
+
+        Expression classKeyword = builder.chars("class");
+        Expression packageKeyword = builder.chars("package");
+
+        Expression letters = builder.oneOrMore(builder.letter());
+        Expression dot = builder.singleChar('.');
         Expression leftCurly = builder.singleChar('{');
         Expression rightCurly = builder.singleChar('}');
-        Expression classDef = builder.sequence(optionalWhitespace, classKeyword, separator, word, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);
+        Expression semiColon = builder.singleChar(';');
+
+        Expression identifier = letters.group();
+        Expression qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
+
+        Expression packageDeclaration = builder.sequence(packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon);
+        Expression optionalPackageDeclaration = builder.optional(packageDeclaration);
+
+        Expression classDef = builder.sequence(optionalWhitespace, optionalPackageDeclaration, optionalWhitespace, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);
         parser = builder.newParser(classDef);
     }
 

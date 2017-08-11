@@ -1,1 +1,1 @@
-include 'parser', 'java'
+include 'parser', 'java', 'testapp'

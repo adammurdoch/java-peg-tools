@@ -1,5 +1,6 @@
 package net.rubygrapefruit.parser.java
 
+import net.rubygrapefruit.parser.peg.visitor.CollectingVisitor
 import spock.lang.Specification
 
 class JavaParserTest extends Specification {
@@ -7,9 +8,9 @@ class JavaParserTest extends Specification {
 
     def "can parse Java class definition"() {
         expect:
-        parser.parse("class Thing { }") == ["class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("class Thing{}") == ["class", " ", "Thing", "{", "}"]
-        parser.parse("""
+        parse("class Thing { }") == ["class", " ", "Thing", " ", "{", " ", "}"]
+        parse("class Thing{}") == ["class", " ", "Thing", "{", "}"]
+        parse("""
 
   class  Thing
   {
@@ -20,23 +21,27 @@ class JavaParserTest extends Specification {
 
     def "can parse optional package declaration"() {
         expect:
-        parser.parse("package thing; class Thing { }") == ["package", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("package a.b.c; class Thing { }") == ["package", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("  package   a.b.c   ; class Thing { }") == ["  ", "package", "   ", "a.b.c", "   ", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("package thing; class Thing { }") == ["package", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("package a.b.c; class Thing { }") == ["package", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("  package   a.b.c   ; class Thing { }") == ["  ", "package", "   ", "a.b.c", "   ", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
     }
 
     def "can parse optional import statements"() {
         expect:
-        parser.parse("import thing; class Thing { }") == ["import", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("import a.b.c; class Thing { }") == ["import", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("import a.b.c.*; class Thing { }") == ["import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parser.parse("import thing; import a.b; import a.b.c.*; class Thing { }") == ["import", " ", "thing", ";", " ", "import", " ", "a.b", ";", " ", "import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import thing; class Thing { }") == ["import", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import a.b.c; class Thing { }") == ["import", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import a.b.c.*; class Thing { }") == ["import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import thing; import a.b; import a.b.c.*; class Thing { }") == ["import", " ", "thing", ";", " ", "import", " ", "a.b", ";", " ", "import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
     }
 
     def "stops parsing on first error"() {
         expect:
-        parser.parse(" Thing { }") == [" "]
-        parser.parse("class x") == ["class", " ", "x"]
-        parser.parse("class Thing extends { }") == ["class", " ", "Thing", " "]
+        parse(" Thing { }") == [" "]
+        parse("class x") == ["class", " ", "x"]
+        parse("class Thing extends { }") == ["class", " ", "Thing", " "]
+    }
+
+    def List<String> parse(String str) {
+        return parser.parse(str, new CollectingVisitor()).result
     }
 }

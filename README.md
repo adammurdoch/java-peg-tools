@@ -5,6 +5,7 @@ Includes a sample grammar for parsing Java.
 ### TODO
 
 - Use a visitor of some kind to collect token stream
+- Match as much as possible on failure 
 - Parse failures
 - Fix `zeroOrMore(optional(x))`, etc
 - Throw exception on parse failure

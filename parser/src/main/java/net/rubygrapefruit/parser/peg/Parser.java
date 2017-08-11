@@ -1,7 +1,5 @@
 package net.rubygrapefruit.parser.peg;
 
-import java.util.List;
-
 /**
  * Parses some input into a sequence of tokens.
  *
@@ -11,7 +9,9 @@ public interface Parser {
     /**
      * Parses as much of the given string as possible.
      *
-     * @return the sequence of tokens.
+     * @param input The string to parse.
+     * @param visitor The visitor to receive the results.
+     * @return the visitor.
      */
-    List<String> parse(String input);
+    <T extends TokenVisitor> T parse(String input, T visitor);
 }

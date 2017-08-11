@@ -1,10 +1,9 @@
 package net.rubygrapefruit.parser.java;
 
+import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.ParserBuilder;
-import net.rubygrapefruit.parser.peg.Expression;
-
-import java.util.List;
+import net.rubygrapefruit.parser.peg.TokenVisitor;
 
 /**
  * Parses Java source into a sequence of tokens.
@@ -49,7 +48,7 @@ public class JavaParser {
     /**
      * Parses the given Java source into a sequence of tokens.
      */
-    public List<String> parse(String input) {
-        return parser.parse(input);
+    public <T extends TokenVisitor> T parse(String input, T visitor) {
+        return parser.parse(input, visitor);
     }
 }

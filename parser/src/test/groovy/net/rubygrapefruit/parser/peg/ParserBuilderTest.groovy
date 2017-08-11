@@ -1,5 +1,6 @@
 package net.rubygrapefruit.parser.peg
 
+import net.rubygrapefruit.parser.peg.visitor.CollectingVisitor
 import spock.lang.Specification
 
 class ParserBuilderTest extends Specification {
@@ -8,34 +9,34 @@ class ParserBuilderTest extends Specification {
     def "can parse a string token"() {
         expect:
         def parser = builder.newParser(builder.chars("abc"))
-        parser.parse("abc") == ["abc"]
+        parse(parser, "abc") == ["abc"]
     }
 
     def "can parse a string character"() {
         expect:
         def parser = builder.newParser(builder.singleChar(";" as char))
-        parser.parse(";") == [";"]
+        parse(parser, ";") == [";"]
     }
 
     def "can parse a sequence of tokens"() {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
-        parser.parse("abc123") == ["abc", "123"]
+        parse(parser, "abc123") == ["abc", "123"]
     }
 
     def "can parse optional token"() {
         expect:
         def parser = builder.newParser(builder.optional(builder.chars("abc")))
-        parser.parse("abc") == ["abc"]
-        parser.parse("") == []
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "") == []
     }
 
     def "can parse zero or more tokens"() {
         expect:
         def parser = builder.newParser(builder.zeroOrMore(builder.chars("abc")))
-        parser.parse("abcabc") == ["abc", "abc"]
-        parser.parse("abc") == ["abc"]
-        parser.parse("") == []
+        parse(parser, "abcabc") == ["abc", "abc"]
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "") == []
     }
 
     def "can parse zero or more expressions with common prefix with following expression"() {
@@ -44,16 +45,16 @@ class ParserBuilderTest extends Specification {
 
         expect:
         def parser = builder.newParser(builder.sequence(builder.zeroOrMore(e1), e2))
-        parser.parse("abc1abc1abc2") == ["abc", "1", "abc", "1", "abc", "2"]
-        parser.parse("abc1abc2") == ["abc", "1", "abc", "2"]
-        parser.parse("abc2") == ["abc", "2"]
+        parse(parser, "abc1abc1abc2") == ["abc", "1", "abc", "1", "abc", "2"]
+        parse(parser, "abc1abc2") == ["abc", "1", "abc", "2"]
+        parse(parser, "abc2") == ["abc", "2"]
     }
 
     def "can parse one or more tokens"() {
         expect:
         def parser = builder.newParser(builder.oneOrMore(builder.chars("abc")))
-        parser.parse("abcabc") == ["abc", "abc"]
-        parser.parse("abc") == ["abc"]
+        parse(parser, "abcabc") == ["abc", "abc"]
+        parse(parser, "abc") == ["abc"]
     }
 
     def "can parse one or more expressions with common prefix with following expression"() {
@@ -62,23 +63,23 @@ class ParserBuilderTest extends Specification {
 
         expect:
         def parser = builder.newParser(builder.sequence(builder.oneOrMore(e1), e2))
-        parser.parse("abc1abc1abc2") == ["abc", "1", "abc", "1", "abc", "2"]
-        parser.parse("abc1abc2") == ["abc", "1", "abc", "2"]
+        parse(parser, "abc1abc1abc2") == ["abc", "1", "abc", "1", "abc", "2"]
+        parse(parser, "abc1abc2") == ["abc", "1", "abc", "2"]
     }
 
     def "can parse one of several alternative tokens"() {
         expect:
         def parser = builder.newParser(builder.anyOf(builder.chars("abc"), builder.chars("123")))
-        parser.parse("123") == ["123"]
-        parser.parse("abc") == ["abc"]
+        parse(parser, "123") == ["123"]
+        parse(parser, "abc") == ["abc"]
     }
 
     def "can parse one of several alternative tokens with common prefix"() {
         expect:
         def parser = builder.newParser(builder.anyOf(builder.chars("abc1"), builder.chars("abc2"), builder.chars("abc")))
-        parser.parse("abc") == ["abc"]
-        parser.parse("abc1") == ["abc1"]
-        parser.parse("abc2") == ["abc2"]
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "abc1") == ["abc1"]
+        parse(parser, "abc2") == ["abc2"]
     }
 
     def "can parse one of several alternative expressions with common prefix"() {
@@ -87,8 +88,8 @@ class ParserBuilderTest extends Specification {
 
         expect:
         def parser = builder.newParser(builder.anyOf(e1, e2))
-        parser.parse("abc1") == ["abc", "1"]
-        parser.parse("abc2") == ["abc", "2"]
+        parse(parser, "abc1") == ["abc", "1"]
+        parse(parser, "abc2") == ["abc", "2"]
     }
 
     def "can parse a sequence of optional tokens"() {
@@ -97,10 +98,10 @@ class ParserBuilderTest extends Specification {
 
         expect:
         def parser = builder.newParser(builder.sequence(e1, e2))
-        parser.parse("abc123") == ["abc", "123"]
-        parser.parse("abc") == ["abc"]
-        parser.parse("123") == ["123"]
-        parser.parse("") == []
+        parse(parser, "abc123") == ["abc", "123"]
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "123") == ["123"]
+        parse(parser, "") == []
     }
 
     def "can parse a sequence of optional expressions with common prefix"() {
@@ -109,9 +110,13 @@ class ParserBuilderTest extends Specification {
 
         expect:
         def parser = builder.newParser(builder.sequence(e1, e2))
-        parser.parse("abc1abc2") == ["abc", "1", "abc", "2"]
-        parser.parse("abc1") == ["abc", "1"]
-        parser.parse("abc2") == ["abc", "2"]
-        parser.parse("") == []
+        parse(parser, "abc1abc2") == ["abc", "1", "abc", "2"]
+        parse(parser, "abc1") == ["abc", "1"]
+        parse(parser, "abc2") == ["abc", "2"]
+        parse(parser, "") == []
+    }
+
+    def List<String> parse(Parser parser, String str) {
+        return parser.parse(str, new CollectingVisitor()).result
     }
 }

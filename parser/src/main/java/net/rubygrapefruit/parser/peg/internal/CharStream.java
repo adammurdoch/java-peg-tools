@@ -57,4 +57,15 @@ public class CharStream {
         }
         return null;
     }
+
+    public String diagnostic() {
+        if (pos >= input.length()) {
+            return "end of input";
+        }
+        return "offset " + pos + " '" + input.substring(pos, Math.min(input.length(), pos + 20)) + "'";
+    }
+
+    public boolean isAtEnd() {
+        return pos >= input.length();
+    }
 }

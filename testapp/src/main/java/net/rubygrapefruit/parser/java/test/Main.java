@@ -35,7 +35,9 @@ public class Main {
                 }
 
                 @Override
-                public void end() {
+                public void failed(String message) {
+                    System.out.println();
+                    System.out.println("FAILED: " + message);
                 }
             });
             System.out.println();

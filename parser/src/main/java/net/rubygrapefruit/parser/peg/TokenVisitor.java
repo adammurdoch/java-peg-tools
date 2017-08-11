@@ -7,7 +7,7 @@ public interface TokenVisitor {
     void token(String token);
 
     /**
-     * Called on end of stream.
+     * Called when parsing stops due to a failure to match.
      */
-    void end();
+    void failed(String message);
 }

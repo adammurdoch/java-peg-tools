@@ -2,6 +2,7 @@ package net.rubygrapefruit.parser.peg
 
 import net.rubygrapefruit.parser.peg.visitor.CollectingVisitor
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class ParserBuilderTest extends Specification {
     def builder = new ParserBuilder()
@@ -12,16 +13,30 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc") == ["abc"]
     }
 
-    def "reports failure to match string token"() {
+    def "reports failure when input contains additional characters at end"() {
         expect:
         def parser = builder.newParser(builder.chars("abc"))
-        parse(parser, "") == []
-        parse(parser, "ab") == []
-        parse(parser, "abd") == []
-        parse(parser, "ABC") == []
-        parse(parser, "abc1") == ["abc"]
-        parse(parser, "123") == []
-        parse(parser, "1abc") == []
+        def result = fail(parser, "abc123")
+        result.result == ["abc"]
+        result.failure == "extra input: offset 3 '123'"
+    }
+
+    @Unroll
+    def "reports failure to match string token - #input"() {
+        expect:
+        def parser = builder.newParser(builder.chars("abc"))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input  | tokens | message
+        ""     | []     | "stopped at: end of input"
+        "ab"   | []     | "stopped at: offset 0 'ab'"
+        "abd"  | []     | "stopped at: offset 0 'abd'"
+        "ABC"  | []     | "stopped at: offset 0 'ABC'"
+        "123"  | []     | "stopped at: offset 0 '123'"
+        "1abc" | []     | "stopped at: offset 0 '1abc'"
     }
 
     def "can parse a string character"() {
@@ -30,14 +45,20 @@ class ParserBuilderTest extends Specification {
         parse(parser, ";") == [";"]
     }
 
-    def "reports failure to match a string character"() {
+    @Unroll
+    def "reports failure to match a string character - #input"() {
         expect:
         def parser = builder.newParser(builder.singleChar("x" as char))
-        parse(parser, "") == []
-        parse(parser, "X") == []
-        parse(parser, "y") == []
-        parse(parser, "yx") == []
-        parse(parser, "xy") == ["x"]
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input | tokens | message
+        ""    | []     | "stopped at: end of input"
+        "X"   | []     | "stopped at: offset 0 'X'"
+        "y"   | []     | "stopped at: offset 0 'y'"
+        "yx"  | []     | "stopped at: offset 0 'yx'"
     }
 
     def "can parse a sequence of tokens"() {
@@ -46,14 +67,22 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc123") == ["abc", "123"]
     }
 
-    def "reports failure to match a sequence of tokens"() {
+    @Unroll
+    def "reports failure to match a sequence of tokens - #input"() {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
-        parse(parser, "") == []
-        parse(parser, "abc") == ["abc"]
-        parse(parser, "abc124") == ["abc"]
-        parse(parser, "1abc123") == []
-        parse(parser, "abc123x") == ["abc", "123"]
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input     | tokens  | message
+        ""        | []      | "stopped at: end of input"
+        "abc"     | ["abc"] | "stopped at: end of input"
+        "abc124"  | ["abc"] | "stopped at: offset 3 '124'"
+        "1abc123" | []      | "stopped at: offset 0 '1abc123'"
+        "abcx123" | ["abc"] | "stopped at: offset 3 'x123'"
+        "abc1123" | ["abc"] | "stopped at: offset 3 '1123'"
     }
 
     def "can parse optional token"() {
@@ -170,6 +199,14 @@ class ParserBuilderTest extends Specification {
     }
 
     def List<String> parse(Parser parser, String str) {
-        return parser.parse(str, new CollectingVisitor()).result
+        def visitor = parser.parse(str, new CollectingVisitor())
+        assert visitor.failure == null
+        return visitor.result
+    }
+
+    def CollectingVisitor fail(Parser parser, String str) {
+        def visitor = parser.parse(str, new CollectingVisitor())
+        assert visitor.failure != null
+        return visitor
     }
 }

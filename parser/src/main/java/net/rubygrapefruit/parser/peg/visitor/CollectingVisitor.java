@@ -7,9 +7,14 @@ import java.util.List;
 
 public class CollectingVisitor implements TokenVisitor {
     private final List<String> result = new ArrayList<String>();
+    private String failure;
 
     public List<String> getResult() {
         return result;
+    }
+
+    public String getFailure() {
+        return failure;
     }
 
     @Override
@@ -18,6 +23,7 @@ public class CollectingVisitor implements TokenVisitor {
     }
 
     @Override
-    public void end() {
+    public void failed(String message) {
+        this.failure = message;
     }
 }

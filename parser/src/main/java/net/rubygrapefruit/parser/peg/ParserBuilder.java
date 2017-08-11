@@ -42,6 +42,13 @@ public class ParserBuilder {
     }
 
     /**
+     * Matches zero or one of the given expressions.
+     */
+    public Expression optional(Expression expression) {
+        return new OptionalExpression(matcher(expression));
+    }
+
+    /**
      * Matches one or more of the given expressions. Matching is greedy.
      */
     public Expression oneOrMore(Expression expression) {

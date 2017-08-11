@@ -16,7 +16,12 @@ public class OptionalExpression extends AbstractExpression implements Expression
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        matcher.consume(stream, visitor);
+        CharStream pos = stream.tail();
+        BatchingMatchVisitor nested = new BatchingMatchVisitor();
+        if (matcher.consume(pos, nested)) {
+            nested.forward(visitor);
+            stream.moveTo(pos);
+        }
         return true;
     }
 }

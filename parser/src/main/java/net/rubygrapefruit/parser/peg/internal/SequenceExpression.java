@@ -18,15 +18,15 @@ public class SequenceExpression extends AbstractExpression implements Expression
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream pos = stream.tail();
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         for (Matcher matcher : matchers) {
+            CharStream pos = stream.tail();
             if (!matcher.consume(pos, nested)) {
                 return false;
             }
+            stream.moveTo(pos);
+            nested.forward(visitor);
         }
-        stream.moveTo(pos);
-        nested.forward(visitor);
         return true;
     }
 }

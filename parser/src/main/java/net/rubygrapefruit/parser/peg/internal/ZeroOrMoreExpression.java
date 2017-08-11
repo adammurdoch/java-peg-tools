@@ -16,7 +16,14 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Expressi
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        while (matcher.consume(stream, visitor)) {
+        BatchingMatchVisitor nested = new BatchingMatchVisitor();
+        while (true) {
+            CharStream pos = stream.tail();
+            if (!matcher.consume(pos, nested)) {
+                break;
+            }
+            stream.moveTo(pos);
+            nested.forward(visitor);
         }
         return true;
     }

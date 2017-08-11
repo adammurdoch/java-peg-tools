@@ -101,14 +101,14 @@ class ParserBuilderTest extends Specification {
 
     def "can parse one of several alternative tokens"() {
         expect:
-        def parser = builder.newParser(builder.anyOf(builder.chars("abc"), builder.chars("123")))
+        def parser = builder.newParser(builder.oneOf(builder.chars("abc"), builder.chars("123")))
         parse(parser, "123") == ["123"]
         parse(parser, "abc") == ["abc"]
     }
 
     def "can parse one of several alternative tokens with common prefix"() {
         expect:
-        def parser = builder.newParser(builder.anyOf(builder.chars("abc1"), builder.chars("abc2"), builder.chars("abc")))
+        def parser = builder.newParser(builder.oneOf(builder.chars("abc1"), builder.chars("abc2"), builder.chars("abc")))
         parse(parser, "abc") == ["abc"]
         parse(parser, "abc1") == ["abc1"]
         parse(parser, "abc2") == ["abc2"]
@@ -119,9 +119,20 @@ class ParserBuilderTest extends Specification {
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
 
         expect:
-        def parser = builder.newParser(builder.anyOf(e1, e2))
+        def parser = builder.newParser(builder.oneOf(e1, e2))
         parse(parser, "abc1") == ["abc", "1"]
         parse(parser, "abc2") == ["abc", "2"]
+    }
+
+    def "can parse one of several alternative expressions with common prefix with following expression"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+        def e3 = builder.sequence(builder.chars("abc"), builder.chars("3"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.oneOf(e1, e2), e3))
+        parse(parser, "abc1abc3") == ["abc", "1", "abc", "3"]
+        parse(parser, "abc2abc3") == ["abc", "2", "abc", "3"]
     }
 
     def "can parse a sequence of optional tokens"() {
@@ -146,6 +157,16 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc1") == ["abc", "1"]
         parse(parser, "abc2") == ["abc", "2"]
         parse(parser, "") == []
+    }
+
+    def "can parse optional expression with common prefix with following expression"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
+        parse(parser, "abc1abc2") == ["abc", "1", "abc", "2"]
+        parse(parser, "abc2") == ["abc", "2"]
     }
 
     def List<String> parse(Parser parser, String str) {

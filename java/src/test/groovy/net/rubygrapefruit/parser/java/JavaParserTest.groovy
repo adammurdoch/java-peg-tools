@@ -39,6 +39,12 @@ class JavaParserTest extends Specification {
         parse(" Thing { }") == [" "]
         parse("class x") == ["class", " ", "x"]
         parse("class Thing extends { }") == ["class", " ", "Thing", " "]
+        parse("x") == []
+        parse("package a.b.{") == []
+        parse("package a.b import a.b") == []
+        parse("package a.b; import a.b{}") == ["package", " ", "a.b", ";", " "]
+        parse("package a.b; import a.b.%; class Thing { }") == ["package", " ", "a.b", ";", " "]
+        parse("packageimportclass") == []
     }
 
     def List<String> parse(String str) {

@@ -27,7 +27,11 @@ public class Main {
             parser.parse(stringBuilder.toString(), new TokenVisitor() {
                 @Override
                 public void token(String token) {
-                    System.out.println(token);
+                    if (token.matches("\\s+")) {
+                        System.out.print(" ");
+                    } else {
+                        System.out.print(token);
+                    }
                 }
 
                 @Override

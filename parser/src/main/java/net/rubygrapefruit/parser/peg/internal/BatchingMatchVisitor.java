@@ -19,6 +19,13 @@ public class BatchingMatchVisitor implements MatchVisitor {
             for (String token : tokens) {
                 visitor.token(token);
             }
+            tokens.clear();
+        }
+    }
+
+    public void reset() {
+        if (tokens != null) {
+            tokens.clear();
         }
     }
 }

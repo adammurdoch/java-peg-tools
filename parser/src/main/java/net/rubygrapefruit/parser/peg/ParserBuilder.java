@@ -3,6 +3,7 @@ package net.rubygrapefruit.parser.peg;
 import net.rubygrapefruit.parser.peg.internal.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,10 +32,10 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches one of the given expressions. Selection is ordered, so that the first matching expression is selected.
+     * Matches one of the given expressions. Order is significant and the first matching expression is selected.
      */
-    public Expression anyOf(Expression... expressions) {
-        return new AnyOfExpression(matchers(expressions));
+    public Expression oneOf(Expression... expressions) {
+        return new OneOfExpression(matchers(expressions));
     }
 
     /**
@@ -48,7 +49,8 @@ public class ParserBuilder {
      * Matches one or more of the given expressions. Matching is greedy.
      */
     public Expression oneOrMore(Expression expression) {
-        return new OneOrMoreExpression(matcher(expression));
+        Matcher matcher = matcher(expression);
+        return new SequenceExpression(Arrays.asList(matcher, new ZeroOrMoreExpression(matcher)));
     }
 
     /**
@@ -62,6 +64,9 @@ public class ParserBuilder {
      * Matches the given sequence of expressions.
      */
     public Expression sequence(Expression... expressions) {
+        if (expressions.length < 2) {
+            throw new IllegalArgumentException("At least two expressions required.");
+        }
         return new SequenceExpression(matchers(expressions));
     }
 

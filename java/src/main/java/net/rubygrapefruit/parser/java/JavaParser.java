@@ -16,7 +16,7 @@ public class JavaParser {
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
 
-        Expression whitespace = builder.anyOf(builder.singleChar(' '), builder.singleChar('\n'));
+        Expression whitespace = builder.oneOf(builder.singleChar(' '), builder.singleChar('\n'));
         Expression whitespaceSeparator = builder.oneOrMore(whitespace).group();
         Expression optionalWhitespace = builder.zeroOrMore(whitespace).group();
 
@@ -38,7 +38,7 @@ public class JavaParser {
         Expression packageDeclaration = builder.sequence(optionalWhitespace, packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon);
         Expression optionalPackageDeclaration = builder.optional(packageDeclaration);
 
-        Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.anyOf(starImport, qualified), optionalWhitespace, semiColon);
+        Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.oneOf(starImport, qualified), optionalWhitespace, semiColon);
         Expression importDeclarations = builder.zeroOrMore(importDeclaration);
 
         Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, optionalWhitespace, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);

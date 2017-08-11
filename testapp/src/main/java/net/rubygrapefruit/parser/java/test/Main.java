@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.java.test;
 
 import net.rubygrapefruit.parser.java.JavaParser;
+import net.rubygrapefruit.parser.peg.TokenVisitor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +24,17 @@ public class Main {
                 }
                 stringBuilder.append(chars, 0, nread);
             }
-            System.out.println(parser.parse(stringBuilder.toString()));
+            parser.parse(stringBuilder.toString(), new TokenVisitor() {
+                @Override
+                public void token(String token) {
+                    System.out.println(token);
+                }
+
+                @Override
+                public void end() {
+                }
+            });
+            System.out.println();
         }
     }
 }

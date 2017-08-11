@@ -17,26 +17,32 @@ public class JavaParser {
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
 
-        Expression whitespace = builder.anyOf(' ', '\n');
+        Expression whitespace = builder.anyOf(builder.singleChar(' '), builder.singleChar('\n'));
         Expression whitespaceSeparator = builder.oneOrMore(whitespace).group();
         Expression optionalWhitespace = builder.zeroOrMore(whitespace).group();
 
         Expression classKeyword = builder.chars("class");
         Expression packageKeyword = builder.chars("package");
+        Expression importKeyword = builder.chars("import");
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
         Expression leftCurly = builder.singleChar('{');
         Expression rightCurly = builder.singleChar('}');
         Expression semiColon = builder.singleChar(';');
+        Expression star = builder.singleChar('*');
 
         Expression identifier = letters.group();
         Expression qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
+        Expression starImport = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters)), dot, star).group();
 
-        Expression packageDeclaration = builder.sequence(packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon);
+        Expression packageDeclaration = builder.sequence(optionalWhitespace, packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon);
         Expression optionalPackageDeclaration = builder.optional(packageDeclaration);
 
-        Expression classDef = builder.sequence(optionalWhitespace, optionalPackageDeclaration, optionalWhitespace, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);
+        Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.anyOf(starImport, qualified), optionalWhitespace, semiColon);
+        Expression importDeclarations = builder.zeroOrMore(importDeclaration);
+
+        Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, optionalWhitespace, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);
         parser = builder.newParser(classDef);
     }
 

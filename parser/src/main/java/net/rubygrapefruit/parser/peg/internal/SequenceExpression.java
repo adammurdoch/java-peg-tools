@@ -21,11 +21,12 @@ public class SequenceExpression extends AbstractExpression implements Expression
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         for (Matcher matcher : matchers) {
             CharStream pos = stream.tail();
-            if (!matcher.consume(pos, nested)) {
-                return false;
-            }
+            boolean matched = matcher.consume(pos, nested);
             stream.moveTo(pos);
             nested.forward(visitor);
+            if (!matched) {
+                return false;
+            }
         }
         return true;
     }

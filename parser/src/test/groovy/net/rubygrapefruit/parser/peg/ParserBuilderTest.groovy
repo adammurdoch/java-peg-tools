@@ -67,6 +67,21 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc123") == ["abc", "123"]
     }
 
+    def "can group a sequence of tokens into a single token"() {
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")).group())
+        parse(parser, "abc123") == ["abc123"]
+    }
+
+    def "can parse a sequence of sequence expressions"() {
+        def e1 = builder.sequence(builder.chars("{"), builder.chars("123"), builder.chars("}"))
+        def e2 = builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(e1, e2))
+        parse(parser, "{123}{abc}") == ["{", "123", "}", "{", "abc", "}"]
+    }
+
     @Unroll
     def "reports failure to match a sequence of tokens - #input"() {
         expect:
@@ -83,6 +98,29 @@ class ParserBuilderTest extends Specification {
         "1abc123" | []      | "stopped at: offset 0 '1abc123'"
         "abcx123" | ["abc"] | "stopped at: offset 3 'x123'"
         "abc1123" | ["abc"] | "stopped at: offset 3 '1123'"
+    }
+
+    @Unroll
+    def "reports failure to match a sequence of sequence expressions - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(e1, e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input       | tokens              | message
+        ""          | []                  | "stopped at: end of input"
+        "ab"        | []                  | "stopped at: offset 0 'ab'"
+        "abc"       | ["abc"]             | "stopped at: end of input"
+        "abc2"      | ["abc"]             | "stopped at: offset 3 '2'"
+        "abc124"    | ["abc", "1"]        | "stopped at: offset 4 '24'"
+        "abc1abc"   | ["abc", "1", "abc"] | "stopped at: end of input"
+        "abc1abc1"  | ["abc", "1", "abc"] | "stopped at: offset 7 '1'"
+        "1abc1abc2" | []                  | "stopped at: offset 0 '1abc1abc2'"
     }
 
     def "can parse optional token"() {

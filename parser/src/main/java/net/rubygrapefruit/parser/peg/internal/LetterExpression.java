@@ -4,10 +4,15 @@ import net.rubygrapefruit.parser.peg.Expression;
 
 import java.util.List;
 
-public class WordExpression implements Expression, Matcher {
+public class LetterExpression implements Expression, Matcher {
+    @Override
+    public Expression group() {
+        return this;
+    }
+
     @Override
     public boolean consume(CharStream stream, List<String> tokens) {
-        String token = stream.consumeUpTo(" ");
+        String token = stream.consumeLetter();
         if (token != null) {
             tokens.add(token);
             return true;

@@ -22,15 +22,17 @@ public class CharStream {
     }
 
     /**
-     * Consumes up to the given string, possibly none. Does not consume the given string.
+     * Consumes up to the given delimit or the end of input. Does not consume the given string.
      * @return The consumed chars, or null if none.
      */
-    public String consumeUpTo(String delim) {
-        int end = input.indexOf(delim, pos);
-        if (end >= 0 && end > pos) {
-            String token = input.substring(pos, end);
-            pos = end;
-            return token;
+    public String consumeLetter() {
+        if (pos >= input.length()) {
+            return null;
+        }
+        char ch = input.charAt(pos);
+        if (Character.isAlphabetic(ch)) {
+            pos++;
+            return Character.toString(ch);
         }
         return null;
     }

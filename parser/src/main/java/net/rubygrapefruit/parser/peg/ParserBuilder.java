@@ -24,10 +24,35 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches one or more non-space characters, case sensitive.
+     * Matches a single character, from the given chars.
      */
-    public Expression word() {
-        return new WordExpression();
+    public Expression anyOf(char... chars) {
+        List<Matcher> matchers = new ArrayList<Matcher>(chars.length);
+        for (char ch : chars) {
+            matchers.add(new SingleCharExpression(ch));
+        }
+        return new AnyOfExpression(matchers);
+    }
+
+    /**
+     * Matches a single letter.
+     */
+    public Expression letter() {
+        return new LetterExpression();
+    }
+
+    /**
+     * Matches one or more of the given expressions. Matching is greedy.
+     */
+    public Expression oneOrMore(Expression expression) {
+        return new OneOrMoreExpression(matcher(expression));
+    }
+
+    /**
+     * Matches zero or more of the given expressions. Matching is greedy.
+     */
+    public Expression zeroOrMore(Expression expression) {
+        return new ZeroOrMoreExpression(matcher(expression));
     }
 
     /**

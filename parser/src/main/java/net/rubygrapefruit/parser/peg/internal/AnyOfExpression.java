@@ -4,20 +4,20 @@ import net.rubygrapefruit.parser.peg.Expression;
 
 import java.util.List;
 
-public class SequenceExpression extends AbstractExpression implements Expression, Matcher {
-    private final List<Matcher> matchers;
+public class AnyOfExpression extends AbstractExpression implements Expression, Matcher {
+    private final List<? extends Matcher> matchers;
 
-    public SequenceExpression(List<Matcher> matchers) {
+    public AnyOfExpression(List<? extends Matcher> matchers) {
         this.matchers = matchers;
     }
 
     @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         for (Matcher matcher : matchers) {
-            if (!matcher.consume(stream, tokens)) {
-                return false;
+            if (matcher.consume(stream, tokens)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

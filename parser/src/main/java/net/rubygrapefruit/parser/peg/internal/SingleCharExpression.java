@@ -12,6 +12,11 @@ public class SingleCharExpression implements Expression, Matcher {
     }
 
     @Override
+    public Expression group() {
+        return this;
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         if (stream.consume(token)) {
             tokens.add(token);

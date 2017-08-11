@@ -12,6 +12,11 @@ public class CharSequenceExpression implements Expression, Matcher {
     }
 
     @Override
+    public Expression group() {
+        return this;
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         if (stream.consume(str)) {
             tokens.add(str);

@@ -12,6 +12,11 @@ public class OneOrMoreExpression extends AbstractExpression implements Expressio
     }
 
     @Override
+    public String toString() {
+        return "{one-or-more: " + matcher + "}";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         if (!matcher.consume(stream, tokens)) {
             return false;

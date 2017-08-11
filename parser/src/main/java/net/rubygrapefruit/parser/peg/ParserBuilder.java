@@ -24,14 +24,10 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches a single character, from the given chars.
+     * Matches one of the given expressions.
      */
-    public Expression anyOf(char... chars) {
-        List<Matcher> matchers = new ArrayList<Matcher>(chars.length);
-        for (char ch : chars) {
-            matchers.add(new SingleCharExpression(ch));
-        }
-        return new AnyOfExpression(matchers);
+    public Expression anyOf(Expression... expressions) {
+        return new AnyOfExpression(matchers(expressions));
     }
 
     /**

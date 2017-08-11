@@ -11,6 +11,11 @@ public class LetterExpression implements Expression, Matcher {
     }
 
     @Override
+    public String toString() {
+        return "{letter}";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         String token = stream.consumeLetter();
         if (token != null) {

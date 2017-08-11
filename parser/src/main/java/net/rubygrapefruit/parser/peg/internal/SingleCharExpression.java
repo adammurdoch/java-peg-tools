@@ -17,6 +17,11 @@ public class SingleCharExpression implements Expression, Matcher {
     }
 
     @Override
+    public String toString() {
+        return "\"" + token + "\"";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         if (stream.consume(token)) {
             tokens.add(token);

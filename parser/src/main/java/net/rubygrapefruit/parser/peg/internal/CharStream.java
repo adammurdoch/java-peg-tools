@@ -8,6 +8,27 @@ public class CharStream {
         this.input = input;
     }
 
+    public CharStream(String input, int pos) {
+        this.input = input;
+        this.pos = pos;
+    }
+
+    @Override
+    public String toString() {
+        return "{chars: \"" + input.substring(pos) + "\"}";
+    }
+
+    /**
+     * Returns a {@link CharStream} that contains the tail of this char stream. Changes made to the other stream are not visible.
+     */
+    public CharStream tail() {
+        return new CharStream(input, pos);
+    }
+
+    public void moveTo(CharStream stream) {
+        pos = stream.pos;
+    }
+
     /**
      * Consumes the given string, if it is at the start of the stream.
      *

@@ -13,6 +13,11 @@ public class GroupingExpression implements Expression, Matcher {
     }
 
     @Override
+    public String toString() {
+        return "{group: " + matcher + "}";
+    }
+
+    @Override
     public Expression group() {
         return this;
     }

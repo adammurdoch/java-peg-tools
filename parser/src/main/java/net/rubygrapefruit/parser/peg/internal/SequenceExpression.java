@@ -12,6 +12,11 @@ public class SequenceExpression extends AbstractExpression implements Expression
     }
 
     @Override
+    public String toString() {
+        return "{sequence: " + matchers + "}";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         for (Matcher matcher : matchers) {
             if (!matcher.consume(stream, tokens)) {

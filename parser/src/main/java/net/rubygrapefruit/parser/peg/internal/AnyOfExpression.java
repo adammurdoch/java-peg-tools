@@ -2,6 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnyOfExpression extends AbstractExpression implements Expression, Matcher {
@@ -12,9 +13,18 @@ public class AnyOfExpression extends AbstractExpression implements Expression, M
     }
 
     @Override
+    public String toString() {
+        return "{any-of " + matchers + "}";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
         for (Matcher matcher : matchers) {
-            if (matcher.consume(stream, tokens)) {
+            CharStream pos = stream.tail();
+            ArrayList<String> maybeTokens = new ArrayList<>();
+            if (matcher.consume(pos, maybeTokens)) {
+                stream.moveTo(pos);
+                tokens.addAll(maybeTokens);
                 return true;
             }
         }

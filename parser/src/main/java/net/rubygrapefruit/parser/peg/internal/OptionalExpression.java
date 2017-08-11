@@ -2,6 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OptionalExpression extends AbstractExpression implements Expression, Matcher {
@@ -12,8 +13,19 @@ public class OptionalExpression extends AbstractExpression implements Expression
     }
 
     @Override
+    public String toString() {
+        return "{optional: " + matcher + "}";
+    }
+
+    @Override
     public boolean consume(CharStream stream, List<String> tokens) {
-        matcher.consume(stream, tokens);
+        CharStream pos = stream.tail();
+        ArrayList<String> consumedTokens = new ArrayList<>();
+        if (matcher.consume(pos, consumedTokens)) {
+            stream.moveTo(pos);
+            tokens.addAll(consumedTokens);
+            return true;
+        }
         return true;
     }
 }

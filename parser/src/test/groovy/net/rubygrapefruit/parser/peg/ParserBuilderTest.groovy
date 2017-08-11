@@ -56,6 +56,16 @@ class ParserBuilderTest extends Specification {
         parser.parse("abc") == ["abc"]
     }
 
+    def "can parse one or more expressions with common prefix with following expression"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.oneOrMore(e1), e2))
+        parser.parse("abc1abc1abc2") == ["abc", "1", "abc", "1", "abc", "2"]
+        parser.parse("abc1abc2") == ["abc", "1", "abc", "2"]
+    }
+
     def "can parse one of several alternative tokens"() {
         expect:
         def parser = builder.newParser(builder.anyOf(builder.chars("abc"), builder.chars("123")))

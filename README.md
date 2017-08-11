@@ -5,8 +5,8 @@ Includes a sample grammar for parsing Java.
 ### TODO
 
 - Use a visitor of some kind to collect token stream
-- Fix `AnyOfExpression` and `OptionalExpression` to reset stream on failed match of candidate
-- Fix `ZeroOrMoreExpression` and `OneOrMoreExpression` to reset stream on failed match of last candidate
+- Parse failures
+- Fix `zeroOrMore(optional(x))`, etc
 - Throw exception on parse failure
 - Parse a stream
 - Parse byte stream

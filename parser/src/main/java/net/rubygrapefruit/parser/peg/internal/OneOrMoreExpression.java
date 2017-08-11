@@ -2,6 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OneOrMoreExpression extends AbstractExpression implements Expression, Matcher {

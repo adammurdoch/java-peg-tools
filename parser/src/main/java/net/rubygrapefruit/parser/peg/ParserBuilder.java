@@ -20,7 +20,7 @@ public class ParserBuilder {
      * Matches a single character.
      */
     public Expression singleChar(char ch) {
-        return new SingleCharExpression(ch);
+        return new CharSequenceExpression(Character.toString(ch));
     }
 
     /**

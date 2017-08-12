@@ -13,3 +13,5 @@ Includes a sample grammar for parsing Java.
 - Parse a stream
 - Parse byte stream
 - Construct a parse tree
+- Java grammar
+    - Accepts more than one `public` or `abstract` modifier on class declaration

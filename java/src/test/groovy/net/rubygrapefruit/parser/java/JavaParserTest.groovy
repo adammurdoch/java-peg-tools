@@ -18,6 +18,9 @@ class JavaParserTest extends Specification {
   }
 """) == ["\n\n  ", "class", "  ", "Thing", "\n  ", "{", "\n\n  ", "}", "\n"]
         parse("public class Thing { }") == ["public", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("abstract class Thing { }") == ["abstract", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("abstract public class Thing { }") == ["abstract", " ", "public", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("public abstract class Thing { }") == ["public", " ", "abstract", " ", "class", " ", "Thing", " ", "{", " ", "}"]
     }
 
     def "can parse Java interface definition"() {
@@ -46,6 +49,7 @@ class JavaParserTest extends Specification {
         parse(" Thing { }") == [" "]
         parse("class x") == ["class", " ", "x"]
         parse("class Thing extends { }") == ["class", " ", "Thing", " "]
+        parse("abstract interface Thing extends { }") == ["abstract", " "]
         parse("x") == []
         parse("package a.b.{") == []
         parse("package a.b import a.b") == []

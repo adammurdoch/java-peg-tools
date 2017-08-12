@@ -23,6 +23,7 @@ public class JavaParser {
         Expression classKeyword = builder.chars("class");
         Expression interfaceKeyword = builder.chars("interface");
         Expression publicKeyword = builder.chars("public");
+        Expression abstractKeyword = builder.chars("abstract");
         Expression packageKeyword = builder.chars("package");
         Expression importKeyword = builder.chars("import");
 
@@ -43,7 +44,10 @@ public class JavaParser {
         Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.oneOf(starImport, qualified), optionalWhitespace, semiColon);
         Expression importDeclarations = builder.zeroOrMore(importDeclaration);
 
-        Expression typeDeclaration = builder.sequence(optionalWhitespace, builder.optional(builder.sequence(publicKeyword, whitespaceSeparator)), builder.oneOf(classKeyword, interfaceKeyword), whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression classModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, abstractKeyword), whitespaceSeparator));
+        Expression classDeclaration = builder.sequence(optionalWhitespace, classModifiers, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression interfaceDeclaration = builder.sequence(optionalWhitespace, builder.optional(builder.sequence(publicKeyword, whitespaceSeparator)), interfaceKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression typeDeclaration = builder.oneOf(classDeclaration, interfaceDeclaration);
 
         Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, typeDeclaration, optionalWhitespace);
         parser = builder.newParser(classDef);

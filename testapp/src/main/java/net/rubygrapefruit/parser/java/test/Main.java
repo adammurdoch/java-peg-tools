@@ -13,6 +13,7 @@ public class Main {
         JavaParser parser = new JavaParser();
         for (String arg : args) {
             File file = new File(arg);
+            System.out.println("-------");
             System.out.println("PARSING " + file.getName());
             BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder stringBuilder = new StringBuilder();
@@ -40,6 +41,7 @@ public class Main {
                     System.out.println("FAILED: " + message);
                 }
             });
+            System.out.println("-------");
             System.out.println();
         }
     }

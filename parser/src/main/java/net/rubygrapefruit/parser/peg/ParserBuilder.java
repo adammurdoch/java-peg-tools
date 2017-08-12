@@ -8,6 +8,8 @@ import java.util.List;
 
 /**
  * Builds a {@link Parser} from a root {@link Expression} specification.
+ *
+ * <p>Call {@link #newParser(Expression)} using the root expression, using the factory methods on this class to assemble the root expression.</p>
  */
 public class ParserBuilder {
     /**
@@ -25,14 +27,14 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches a single letter.
+     * Matches a single letter, as per {@link Character#isAlphabetic(int)}.
      */
     public Expression letter() {
         return new LetterExpression();
     }
 
     /**
-     * Matches one of the given expressions. Order is significant and the first matching expression is selected.
+     * Matches one of the given expressions. Order is significant and the first matching expression is selected, regardless of whether later expressions might also match.
      */
     public Expression oneOf(Expression... expressions) {
         if (expressions.length < 2) {
@@ -42,7 +44,7 @@ public class ParserBuilder {
     }
 
     /**
-     * Matches zero or one of the given expressions.
+     * Matches zero or one of the given expression.
      */
     public Expression optional(Expression expression) {
         return new OptionalExpression(matcher(expression));

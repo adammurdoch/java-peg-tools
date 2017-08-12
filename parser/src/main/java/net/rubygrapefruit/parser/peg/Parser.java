@@ -1,7 +1,7 @@
 package net.rubygrapefruit.parser.peg;
 
 /**
- * Parses some input into a sequence of tokens.
+ * Parses some input into a sequence of tokens. For now, this is a scanner rather than a parser.
  *
  * <p>Implementations are thread-safe.</p>
  */

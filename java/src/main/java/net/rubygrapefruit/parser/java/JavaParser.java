@@ -26,6 +26,8 @@ public class JavaParser {
         Expression abstractKeyword = builder.chars("abstract");
         Expression packageKeyword = builder.chars("package");
         Expression importKeyword = builder.chars("import");
+        Expression extendsKeyword = builder.chars("extends");
+        Expression implementsKeyword = builder.chars("implements");
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
@@ -33,6 +35,7 @@ public class JavaParser {
         Expression rightCurly = builder.singleChar('}');
         Expression semiColon = builder.singleChar(';');
         Expression star = builder.singleChar('*');
+        Expression comma = builder.singleChar(',');
 
         Expression identifier = letters.group();
         Expression qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
@@ -44,9 +47,16 @@ public class JavaParser {
         Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.oneOf(starImport, qualified), optionalWhitespace, semiColon);
         Expression importDeclarations = builder.zeroOrMore(importDeclaration);
 
+        Expression identifierList = builder.sequence(identifier, builder.zeroOrMore(builder.sequence(optionalWhitespace, comma, optionalWhitespace, identifier)));
+        Expression superClassDeclaration = builder.sequence(whitespaceSeparator, extendsKeyword, whitespaceSeparator, identifier);
+        Expression superTypesDeclaration = builder.sequence(whitespaceSeparator, extendsKeyword, whitespaceSeparator, identifierList);
+        Expression implementsDeclaration = builder.sequence(whitespaceSeparator, implementsKeyword, whitespaceSeparator, identifierList);
+
         Expression classModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, abstractKeyword), whitespaceSeparator));
-        Expression classDeclaration = builder.sequence(optionalWhitespace, classModifiers, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
-        Expression interfaceDeclaration = builder.sequence(optionalWhitespace, builder.optional(builder.sequence(publicKeyword, whitespaceSeparator)), interfaceKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression classDeclaration = builder.sequence(optionalWhitespace, classModifiers, classKeyword, whitespaceSeparator, identifier, builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+
+        Expression interfaceModifiers = builder.optional(builder.sequence(publicKeyword, whitespaceSeparator));
+        Expression interfaceDeclaration = builder.sequence(optionalWhitespace, interfaceModifiers, interfaceKeyword, whitespaceSeparator, identifier, builder.optional(superTypesDeclaration), optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
         Expression typeDeclaration = builder.oneOf(classDeclaration, interfaceDeclaration);
 
         Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, typeDeclaration, optionalWhitespace);

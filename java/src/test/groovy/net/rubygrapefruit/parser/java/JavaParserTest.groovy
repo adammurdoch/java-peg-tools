@@ -21,12 +21,20 @@ class JavaParserTest extends Specification {
         parse("abstract class Thing { }") == ["abstract", " ", "class", " ", "Thing", " ", "{", " ", "}"]
         parse("abstract public class Thing { }") == ["abstract", " ", "public", " ", "class", " ", "Thing", " ", "{", " ", "}"]
         parse("public abstract class Thing { }") == ["public", " ", "abstract", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("class Thing extends OtherThing { }") == ["class", " ", "Thing", " ", "extends", " ", "OtherThing", " ", "{", " ", "}"]
+        parse("class Thing implements OtherThing { }") == ["class", " ", "Thing", " ", "implements", " ", "OtherThing", " ", "{", " ", "}"]
+        parse("class Thing implements A, B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", ",", " ", "B", " ", "{", " ", "}"]
+        parse("class Thing extends A implements B { }") == ["class", " ", "Thing", " ", "extends", " ", "A", " ", "implements", " ", "B", " ", "{", " ", "}"]
+        parse("class Thing extends A implements B,C{ }") == ["class", " ", "Thing", " ", "extends", " ", "A", " ", "implements", " ", "B", ",", "C", "{", " ", "}"]
     }
 
     def "can parse Java interface definition"() {
         expect:
         parse("interface Thing { }") == ["interface", " ", "Thing", " ", "{", " ", "}"]
         parse("public interface Thing { }") == ["public", " ", "interface", " ", "Thing", " ", "{", " ", "}"]
+        parse("interface Thing extends OtherThing { }") == ["interface", " ", "Thing", " ", "extends", " ", "OtherThing", " ", "{", " ", "}"]
+        parse("interface Thing extends A, B { }") == ["interface", " ", "Thing", " ", "extends", " ", "A", ",", " ", "B", " ", "{", " ", "}"]
+        parse("interface Thing extends A,B{ }") == ["interface", " ", "Thing", " ", "extends", " ", "A", ",", "B", "{", " ", "}"]
     }
 
     def "can parse optional package declaration"() {
@@ -49,7 +57,11 @@ class JavaParserTest extends Specification {
         parse(" Thing { }") == [" "]
         parse("class x") == ["class", " ", "x"]
         parse("class Thing extends { }") == ["class", " ", "Thing", " "]
+        parse("class Thing implements A extends B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        parse("class Thing implements A implements B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        parse("class Thing extends A, B { }") == ["class", " ", "Thing", " ", "extends", " ", "A"]
         parse("abstract interface Thing extends { }") == ["abstract", " "]
+        parse("interface Thing implements A { }") == ["interface", " ", "Thing", " "]
         parse("x") == []
         parse("package a.b.{") == []
         parse("package a.b import a.b") == []

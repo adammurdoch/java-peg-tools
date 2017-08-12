@@ -35,6 +35,9 @@ public class ParserBuilder {
      * Matches one of the given expressions. Order is significant and the first matching expression is selected.
      */
     public Expression oneOf(Expression... expressions) {
+        if (expressions.length < 2) {
+            throw new IllegalArgumentException("At least two expressions required.");
+        }
         return new OneOfExpression(matchers(expressions));
     }
 

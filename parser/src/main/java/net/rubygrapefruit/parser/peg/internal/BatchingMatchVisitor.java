@@ -28,4 +28,11 @@ public class BatchingMatchVisitor implements MatchVisitor {
             tokens.clear();
         }
     }
+
+    public int matches() {
+        if (tokens == null) {
+            return 0;
+        }
+        return tokens.size();
+    }
 }

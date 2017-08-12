@@ -191,6 +191,29 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc2") == ["abc", "2"]
     }
 
+    @Unroll
+    def "reports failure to match one of several alternative expressions with common prefix and suffix - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.oneOf(e1, e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input   | tokens       | message
+        ""      | []           | "stopped at: end of input"
+        "ab"    | []           | "stopped at: offset 0 'ab'"
+        "abc"   | ["abc"]      | "stopped at: end of input"
+        "abc3"  | ["abc"]      | "stopped at: offset 3 '3'"
+        "abc1"  | ["abc", "1"] | "stopped at: end of input"
+        "abc1x" | ["abc", "1"] | "stopped at: offset 4 'x'"
+        "abc2"  | ["abc", "2"] | "stopped at: end of input"
+        "abc2x" | ["abc", "2"] | "stopped at: offset 4 'x'"
+    }
+
     def "can parse one of several alternative expressions with common prefix with following expression"() {
         def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))

@@ -17,6 +17,13 @@ class JavaParserTest extends Specification {
 
   }
 """) == ["\n\n  ", "class", "  ", "Thing", "\n  ", "{", "\n\n  ", "}", "\n"]
+        parse("public class Thing { }") == ["public", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+    }
+
+    def "can parse Java interface definition"() {
+        expect:
+        parse("interface Thing { }") == ["interface", " ", "Thing", " ", "{", " ", "}"]
+        parse("public interface Thing { }") == ["public", " ", "interface", " ", "Thing", " ", "{", " ", "}"]
     }
 
     def "can parse optional package declaration"() {

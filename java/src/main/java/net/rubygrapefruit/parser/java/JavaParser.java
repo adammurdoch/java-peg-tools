@@ -21,6 +21,8 @@ public class JavaParser {
         Expression optionalWhitespace = builder.zeroOrMore(whitespace).group();
 
         Expression classKeyword = builder.chars("class");
+        Expression interfaceKeyword = builder.chars("interface");
+        Expression publicKeyword = builder.chars("public");
         Expression packageKeyword = builder.chars("package");
         Expression importKeyword = builder.chars("import");
 
@@ -41,7 +43,9 @@ public class JavaParser {
         Expression importDeclaration = builder.sequence(optionalWhitespace, importKeyword, whitespaceSeparator, builder.oneOf(starImport, qualified), optionalWhitespace, semiColon);
         Expression importDeclarations = builder.zeroOrMore(importDeclaration);
 
-        Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, optionalWhitespace, classKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly, optionalWhitespace);
+        Expression typeDeclaration = builder.sequence(optionalWhitespace, builder.optional(builder.sequence(publicKeyword, whitespaceSeparator)), builder.oneOf(classKeyword, interfaceKeyword), whitespaceSeparator, identifier, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+
+        Expression classDef = builder.sequence(optionalPackageDeclaration, importDeclarations, typeDeclaration, optionalWhitespace);
         parser = builder.newParser(classDef);
     }
 

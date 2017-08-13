@@ -3,7 +3,6 @@ package net.rubygrapefruit.parser.peg;
 import net.rubygrapefruit.parser.peg.internal.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,7 +54,7 @@ public class ParserBuilder {
      */
     public Expression oneOrMore(Expression expression) {
         MatchExpression matchExpression = matcher(expression);
-        return new SequenceExpression(Arrays.asList(matchExpression, new ZeroOrMoreExpression(matchExpression)));
+        return new OneOrMoreExpression(matchExpression);
     }
 
     /**

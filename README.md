@@ -8,6 +8,7 @@ Implementation is in the very early stages, and doesn't do anything much.
 
 - Don't create a string for each match, collect locations instead
 - Detangle producing the result (eg grouping) from matching
+- Forward result to visitor as soon as a selection is committed rather than collecting in a list
 - Match as much as possible on failure when speculating 
 - Report (line,col) location where parsing stopped
 - Report why parsing stopped

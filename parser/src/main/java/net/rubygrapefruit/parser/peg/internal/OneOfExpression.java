@@ -1,23 +1,17 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import net.rubygrapefruit.parser.peg.Expression;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class OneOfExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
-    private final List<Matcher> matchers;
+public class OneOfExpression extends AbstractExpression implements Matcher {
+    private final List<? extends MatchExpression> expressions;
 
     public OneOfExpression(List<? extends MatchExpression> expressions) {
-        this.matchers = new ArrayList<Matcher>(expressions.size());
-        for (MatchExpression expression : expressions) {
-            matchers.add(expression.getMatcher());
-        }
+        this.expressions = expressions;
     }
 
     @Override
     public String toString() {
-        return "{one-of " + matchers + "}";
+        return "{one-of " + expressions + "}";
     }
 
     @Override
@@ -28,17 +22,19 @@ public class OneOfExpression extends AbstractExpression implements Expression, M
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         BatchingMatchVisitor partialMatch = null;
+        MatchExpression partialMatchExpression = null;
         CharStream partialMatchEndsAt = null;
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
-        for (Matcher matcher : matchers) {
+        for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
-            if (matcher.consume(pos, nested)) {
-                nested.forward(visitor);
+            if (expression.getMatcher().consume(pos, nested)) {
+                nested.forward(expression, visitor);
                 stream.moveTo(pos);
                 return true;
             }
             if (partialMatch == null || nested.matches() > partialMatch.matches()) {
                 partialMatch = nested;
+                partialMatchExpression = expression;
                 partialMatchEndsAt = pos;
                 nested = new BatchingMatchVisitor();
             } else {
@@ -46,7 +42,7 @@ public class OneOfExpression extends AbstractExpression implements Expression, M
             }
         }
         if (partialMatch != null) {
-            partialMatch.forward(visitor);
+            partialMatch.forward(partialMatchExpression, visitor);
             stream.moveTo(partialMatchEndsAt);
         }
         return false;

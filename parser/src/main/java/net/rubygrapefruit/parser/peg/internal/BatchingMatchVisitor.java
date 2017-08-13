@@ -14,11 +14,9 @@ public class BatchingMatchVisitor implements MatchVisitor {
         tokens.add(token);
     }
 
-    public void forward(MatchVisitor visitor) {
+    public void forward(MatchExpression expression, MatchVisitor visitor) {
         if (tokens != null) {
-            for (String token : tokens) {
-                visitor.token(token);
-            }
+            expression.collectResult(tokens, visitor);
             tokens.clear();
         }
     }

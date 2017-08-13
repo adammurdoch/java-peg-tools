@@ -2,7 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class CharSequenceExpression implements Expression, MatchExpression, Matcher {
+public class CharSequenceExpression extends AbstractExpression implements Matcher {
     private final String str;
 
     public CharSequenceExpression(String str) {

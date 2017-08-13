@@ -13,7 +13,9 @@ public class DefaultParser implements Parser {
     @Override
     public <T extends TokenVisitor> T parse(String input, final T visitor) {
         CharStream stream = new CharStream(input);
-        boolean match = rootExpression.getMatcher().consume(stream, new MatchVisitor() {
+        BatchingMatchVisitor matchVisitor = new BatchingMatchVisitor();
+        boolean match = rootExpression.getMatcher().consume(stream, matchVisitor);
+        matchVisitor.forward(rootExpression, new MatchVisitor(){
             @Override
             public void token(String token) {
                 visitor.token(token);

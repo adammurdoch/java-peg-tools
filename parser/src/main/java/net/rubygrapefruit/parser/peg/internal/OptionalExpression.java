@@ -1,17 +1,15 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import net.rubygrapefruit.parser.peg.Expression;
-
-public class OptionalExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
-    private final Matcher matcher;
+public class OptionalExpression extends AbstractExpression implements Matcher {
+    private final MatchExpression expression;
 
     public OptionalExpression(MatchExpression expression) {
-        this.matcher = expression.getMatcher();
+        this.expression = expression;
     }
 
     @Override
     public String toString() {
-        return "{optional: " + matcher + "}";
+        return "{optional: " + expression + "}";
     }
 
     @Override
@@ -23,8 +21,8 @@ public class OptionalExpression extends AbstractExpression implements Expression
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         CharStream pos = stream.tail();
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
-        if (matcher.consume(pos, nested)) {
-            nested.forward(visitor);
+        if (expression.getMatcher().consume(pos, nested)) {
+            nested.forward(expression, visitor);
             stream.moveTo(pos);
         }
         return true;

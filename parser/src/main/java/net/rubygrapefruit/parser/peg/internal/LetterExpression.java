@@ -2,7 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class LetterExpression implements Expression, MatchExpression, Matcher {
+public class LetterExpression extends AbstractExpression implements Matcher {
     @Override
     public Expression group() {
         return this;

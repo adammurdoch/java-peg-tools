@@ -1,17 +1,15 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import net.rubygrapefruit.parser.peg.Expression;
-
-public class ZeroOrMoreExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
-    private final Matcher matcher;
+public class ZeroOrMoreExpression extends AbstractExpression implements Matcher {
+    private final MatchExpression expression;
 
     public ZeroOrMoreExpression(MatchExpression expression) {
-        this.matcher = expression.getMatcher();
+        this.expression = expression;
     }
 
     @Override
     public String toString() {
-        return "{zero-or-more: " + matcher + "}";
+        return "{zero-or-more: " + expression + "}";
     }
 
     @Override
@@ -24,11 +22,11 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Expressi
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         while (true) {
             CharStream pos = stream.tail();
-            if (!matcher.consume(pos, nested)) {
+            if (!expression.getMatcher().consume(pos, nested)) {
                 break;
             }
             stream.moveTo(pos);
-            nested.forward(visitor);
+            nested.forward(expression, visitor);
         }
         return true;
     }

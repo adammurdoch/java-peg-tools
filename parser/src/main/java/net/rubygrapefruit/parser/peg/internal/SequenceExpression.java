@@ -1,23 +1,17 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import net.rubygrapefruit.parser.peg.Expression;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class SequenceExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
-    private final List<Matcher> matchers;
+public class SequenceExpression extends AbstractExpression implements Matcher {
+    private final List<? extends MatchExpression> expressions;
 
     public SequenceExpression(List<? extends MatchExpression> expressions) {
-        this.matchers = new ArrayList<Matcher>(expressions.size());
-        for (MatchExpression expression : expressions) {
-            matchers.add(expression.getMatcher());
-        }
+        this.expressions = expressions;
     }
 
     @Override
     public String toString() {
-        return "{sequence: " + matchers + "}";
+        return "{sequence: " + expressions + "}";
     }
 
     @Override
@@ -28,11 +22,11 @@ public class SequenceExpression extends AbstractExpression implements Expression
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
-        for (Matcher matcher : matchers) {
+        for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
-            boolean matched = matcher.consume(pos, nested);
+            boolean matched = expression.getMatcher().consume(pos, nested);
             stream.moveTo(pos);
-            nested.forward(visitor);
+            nested.forward(expression, visitor);
             if (!matched) {
                 return false;
             }

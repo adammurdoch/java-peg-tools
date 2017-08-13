@@ -2,8 +2,6 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.List;
-
 public abstract class AbstractExpression implements Expression, MatchExpression {
     @Override
     public Expression group() {
@@ -11,8 +9,23 @@ public abstract class AbstractExpression implements Expression, MatchExpression 
     }
 
     @Override
-    public void collectResult(List<String> tokens, MatchVisitor visitor) {
-        for (String token : tokens) {
+    public BufferingMatchVisitor collector(final MatchVisitor visitor) {
+        return new ForwardingVisitor(visitor);
+    }
+
+    private static class ForwardingVisitor implements BufferingMatchVisitor {
+        private final MatchVisitor visitor;
+
+        public ForwardingVisitor(MatchVisitor visitor) {
+            this.visitor = visitor;
+        }
+
+        @Override
+        public void done() {
+        }
+
+        @Override
+        public void token(String token) {
             visitor.token(token);
         }
     }

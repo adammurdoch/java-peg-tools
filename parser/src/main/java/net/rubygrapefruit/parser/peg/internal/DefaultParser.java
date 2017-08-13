@@ -13,14 +13,14 @@ public class DefaultParser implements Parser {
     @Override
     public <T extends TokenVisitor> T parse(String input, final T visitor) {
         CharStream stream = new CharStream(input);
-        BatchingMatchVisitor matchVisitor = new BatchingMatchVisitor();
-        boolean match = rootExpression.getMatcher().consume(stream, matchVisitor);
-        matchVisitor.forward(rootExpression, new MatchVisitor(){
+        BufferingMatchVisitor matchVisitor = rootExpression.collector(new MatchVisitor() {
             @Override
             public void token(String token) {
                 visitor.token(token);
             }
         });
+        boolean match = rootExpression.getMatcher().consume(stream, matchVisitor);
+        matchVisitor.done();
         if (!match) {
             visitor.failed("stopped at: " + stream.diagnostic());
         } else if (!stream.isAtEnd()) {

@@ -28,7 +28,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
         for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
             if (expression.getMatcher().consume(pos, nested)) {
-                nested.forward(expression, visitor);
+                nested.forward(expression.collector(visitor));
                 stream.moveTo(pos);
                 return true;
             }
@@ -42,7 +42,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
             }
         }
         if (partialMatch != null) {
-            partialMatch.forward(partialMatchExpression, visitor);
+            partialMatch.forward(partialMatchExpression.collector(visitor));
             stream.moveTo(partialMatchEndsAt);
         }
         return false;

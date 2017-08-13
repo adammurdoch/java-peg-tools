@@ -22,7 +22,7 @@ public class OptionalExpression extends AbstractExpression implements Matcher {
         CharStream pos = stream.tail();
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         if (expression.getMatcher().consume(pos, nested)) {
-            nested.forward(expression, visitor);
+            nested.forward(expression.collector(visitor));
             stream.moveTo(pos);
         }
         return true;

@@ -26,7 +26,7 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             CharStream pos = stream.tail();
             boolean matched = expression.getMatcher().consume(pos, nested);
             stream.moveTo(pos);
-            nested.forward(expression, visitor);
+            nested.forward(expression.collector(visitor));
             if (!matched) {
                 return false;
             }

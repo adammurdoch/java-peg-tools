@@ -1,7 +1,5 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import java.util.List;
-
 public interface MatchExpression {
     /**
      * Returns the matcher for this expression.
@@ -9,7 +7,7 @@ public interface MatchExpression {
     Matcher getMatcher();
 
     /**
-     * Notifies the given visitor of the result of matching this expression.
+     * Creates a visitor to receive the results of matching this expression and that transforms and forwards the results to the given visitor.
      */
-    void collectResult(List<String> tokens, MatchVisitor visitor);
+    BufferingMatchVisitor collector(MatchVisitor visitor);
 }

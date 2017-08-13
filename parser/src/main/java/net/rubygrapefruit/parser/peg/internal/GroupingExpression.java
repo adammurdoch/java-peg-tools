@@ -2,8 +2,6 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.List;
-
 public class GroupingExpression implements Expression, MatchExpression {
     private final MatchExpression expression;
 
@@ -27,14 +25,29 @@ public class GroupingExpression implements Expression, MatchExpression {
     }
 
     @Override
-    public void collectResult(List<String> tokens, MatchVisitor visitor) {
-        if (tokens.isEmpty()) {
-            return;
+    public BufferingMatchVisitor collector(final MatchVisitor visitor) {
+        return new TokenMergingMatchVisitor(visitor);
+    }
+
+    private static class TokenMergingMatchVisitor implements BufferingMatchVisitor {
+        private final MatchVisitor visitor;
+        StringBuilder builder;
+
+        public TokenMergingMatchVisitor(MatchVisitor visitor) {
+            this.visitor = visitor;
+            builder = new StringBuilder();
         }
-        StringBuilder builder = new StringBuilder();
-        for (String token : tokens) {
+
+        @Override
+        public void token(String token) {
             builder.append(token);
         }
-        visitor.token(builder.toString());
+
+        @Override
+        public void done() {
+            if (builder.length() > 0) {
+                visitor.token(builder.toString());
+            }
+        }
     }
 }

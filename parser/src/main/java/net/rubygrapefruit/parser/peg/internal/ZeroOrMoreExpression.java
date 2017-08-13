@@ -26,7 +26,7 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
                 break;
             }
             stream.moveTo(pos);
-            nested.forward(expression, visitor);
+            nested.forward(expression.collector(visitor));
         }
         return true;
     }

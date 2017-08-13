@@ -1,6 +1,8 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-public interface BufferingMatchVisitor extends MatchVisitor {
+public interface ResultCollector {
+    void token(String token);
+
     /**
      * Called when the result has been visited.
      */

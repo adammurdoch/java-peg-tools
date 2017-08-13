@@ -28,8 +28,10 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         if (stream.consume(str)) {
             visitor.token(str);
+            visitor.stoppedAt(stream.tail());
             return true;
         }
+        visitor.stoppedAt(stream.tail());
         return false;
     }
 }

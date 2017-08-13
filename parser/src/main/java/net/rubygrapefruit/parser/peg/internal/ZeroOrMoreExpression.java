@@ -28,6 +28,7 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
             stream.moveTo(pos);
             nested.forward(expression.collector(visitor));
         }
+        visitor.stoppedAt(nested.getStoppedAt());
         return true;
     }
 }

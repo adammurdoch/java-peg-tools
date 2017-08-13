@@ -9,15 +9,15 @@ public abstract class AbstractExpression implements Expression, MatchExpression 
     }
 
     @Override
-    public BufferingMatchVisitor collector(final MatchVisitor visitor) {
-        return new ForwardingVisitor(visitor);
+    public ResultCollector collector(final TokenCollector collector) {
+        return new ForwardingVisitor(collector);
     }
 
-    private static class ForwardingVisitor implements BufferingMatchVisitor {
-        private final MatchVisitor visitor;
+    private static class ForwardingVisitor implements ResultCollector {
+        private final TokenCollector collector;
 
-        public ForwardingVisitor(MatchVisitor visitor) {
-            this.visitor = visitor;
+        public ForwardingVisitor(TokenCollector collector) {
+            this.collector = collector;
         }
 
         @Override
@@ -26,7 +26,7 @@ public abstract class AbstractExpression implements Expression, MatchExpression 
 
         @Override
         public void token(String token) {
-            visitor.token(token);
+            collector.token(token);
         }
     }
 }

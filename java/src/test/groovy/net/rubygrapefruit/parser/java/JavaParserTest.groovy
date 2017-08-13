@@ -54,23 +54,75 @@ class JavaParserTest extends Specification {
 
     def "stops parsing on first error"() {
         expect:
-        parse(" Thing { }") == [" "]
-        parse("class x") == ["class", " ", "x"]
-        parse("class Thing extends { }") == ["class", " ", "Thing", " "]
-        parse("class Thing implements A extends B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
-        parse("class Thing implements A implements B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
-        parse("class Thing extends A, B { }") == ["class", " ", "Thing", " ", "extends", " ", "A"]
-        parse("abstract interface Thing extends { }") == ["abstract", " "]
-        parse("interface Thing implements A { }") == ["interface", " ", "Thing", " "]
-        parse("x") == []
-        parse("package a.b.{") == []
-        parse("package a.b import a.b") == []
-        parse("package a.b; import a.b{}") == ["package", " ", "a.b", ";", " "]
-        parse("package a.b; import a.b.%; class Thing { }") == ["package", " ", "a.b", ";", " "]
-        parse("packageimportclass") == []
+        def r1 = fail(" Thing { }")
+        r1.result == [" "]
+        r1.failure == "stopped at: offset 1 'Thing { }'"
+
+        def r2 = fail("class x")
+        r2.result == ["class", " ", "x"]
+        r2.failure == "stopped at: end of input"
+
+        // TODO - incomplete
+        def r3 = fail("class Thing extends { }")
+        r3.result == ["class", " ", "Thing", " "]
+        r3.failure == "stopped at: offset 12 'extends { }'"
+
+        def r4 = fail("class Thing implements A extends B { }")
+        r4.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        r4.failure == "stopped at: offset 25 'extends B { }'"
+
+        def r5 = fail("class Thing implements A implements B { }")
+        r5.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        r5.failure == "stopped at: offset 25 'implements B { }'"
+
+        def r6 = fail("class Thing extends A, B { }")
+        r6.result == ["class", " ", "Thing", " ", "extends", " ", "A"]
+        r6.failure == "stopped at: offset 21 ', B { }'"
+
+        // TODO - should really complain that interface cant be abstract
+        def r7 = fail("abstract interface Thing extends { }")
+        r7.result == ["abstract", " "]
+        r7.failure == "stopped at: offset 9 'interface Thing exte'"
+
+        def r8 = fail("interface Thing implements A { }")
+        r8.result == ["interface", " ", "Thing", " "]
+        r8.failure == "stopped at: offset 16 'implements A { }'"
+
+        def r9 = fail("x")
+        r9.result == []
+        r9.failure == "stopped at: offset 0 'x'"
+
+        // TODO - incomplete
+        def r10 = fail("package a.b.{")
+        r10.result == []
+        r10.failure == "stopped at: offset 0 'package a.b.{'"
+
+        // TODO - incomplete
+        def r11 = fail("package a.b import a.b")
+        r11.result == []
+        r11.failure == "stopped at: offset 0 'package a.b import a'"
+
+        // TODO - incomplete
+        def r12 = fail("package a.b; import a.b{}")
+        r12.result == ["package", " ", "a.b", ";", " "]
+        r12.failure == "stopped at: offset 13 'import a.b{}'"
+
+        // TODO - incomplete
+        def r13 = fail("package a.b; import a.b.%; class Thing { }")
+        r13.result == ["package", " ", "a.b", ";", " "]
+        r13.failure == "stopped at: offset 13 'import a.b.%; class '"
+
+        // TODO - incomplete
+        def r14 = fail("packageimportclass")
+        r14.result == []
+        r14.failure == "stopped at: offset 0 'packageimportclass'"
     }
 
     def List<String> parse(String str) {
         return parser.parse(str, new CollectingVisitor()).result
+    }
+
+    def CollectingVisitor fail(String str) {
+        return parser.parse(str, new CollectingVisitor())
     }
 }

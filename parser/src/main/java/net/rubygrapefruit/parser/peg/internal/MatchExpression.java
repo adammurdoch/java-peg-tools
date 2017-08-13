@@ -9,5 +9,5 @@ public interface MatchExpression {
     /**
      * Creates a visitor to receive the results of matching this expression and that transforms and forwards the results to the given visitor.
      */
-    BufferingMatchVisitor collector(MatchVisitor visitor);
+    ResultCollector collector(TokenCollector collector);
 }

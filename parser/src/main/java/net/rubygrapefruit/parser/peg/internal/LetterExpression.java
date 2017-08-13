@@ -23,8 +23,10 @@ public class LetterExpression extends AbstractExpression implements Matcher {
         String token = stream.consumeLetter();
         if (token != null) {
             visitor.token(token);
+            visitor.stoppedAt(stream.tail());
             return true;
         }
+        visitor.stoppedAt(stream.tail());
         return false;
     }
 }

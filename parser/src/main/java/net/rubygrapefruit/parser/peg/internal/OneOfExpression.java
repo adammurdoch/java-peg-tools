@@ -21,30 +21,27 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        BatchingMatchVisitor partialMatch = null;
-        MatchExpression partialMatchExpression = null;
-        CharStream partialMatchEndsAt = null;
+        BatchingMatchVisitor bestMatch = null;
+        MatchExpression bestMatchExpression = null;
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
             if (expression.getMatcher().consume(pos, nested)) {
                 nested.forward(expression.collector(visitor));
                 stream.moveTo(pos);
+                visitor.stoppedAt(nested.getStoppedAt());
                 return true;
             }
-            if (partialMatch == null || nested.matches() > partialMatch.matches()) {
-                partialMatch = nested;
-                partialMatchExpression = expression;
-                partialMatchEndsAt = pos;
+            if (bestMatch == null || nested.matches() > bestMatch.matches()) {
+                bestMatch = nested;
+                bestMatchExpression = expression;
                 nested = new BatchingMatchVisitor();
             } else {
                 nested.reset();
             }
         }
-        if (partialMatch != null) {
-            partialMatch.forward(partialMatchExpression.collector(visitor));
-            stream.moveTo(partialMatchEndsAt);
-        }
+        bestMatch.forward(bestMatchExpression.collector(visitor));
+        visitor.stoppedAt(bestMatch.getStoppedAt());
         return false;
     }
 }

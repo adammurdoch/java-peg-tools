@@ -28,9 +28,11 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             stream.moveTo(pos);
             nested.forward(expression.collector(visitor));
             if (!matched) {
+                visitor.stoppedAt(nested.getStoppedAt());
                 return false;
             }
         }
+        visitor.stoppedAt(nested.getStoppedAt());
         return true;
     }
 }

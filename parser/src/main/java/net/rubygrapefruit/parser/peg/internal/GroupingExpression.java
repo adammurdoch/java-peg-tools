@@ -25,28 +25,30 @@ public class GroupingExpression implements Expression, MatchExpression {
     }
 
     @Override
-    public BufferingMatchVisitor collector(final MatchVisitor visitor) {
-        return new TokenMergingMatchVisitor(visitor);
+    public ResultCollector collector(TokenCollector collector) {
+        return new TokenMergingMatchVisitor(collector);
     }
 
-    private static class TokenMergingMatchVisitor implements BufferingMatchVisitor {
-        private final MatchVisitor visitor;
+    private static class TokenMergingMatchVisitor implements ResultCollector {
+        private final TokenCollector collector;
         StringBuilder builder;
 
-        public TokenMergingMatchVisitor(MatchVisitor visitor) {
-            this.visitor = visitor;
-            builder = new StringBuilder();
+        TokenMergingMatchVisitor(TokenCollector collector) {
+            this.collector = collector;
         }
 
         @Override
         public void token(String token) {
+            if (builder == null) {
+                builder = new StringBuilder();
+            }
             builder.append(token);
         }
 
         @Override
         public void done() {
-            if (builder.length() > 0) {
-                visitor.token(builder.toString());
+            if (builder != null && builder.length() > 0) {
+                collector.token(builder.toString());
             }
         }
     }

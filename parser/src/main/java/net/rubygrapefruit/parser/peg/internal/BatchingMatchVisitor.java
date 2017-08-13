@@ -5,6 +5,7 @@ import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
     private List<String> tokens;
+    private CharStream stoppedAt;
 
     @Override
     public void token(String token) {
@@ -14,7 +15,19 @@ public class BatchingMatchVisitor implements MatchVisitor {
         tokens.add(token);
     }
 
-    public void forward(BufferingMatchVisitor visitor) {
+    public CharStream getStoppedAt() {
+        return stoppedAt;
+    }
+
+    @Override
+    public void stoppedAt(CharStream pos) {
+        stoppedAt = pos;
+    }
+
+    /**
+     * Forwards the result collected by this visitor.
+     */
+    public void forward(ResultCollector visitor) {
         if (tokens != null) {
             for (String token : tokens) {
                 visitor.token(token);
@@ -28,6 +41,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
         if (tokens != null) {
             tokens.clear();
         }
+        stoppedAt = null;
     }
 
     public int matches() {

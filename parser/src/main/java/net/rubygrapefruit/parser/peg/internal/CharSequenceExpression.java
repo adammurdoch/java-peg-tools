@@ -26,12 +26,14 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
+        CharStream start = stream.tail();
         if (stream.consume(str)) {
-            visitor.token(str);
-            visitor.stoppedAt(stream.tail());
+            CharStream end = stream.tail();
+            visitor.token(start, end);
+            visitor.stoppedAt(end);
             return true;
         }
-        visitor.stoppedAt(stream.tail());
+        visitor.stoppedAt(start);
         return false;
     }
 }

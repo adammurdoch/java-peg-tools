@@ -20,13 +20,15 @@ public class LetterExpression extends AbstractExpression implements Matcher {
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
+        CharStream start = stream.tail();
         String token = stream.consumeLetter();
         if (token != null) {
-            visitor.token(token);
-            visitor.stoppedAt(stream.tail());
+            CharStream end = stream.tail();
+            visitor.token(start, end);
+            visitor.stoppedAt(end);
             return true;
         }
-        visitor.stoppedAt(stream.tail());
+        visitor.stoppedAt(start);
         return false;
     }
 }

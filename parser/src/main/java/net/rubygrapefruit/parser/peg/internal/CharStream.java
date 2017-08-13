@@ -68,4 +68,8 @@ public class CharStream {
     public boolean isAtEnd() {
         return pos >= input.length();
     }
+
+    public String upTo(CharStream end) {
+        return input.substring(pos, end.pos);
+    }
 }

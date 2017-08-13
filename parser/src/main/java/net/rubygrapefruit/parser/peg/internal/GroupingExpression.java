@@ -31,24 +31,25 @@ public class GroupingExpression implements Expression, MatchExpression {
 
     private static class TokenMergingMatchVisitor implements ResultCollector {
         private final TokenCollector collector;
-        StringBuilder builder;
+        CharStream start;
+        CharStream end;
 
         TokenMergingMatchVisitor(TokenCollector collector) {
             this.collector = collector;
         }
 
         @Override
-        public void token(String token) {
-            if (builder == null) {
-                builder = new StringBuilder();
+        public void token(CharStream start, CharStream end) {
+            if (this.start == null) {
+                this.start = start;
             }
-            builder.append(token);
+            this.end = end;
         }
 
         @Override
         public void done() {
-            if (builder != null && builder.length() > 0) {
-                collector.token(builder.toString());
+            if (start != null) {
+                collector.token(start, end);
             }
         }
     }

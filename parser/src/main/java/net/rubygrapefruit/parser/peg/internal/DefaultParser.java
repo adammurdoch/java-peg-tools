@@ -15,8 +15,8 @@ public class DefaultParser implements Parser {
         CharStream stream = new CharStream(input);
         final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
             @Override
-            public void token(String token) {
-                visitor.token(token);
+            public void token(CharStream start, CharStream end) {
+                visitor.token(start.upTo(end));
             }
         });
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);
@@ -40,8 +40,8 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void token(String token) {
-            resultCollector.token(token);
+        public void token(CharStream start, CharStream end) {
+            resultCollector.token(start, end);
         }
 
         @Override

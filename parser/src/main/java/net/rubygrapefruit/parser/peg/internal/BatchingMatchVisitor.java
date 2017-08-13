@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
-    private List<String> tokens;
+    private List<Match> tokens;
     private CharStream stoppedAt;
 
     @Override
-    public void token(String token) {
+    public void token(CharStream start, CharStream end) {
         if (tokens == null) {
-            tokens = new ArrayList<String>();
+            tokens = new ArrayList<Match>();
         }
-        tokens.add(token);
+        tokens.add(new Match(start, end));
     }
 
     public CharStream getStoppedAt() {
@@ -29,8 +29,8 @@ public class BatchingMatchVisitor implements MatchVisitor {
      */
     public void forward(ResultCollector visitor) {
         if (tokens != null) {
-            for (String token : tokens) {
-                visitor.token(token);
+            for (Match token : tokens) {
+                visitor.token(token.start, token.end);
             }
             visitor.done();
             tokens.clear();
@@ -49,5 +49,15 @@ public class BatchingMatchVisitor implements MatchVisitor {
             return 0;
         }
         return tokens.size();
+    }
+
+    private static class Match {
+        final CharStream start;
+        final CharStream end;
+
+        Match(CharStream start, CharStream end) {
+            this.start = start;
+            this.end = end;
+        }
     }
 }

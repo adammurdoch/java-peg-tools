@@ -6,9 +6,8 @@ Includes a sample grammar for parsing Java.
 
 Implementation is in the very early stages, and doesn't do anything much.
 
-- Don't create a string for each match, collect locations instead
-- Detangle producing the result (eg grouping) from matching
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
+- Use immutable positions to represent locations in the stream
 - Report (line,col) location where parsing stopped
 - Report why parsing stopped
 - Parse failures

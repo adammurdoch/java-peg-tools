@@ -2,10 +2,10 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class GroupingExpression implements Expression, Matcher {
+public class GroupingExpression implements Expression, MatchExpression, Matcher {
     private final Matcher matcher;
 
-    protected GroupingExpression(Matcher matcher) {
+    GroupingExpression(Matcher matcher) {
         this.matcher = matcher;
     }
 
@@ -16,6 +16,11 @@ public class GroupingExpression implements Expression, Matcher {
 
     @Override
     public Expression group() {
+        return this;
+    }
+
+    @Override
+    public Matcher getMatcher() {
         return this;
     }
 

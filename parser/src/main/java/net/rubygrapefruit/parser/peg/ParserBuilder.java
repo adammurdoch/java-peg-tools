@@ -54,8 +54,8 @@ public class ParserBuilder {
      * Matches one or more of the given expressions. Matching is greedy.
      */
     public Expression oneOrMore(Expression expression) {
-        Matcher matcher = matcher(expression);
-        return new SequenceExpression(Arrays.asList(matcher, new ZeroOrMoreExpression(matcher)));
+        MatchExpression matchExpression = matcher(expression);
+        return new SequenceExpression(Arrays.asList(matchExpression, new ZeroOrMoreExpression(matchExpression)));
     }
 
     /**
@@ -82,15 +82,15 @@ public class ParserBuilder {
         return new DefaultParser(matcher(expression));
     }
 
-    private List<Matcher> matchers(Expression... expressions) {
-        List<Matcher> matchers = new ArrayList<>(expressions.length);
+    private List<MatchExpression> matchers(Expression... expressions) {
+        List<MatchExpression> matchers = new ArrayList<>(expressions.length);
         for (Expression expression : expressions) {
             matchers.add(matcher(expression));
         }
         return matchers;
     }
 
-    private Matcher matcher(Expression expression) {
-        return (Matcher) expression;
+    private MatchExpression matcher(Expression expression) {
+        return (MatchExpression) expression;
     }
 }

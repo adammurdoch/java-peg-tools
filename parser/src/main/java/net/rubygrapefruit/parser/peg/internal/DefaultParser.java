@@ -4,16 +4,16 @@ import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
 public class DefaultParser implements Parser {
-    private final Matcher rootExpression;
+    private final MatchExpression rootExpression;
 
-    public DefaultParser(Matcher rootExpression) {
+    public DefaultParser(MatchExpression rootExpression) {
         this.rootExpression = rootExpression;
     }
 
     @Override
     public <T extends TokenVisitor> T parse(String input, final T visitor) {
         CharStream stream = new CharStream(input);
-        boolean match = rootExpression.consume(stream, new MatchVisitor() {
+        boolean match = rootExpression.getMatcher().consume(stream, new MatchVisitor() {
             @Override
             public void token(String token) {
                 visitor.token(token);

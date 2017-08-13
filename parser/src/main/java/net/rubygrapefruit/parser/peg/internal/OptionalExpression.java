@@ -2,16 +2,21 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class OptionalExpression extends AbstractExpression implements Expression, Matcher {
+public class OptionalExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
     private final Matcher matcher;
 
-    public OptionalExpression(Matcher matcher) {
-        this.matcher = matcher;
+    public OptionalExpression(MatchExpression expression) {
+        this.matcher = expression.getMatcher();
     }
 
     @Override
     public String toString() {
         return "{optional: " + matcher + "}";
+    }
+
+    @Override
+    public Matcher getMatcher() {
+        return this;
     }
 
     @Override

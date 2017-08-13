@@ -2,18 +2,27 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class OneOfExpression extends AbstractExpression implements Expression, Matcher {
-    private final List<? extends Matcher> matchers;
+public class OneOfExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
+    private final List<Matcher> matchers;
 
-    public OneOfExpression(List<? extends Matcher> matchers) {
-        this.matchers = matchers;
+    public OneOfExpression(List<? extends MatchExpression> expressions) {
+        this.matchers = new ArrayList<Matcher>(expressions.size());
+        for (MatchExpression expression : expressions) {
+            matchers.add(expression.getMatcher());
+        }
     }
 
     @Override
     public String toString() {
         return "{one-of " + matchers + "}";
+    }
+
+    @Override
+    public Matcher getMatcher() {
+        return this;
     }
 
     @Override

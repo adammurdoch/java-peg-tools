@@ -2,9 +2,7 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-import java.util.List;
-
-public class CharSequenceExpression implements Expression, Matcher {
+public class CharSequenceExpression implements Expression, MatchExpression, Matcher {
     private final String str;
 
     public CharSequenceExpression(String str) {
@@ -19,6 +17,11 @@ public class CharSequenceExpression implements Expression, Matcher {
     @Override
     public String toString() {
         return "\"" + str + "\"";
+    }
+
+    @Override
+    public Matcher getMatcher() {
+        return this;
     }
 
     @Override

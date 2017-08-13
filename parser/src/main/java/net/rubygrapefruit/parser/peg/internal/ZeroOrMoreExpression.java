@@ -2,16 +2,21 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class ZeroOrMoreExpression extends AbstractExpression implements Expression, Matcher {
+public class ZeroOrMoreExpression extends AbstractExpression implements Expression, MatchExpression, Matcher {
     private final Matcher matcher;
 
-    public ZeroOrMoreExpression(Matcher matcher) {
-        this.matcher = matcher;
+    public ZeroOrMoreExpression(MatchExpression expression) {
+        this.matcher = expression.getMatcher();
     }
 
     @Override
     public String toString() {
         return "{zero-or-more: " + matcher + "}";
+    }
+
+    @Override
+    public Matcher getMatcher() {
+        return this;
     }
 
     @Override

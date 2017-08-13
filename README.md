@@ -4,7 +4,7 @@ Includes a sample grammar for parsing Java source.
 
 ### TODO
 
-Implementation is in the very early stages, and will scan the input into tokens but does not yet provide a parse tree as output or meaningful error reporting
+The implementation is in the very early stages and can scan the input into tokens, but does not yet provide a parse tree as output or meaningful error reporting.
 
 #### Features
 

@@ -39,6 +39,12 @@ class ParserBuilderTest extends Specification {
         "1abc" | []     | "stopped at: offset 0 '1abc'"
     }
 
+    def "can parse a string token as a group"() {
+        expect:
+        def parser = builder.newParser(builder.chars("abc").group())
+        parse(parser, "abc") == ["abc"]
+    }
+
     def "can parse a string character"() {
         expect:
         def parser = builder.newParser(builder.singleChar(";" as char))
@@ -61,13 +67,19 @@ class ParserBuilderTest extends Specification {
         "yx"  | []     | "stopped at: offset 0 'yx'"
     }
 
+    def "can parse a string character as a group"() {
+        expect:
+        def parser = builder.newParser(builder.singleChar(";" as char).group())
+        parse(parser, ";") == [";"]
+    }
+
     def "can parse a sequence of tokens"() {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
         parse(parser, "abc123") == ["abc", "123"]
     }
 
-    def "can group a sequence of tokens into a single token"() {
+    def "can parse a sequence of tokens as a group"() {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")).group())
         parse(parser, "abc123") == ["abc123"]
@@ -80,6 +92,15 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(e1, e2))
         parse(parser, "{123}{abc}") == ["{", "123", "}", "{", "abc", "}"]
+    }
+
+    def "can parse a sequence of sequence expressions as a group"() {
+        def e1 = builder.sequence(builder.chars("{"), builder.chars("123"), builder.chars("}"))
+        def e2 = builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(e1, e2).group())
+        parse(parser, "{123}{abc}") == ["{123}{abc}"]
     }
 
     @Unroll
@@ -130,11 +151,80 @@ class ParserBuilderTest extends Specification {
         parse(parser, "") == []
     }
 
+    def "can parse optional token as a group"() {
+        expect:
+        def parser = builder.newParser(builder.optional(builder.chars("abc")).group())
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "") == []
+    }
+
+    def "can parse optional sequence expression"() {
+        expect:
+        def parser = builder.newParser(builder.optional(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
+        parse(parser, "{abc}") == ["{", "abc", "}"]
+        parse(parser, "") == []
+    }
+
+    def "can parse optional sequence expression as a group"() {
+        expect:
+        def parser = builder.newParser(builder.optional(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
+        parse(parser, "{abc}") == ["{abc}"]
+        parse(parser, "") == []
+    }
+
+    @Unroll
+    def "reports failure to match optional expression with common prefix with following expression - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input        | tokens                   | message
+        ""           | []                       | "stopped at: end of input"
+        "abc"        | ["abc"]                  | "stopped at: end of input"
+        "abc1"       | ["abc", "1"]             | "stopped at: end of input"
+        "abc1x"      | ["abc", "1"]             | "stopped at: offset 4 'x'"
+        "abc1xabc2"  | ["abc", "1"]             | "stopped at: offset 4 'xabc2'"
+        "abc3"       | ["abc"]                  | "stopped at: offset 3 '3'"
+        "abc12abc"   | ["abc", "1", "2", "abc"] | "stopped at: end of input"
+        "abc12abc3"  | ["abc", "1", "2", "abc"] | "stopped at: offset 8 '3'"
+        "abc12xabc2" | ["abc", "1", "2"]        | "stopped at: offset 5 'xabc2'"
+    }
+
     def "can parse zero or more tokens"() {
         expect:
         def parser = builder.newParser(builder.zeroOrMore(builder.chars("abc")))
         parse(parser, "abcabc") == ["abc", "abc"]
         parse(parser, "abc") == ["abc"]
+        parse(parser, "") == []
+    }
+
+    def "can parse zero or more tokens as a group"() {
+        expect:
+        def parser = builder.newParser(builder.zeroOrMore(builder.chars("abc")).group())
+        parse(parser, "abcabc") == ["abcabc"]
+        parse(parser, "abc") == ["abc"]
+        parse(parser, "") == []
+    }
+
+    def "can parse zero or more sequence expressions"() {
+        expect:
+        def parser = builder.newParser(builder.zeroOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
+        parse(parser, "{abc}{abc}") == ["{", "abc", "}", "{", "abc", "}"]
+        parse(parser, "{abc}") == ["{", "abc", "}"]
+        parse(parser, "") == []
+    }
+
+    def "can parse zero or more sequence expressions as a group"() {
+        expect:
+        def parser = builder.newParser(builder.zeroOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
+        parse(parser, "{abc}{abc}") == ["{abc}{abc}"]
+        parse(parser, "{abc}") == ["{abc}"]
         parse(parser, "") == []
     }
 
@@ -156,6 +246,27 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc") == ["abc"]
     }
 
+    def "can parse one or more tokens as a group"() {
+        expect:
+        def parser = builder.newParser(builder.oneOrMore(builder.chars("abc")).group())
+        parse(parser, "abcabc") == ["abcabc"]
+        parse(parser, "abc") == ["abc"]
+    }
+
+    def "can parse one or more sequence expressions"() {
+        expect:
+        def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
+        parse(parser, "{abc}{abc}") == ["{", "abc", "}", "{", "abc", "}"]
+        parse(parser, "{abc}") == ["{", "abc", "}"]
+    }
+
+    def "can parse one or more sequence expressions as a group"() {
+        expect:
+        def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
+        parse(parser, "{abc}{abc}") == ["{abc}{abc}"]
+        parse(parser, "{abc}") == ["{abc}"]
+    }
+
     def "can parse one or more expressions with common prefix with following expression"() {
         def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
@@ -171,6 +282,33 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.oneOf(builder.chars("abc"), builder.chars("123")))
         parse(parser, "123") == ["123"]
         parse(parser, "abc") == ["abc"]
+    }
+
+    def "can parse one of several alternative tokens as a group"() {
+        expect:
+        def parser = builder.newParser(builder.oneOf(builder.chars("abc"), builder.chars("123")).group())
+        parse(parser, "123") == ["123"]
+        parse(parser, "abc") == ["abc"]
+    }
+
+    def "can parse one of several alternative sequence expressions"() {
+        def e1 = builder.sequence(builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("2"), builder.chars("1"))
+
+        expect:
+        def parser = builder.newParser(builder.oneOf(e1, e2))
+        parse(parser, "12") == ["1", "2"]
+        parse(parser, "21") == ["2", "1"]
+    }
+
+    def "can parse one of several alternative sequence expressions as a group"() {
+        def e1 = builder.sequence(builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("2"), builder.chars("1"))
+
+        expect:
+        def parser = builder.newParser(builder.oneOf(e1, e2).group())
+        parse(parser, "12") == ["12"]
+        parse(parser, "21") == ["21"]
     }
 
     def "can parse one of several alternative tokens with common prefix"() {

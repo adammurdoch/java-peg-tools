@@ -173,6 +173,32 @@ class ParserBuilderTest extends Specification {
     }
 
     @Unroll
+    def "reports failure to match sequence with optional expression - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("1"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input     | tokens            | message
+        ""        | []                | "stopped at offset 0: end of input"
+        "abd"     | []                | "stopped at offset 0: [abd]"
+        // TODO - using incorrect branch
+        "abc"     | []                | "stopped at offset 0: [abc]"
+        // TODO - using incorrect branch
+        "abc2"    | []                | "stopped at offset 0: [abc2]"
+        "1"       | ["1"]             | "stopped at offset 1: end of input"
+        "13"      | ["1"]             | "stopped at offset 1: [3]"
+        "abc11"   | ["abc", "1", "1"] | "stopped at offset 5: end of input"
+        "abc113"  | ["abc", "1", "1"] | "stopped at offset 5: [3]"
+        "1abc112" | ["1"]             | "stopped at offset 1: [abc112]"
+    }
+
+    @Unroll
     def "reports failure to match optional expression with common prefix with following expression - #input"() {
         def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))

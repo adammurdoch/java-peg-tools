@@ -45,8 +45,18 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void stoppedAt(CharStream pos) {
-            stoppedAt = pos;
+        public void matched(CharStream endPos) {
+            stoppedAt = endPos;
+        }
+
+        @Override
+        public void matched(CharStream endPos, CharStream stoppedAt) {
+            this.stoppedAt = stoppedAt;
+        }
+
+        @Override
+        public void failed(CharStream stoppedAt) {
+            this.stoppedAt = stoppedAt;
         }
     }
 }

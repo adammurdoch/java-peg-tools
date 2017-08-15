@@ -25,7 +25,7 @@ public class OptionalExpression extends AbstractExpression implements Matcher {
             nested.forward(expression.collector(visitor));
             stream.moveTo(pos);
         }
-        visitor.stoppedAt(nested.getStoppedAt());
+        visitor.matched(pos, nested.getStoppedAt());
         return true;
     }
 }

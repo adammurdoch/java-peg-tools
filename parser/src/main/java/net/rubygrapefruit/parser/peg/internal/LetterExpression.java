@@ -25,10 +25,10 @@ public class LetterExpression extends AbstractExpression implements Matcher {
         if (token != null) {
             CharStream end = stream.tail();
             visitor.token(start, end);
-            visitor.stoppedAt(end);
+            visitor.matched(end);
             return true;
         }
-        visitor.stoppedAt(start);
+        visitor.failed(start);
         return false;
     }
 }

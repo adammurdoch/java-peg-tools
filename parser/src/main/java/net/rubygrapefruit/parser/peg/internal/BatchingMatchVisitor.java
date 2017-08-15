@@ -5,6 +5,7 @@ import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
     private List<Match> tokens;
+    private CharStream matchEnd;
     private CharStream stoppedAt;
 
     @Override
@@ -20,8 +21,20 @@ public class BatchingMatchVisitor implements MatchVisitor {
     }
 
     @Override
-    public void stoppedAt(CharStream pos) {
-        stoppedAt = pos;
+    public void matched(CharStream endPos) {
+        matchEnd = endPos;
+        stoppedAt = endPos;
+    }
+
+    @Override
+    public void matched(CharStream endPos, CharStream stoppedAt) {
+        matchEnd = endPos;
+        this.stoppedAt = stoppedAt;
+    }
+
+    @Override
+    public void failed(CharStream stoppedAt) {
+        this.stoppedAt = stoppedAt;
     }
 
     /**
@@ -42,6 +55,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             tokens.clear();
         }
         stoppedAt = null;
+        matchEnd = null;
     }
 
     public int matches() {

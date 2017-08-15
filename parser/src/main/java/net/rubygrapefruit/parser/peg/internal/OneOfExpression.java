@@ -29,7 +29,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
             if (expression.getMatcher().consume(pos, nested)) {
                 nested.forward(expression.collector(visitor));
                 stream.moveTo(pos);
-                visitor.stoppedAt(nested.getStoppedAt());
+                visitor.matched(pos, nested.getStoppedAt());
                 return true;
             }
             if (bestMatch == null || nested.matches() > bestMatch.matches()) {
@@ -41,7 +41,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
             }
         }
         bestMatch.forward(bestMatchExpression.collector(visitor));
-        visitor.stoppedAt(bestMatch.getStoppedAt());
+        visitor.failed(bestMatch.getStoppedAt());
         return false;
     }
 }

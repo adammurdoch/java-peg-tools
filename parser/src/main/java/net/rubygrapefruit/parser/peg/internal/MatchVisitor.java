@@ -1,8 +1,9 @@
 package net.rubygrapefruit.parser.peg.internal;
 
 public interface MatchVisitor extends TokenCollector {
-    /**
-     * Called when a matcher stops matching.
-     */
-    void stoppedAt(CharStream pos);
+    void matched(CharStream endPos);
+
+    void matched(CharStream endPos, CharStream stoppedAt);
+
+    void failed(CharStream stoppedAt);
 }

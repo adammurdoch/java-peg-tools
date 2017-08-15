@@ -30,10 +30,10 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
         if (stream.consume(str)) {
             CharStream end = stream.tail();
             visitor.token(start, end);
-            visitor.stoppedAt(end);
+            visitor.matched(end);
             return true;
         }
-        visitor.stoppedAt(start);
+        visitor.failed(start);
         return false;
     }
 }

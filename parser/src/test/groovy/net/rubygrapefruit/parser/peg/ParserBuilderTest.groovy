@@ -18,7 +18,7 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.chars("abc"))
         def result = fail(parser, "abc123")
         result.result == ["abc"]
-        result.failure == "extra input: offset 3 '123'"
+        result.failure == "extra input at offset 3: [123]"
     }
 
     @Unroll
@@ -31,12 +31,12 @@ class ParserBuilderTest extends Specification {
 
         where:
         input  | tokens | message
-        ""     | []     | "stopped at: end of input"
-        "ab"   | []     | "stopped at: offset 0 'ab'"
-        "abd"  | []     | "stopped at: offset 0 'abd'"
-        "ABC"  | []     | "stopped at: offset 0 'ABC'"
-        "123"  | []     | "stopped at: offset 0 '123'"
-        "1abc" | []     | "stopped at: offset 0 '1abc'"
+        ""     | []     | "stopped at offset 0: end of input"
+        "ab"   | []     | "stopped at offset 0: [ab]"
+        "abd"  | []     | "stopped at offset 0: [abd]"
+        "ABC"  | []     | "stopped at offset 0: [ABC]"
+        "123"  | []     | "stopped at offset 0: [123]"
+        "1abc" | []     | "stopped at offset 0: [1abc]"
     }
 
     def "can parse a string token as a group"() {
@@ -61,10 +61,10 @@ class ParserBuilderTest extends Specification {
 
         where:
         input | tokens | message
-        ""    | []     | "stopped at: end of input"
-        "X"   | []     | "stopped at: offset 0 'X'"
-        "y"   | []     | "stopped at: offset 0 'y'"
-        "yx"  | []     | "stopped at: offset 0 'yx'"
+        ""    | []     | "stopped at offset 0: end of input"
+        "X"   | []     | "stopped at offset 0: [X]"
+        "y"   | []     | "stopped at offset 0: [y]"
+        "yx"  | []     | "stopped at offset 0: [yx]"
     }
 
     def "can parse a string character as a group"() {
@@ -113,12 +113,12 @@ class ParserBuilderTest extends Specification {
 
         where:
         input     | tokens  | message
-        ""        | []      | "stopped at: end of input"
-        "abc"     | ["abc"] | "stopped at: end of input"
-        "abc124"  | ["abc"] | "stopped at: offset 3 '124'"
-        "1abc123" | []      | "stopped at: offset 0 '1abc123'"
-        "abcx123" | ["abc"] | "stopped at: offset 3 'x123'"
-        "abc1123" | ["abc"] | "stopped at: offset 3 '1123'"
+        ""        | []      | "stopped at offset 0: end of input"
+        "abc"     | ["abc"] | "stopped at offset 3: end of input"
+        "abc124"  | ["abc"] | "stopped at offset 3: [124]"
+        "1abc123" | []      | "stopped at offset 0: [1abc123]"
+        "abcx123" | ["abc"] | "stopped at offset 3: [x123]"
+        "abc1123" | ["abc"] | "stopped at offset 3: [1123]"
     }
 
     @Unroll
@@ -134,14 +134,14 @@ class ParserBuilderTest extends Specification {
 
         where:
         input       | tokens              | message
-        ""          | []                  | "stopped at: end of input"
-        "ab"        | []                  | "stopped at: offset 0 'ab'"
-        "abc"       | ["abc"]             | "stopped at: end of input"
-        "abc2"      | ["abc"]             | "stopped at: offset 3 '2'"
-        "abc124"    | ["abc", "1"]        | "stopped at: offset 4 '24'"
-        "abc1abc"   | ["abc", "1", "abc"] | "stopped at: end of input"
-        "abc1abc1"  | ["abc", "1", "abc"] | "stopped at: offset 7 '1'"
-        "1abc1abc2" | []                  | "stopped at: offset 0 '1abc1abc2'"
+        ""          | []                  | "stopped at offset 0: end of input"
+        "ab"        | []                  | "stopped at offset 0: [ab]"
+        "abc"       | ["abc"]             | "stopped at offset 3: end of input"
+        "abc2"      | ["abc"]             | "stopped at offset 3: [2]"
+        "abc124"    | ["abc", "1"]        | "stopped at offset 4: [24]"
+        "abc1abc"   | ["abc", "1", "abc"] | "stopped at offset 7: end of input"
+        "abc1abc1"  | ["abc", "1", "abc"] | "stopped at offset 7: [1]"
+        "1abc1abc2" | []                  | "stopped at offset 0: [1abc1abc2]"
     }
 
     def "can parse optional token"() {
@@ -185,18 +185,18 @@ class ParserBuilderTest extends Specification {
 
         where:
         input        | tokens                   | message
-        ""           | []                       | "stopped at: end of input"
-        "abc"        | ["abc"]                  | "stopped at: end of input"
+        ""           | []                       | "stopped at offset 0: end of input"
+        "abc"        | ["abc"]                  | "stopped at offset 3: end of input"
         // TODO - using the incorrect branch
-        "abc1"       | ["abc"]                  | "stopped at: offset 3 '1'"
+        "abc1"       | ["abc"]                  | "stopped at offset 3: [1]"
         // TODO - using the incorrect branch
-        "abc1x"      | ["abc"]                  | "stopped at: offset 3 '1x'"
+        "abc1x"      | ["abc"]                  | "stopped at offset 3: [1x]"
         // TODO - using the incorrect branch
-        "abc1xabc2"  | ["abc"]                  | "stopped at: offset 3 '1xabc2'"
-        "abc3"       | ["abc"]                  | "stopped at: offset 3 '3'"
-        "abc12abc"   | ["abc", "1", "2", "abc"] | "stopped at: end of input"
-        "abc12abc3"  | ["abc", "1", "2", "abc"] | "stopped at: offset 8 '3'"
-        "abc12xabc2" | ["abc", "1", "2"]        | "stopped at: offset 5 'xabc2'"
+        "abc1xabc2"  | ["abc"]                  | "stopped at offset 3: [1xabc2]"
+        "abc3"       | ["abc"]                  | "stopped at offset 3: [3]"
+        "abc12abc"   | ["abc", "1", "2", "abc"] | "stopped at offset 8: end of input"
+        "abc12abc3"  | ["abc", "1", "2", "abc"] | "stopped at offset 8: [3]"
+        "abc12xabc2" | ["abc", "1", "2"]        | "stopped at offset 5: [xabc2]"
     }
 
     def "can parse zero or more tokens"() {
@@ -345,14 +345,14 @@ class ParserBuilderTest extends Specification {
 
         where:
         input   | tokens       | message
-        ""      | []           | "stopped at: end of input"
-        "ab"    | []           | "stopped at: offset 0 'ab'"
-        "abc"   | ["abc"]      | "stopped at: end of input"
-        "abc3"  | ["abc"]      | "stopped at: offset 3 '3'"
-        "abc1"  | ["abc", "1"] | "stopped at: end of input"
-        "abc1x" | ["abc", "1"] | "stopped at: offset 4 'x'"
-        "abc2"  | ["abc", "2"] | "stopped at: end of input"
-        "abc2x" | ["abc", "2"] | "stopped at: offset 4 'x'"
+        ""      | []           | "stopped at offset 0: end of input"
+        "ab"    | []           | "stopped at offset 0: [ab]"
+        "abc"   | ["abc"]      | "stopped at offset 3: end of input"
+        "abc3"  | ["abc"]      | "stopped at offset 3: [3]"
+        "abc1"  | ["abc", "1"] | "stopped at offset 4: end of input"
+        "abc1x" | ["abc", "1"] | "stopped at offset 4: [x]"
+        "abc2"  | ["abc", "2"] | "stopped at offset 4: end of input"
+        "abc2x" | ["abc", "2"] | "stopped at offset 4: [x]"
     }
 
     def "can parse one of several alternative expressions with common prefix with following expression"() {

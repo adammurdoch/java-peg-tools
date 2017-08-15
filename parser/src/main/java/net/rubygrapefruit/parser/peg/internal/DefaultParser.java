@@ -24,9 +24,9 @@ public class DefaultParser implements Parser {
         resultCollector.done();
         CharStream pos = resultVisitor.stoppedAt;
         if (!match) {
-            visitor.failed("stopped at: " + pos.diagnostic());
+            visitor.failed("stopped at " + pos.diagnostic());
         } else if (!pos.isAtEnd()) {
-            visitor.failed("extra input: " + pos.diagnostic());
+            visitor.failed("extra input at " + pos.diagnostic());
         }
         return visitor;
     }

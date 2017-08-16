@@ -187,10 +187,10 @@ class ParserBuilderTest extends Specification {
         input     | tokens            | message
         ""        | []                | "stopped at offset 0: end of input"
         "abd"     | []                | "stopped at offset 0: [abd]"
-        // TODO - using incorrect branch
-        "abc"     | []                | "stopped at offset 0: [abc]"
-        // TODO - using incorrect branch
-        "abc2"    | []                | "stopped at offset 0: [abc2]"
+        // TODO - incomplete tokens
+        "abc"     | []                | "stopped at offset 3: end of input"
+        // TODO - incomplete tokens
+        "abc2"    | []                | "stopped at offset 3: [2]"
         "1"       | ["1"]             | "stopped at offset 1: end of input"
         "13"      | ["1"]             | "stopped at offset 1: [3]"
         "abc11"   | ["abc", "1", "1"] | "stopped at offset 5: end of input"
@@ -213,12 +213,12 @@ class ParserBuilderTest extends Specification {
         input        | tokens                   | message
         ""           | []                       | "stopped at offset 0: end of input"
         "abc"        | ["abc"]                  | "stopped at offset 3: end of input"
-        // TODO - using the incorrect branch
-        "abc1"       | ["abc"]                  | "stopped at offset 3: [1]"
-        // TODO - using the incorrect branch
-        "abc1x"      | ["abc"]                  | "stopped at offset 3: [1x]"
-        // TODO - using the incorrect branch
-        "abc1xabc2"  | ["abc"]                  | "stopped at offset 3: [1xabc2]"
+        // TODO - incomplete tokens
+        "abc1"       | ["abc"]                  | "stopped at offset 4: end of input"
+        // TODO - incomplete tokens
+        "abc1x"      | ["abc"]                  | "stopped at offset 4: [x]"
+        // TODO - incomplete tokens
+        "abc1xabc2"  | ["abc"]                  | "stopped at offset 4: [xabc2]"
         "abc3"       | ["abc"]                  | "stopped at offset 3: [3]"
         "abc12abc"   | ["abc", "1", "2", "abc"] | "stopped at offset 8: end of input"
         "abc12abc3"  | ["abc", "1", "2", "abc"] | "stopped at offset 8: [3]"

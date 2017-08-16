@@ -105,12 +105,12 @@ class JavaParserTest extends Specification {
         // TODO - incomplete
         def r12 = fail("package a.b; import a.b{}")
         r12.result == ["package", " ", "a.b", ";", " "]
-        r12.failure == "stopped at offset 13: [import a.b{}]"
+        r12.failure == "stopped at offset 23: [{}]"
 
-        // TODO - incomplete
+        // TODO - incomplete (should have consumed the '.')
         def r13 = fail("package a.b; import a.b.%; class Thing { }")
         r13.result == ["package", " ", "a.b", ";", " "]
-        r13.failure == "stopped at offset 13: [import a.b.%; class ]"
+        r13.failure == "stopped at offset 23: [.%; class Thing { }]"
 
         // TODO - incomplete
         def r14 = fail("packageimportclass")

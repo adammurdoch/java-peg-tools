@@ -26,6 +26,8 @@ The implementation is in the very early stages and can scan the input into token
     - test: A* B where A partially matched zero or more times, B partially matched
     - test: A+ B where A partially matched zero or more times, B no match
     - test: A+ B where A partially matched zero or more times, B partially matched
+    - test: A | B where A partially matched, B no match
+    - test: A | B where A partially matched and B partially matched
 - Use immutable positions to represent locations in the stream
 - Fix `zeroOrMore(optional(x))`, etc
 - Improve matching when there is a common prefix between alternatives

@@ -72,4 +72,8 @@ public class CharStream {
     public String upTo(CharStream end) {
         return input.substring(pos, end.pos);
     }
+
+    public int diff(CharStream start) {
+        return pos - start.pos;
+    }
 }

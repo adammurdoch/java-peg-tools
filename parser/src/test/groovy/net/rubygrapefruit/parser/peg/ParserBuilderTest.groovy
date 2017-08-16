@@ -213,10 +213,10 @@ class ParserBuilderTest extends Specification {
         input     | tokens                 | message
         ""        | []                     | "stopped at offset 0: end of input"
         "adc"     | []                     | "stopped at offset 0: [adc]"
-        // TODO - incomplete tokens, wrong stop pos
-        "abc"     | []                     | "stopped at offset 0: [abc]"
-        // TODO - incomplete tokens, wrong stop pos
-        "abc2"    | []                     | "stopped at offset 0: [abc2]"
+        // TODO - incomplete tokens
+        "abc"     | []                     | "stopped at offset 3: end of input"
+        // TODO - incomplete tokens
+        "abc2"    | []                     | "stopped at offset 3: [2]"
         "abc1"    | ["abc", "1"]           | "stopped at offset 4: end of input"
         "abc1x"   | ["abc", "1"]           | "stopped at offset 4: [x]"
         // TODO - incomplete tokens

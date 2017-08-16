@@ -19,7 +19,6 @@ The implementation is in the very early stages and can scan the input into token
 #### Fixes
 
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
-    - Fix case where other alternatives should have been eliminated
     - test: A? B where A partially matched, B no match
     - test: A? B where A partially matched and B partially matched
     - test: A* B where A partially matched zero or more times, B no match

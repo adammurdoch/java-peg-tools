@@ -199,6 +199,41 @@ class ParserBuilderTest extends Specification {
     }
 
     @Unroll
+    def "reports failure to match sequence with optional expressions - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+        def e2 = builder.sequence(builder.chars("1"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.optional(e1), builder.optional(e2), builder.chars(";")))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input     | tokens                 | message
+        ""        | []                     | "stopped at offset 0: end of input"
+        "adc"     | []                     | "stopped at offset 0: [adc]"
+        // TODO - incomplete tokens, wrong stop pos
+        "abc"     | []                     | "stopped at offset 0: [abc]"
+        // TODO - incomplete tokens, wrong stop pos
+        "abc2"    | []                     | "stopped at offset 0: [abc2]"
+        "abc1"    | ["abc", "1"]           | "stopped at offset 4: end of input"
+        "abc1x"   | ["abc", "1"]           | "stopped at offset 4: [x]"
+        // TODO - incomplete tokens
+        "abc11"   | ["abc", "1"]           | "stopped at offset 5: end of input"
+        // TODO - incomplete tokens
+        "abc11x"  | ["abc", "1"]           | "stopped at offset 5: [x]"
+        "abc112"  | ["abc", "1", "1", "2"] | "stopped at offset 6: end of input"
+        "abc112x" | ["abc", "1", "1", "2"] | "stopped at offset 6: [x]"
+        // TODO - incomplete tokens
+        "1;"      | []                     | "stopped at offset 1: [;]"
+        // TODO - incomplete tokens
+        "1x"      | []                     | "stopped at offset 1: [x]"
+        "12"      | ["1", "2"]             | "stopped at offset 2: end of input"
+        "x"       | []                     | "stopped at offset 0: [x]"
+    }
+
+    @Unroll
     def "reports failure to match optional expression with common prefix with following expression - #input"() {
         def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
@@ -356,6 +391,32 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.oneOf(e1, e2))
         parse(parser, "abc1") == ["abc", "1"]
         parse(parser, "abc2") == ["abc", "2"]
+    }
+
+    @Unroll
+    def "reports failure to match one of several alternative expressions - #input"() {
+        def e1 = builder.sequence(builder.chars("ab"), builder.chars("12"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("1"))
+
+        expect:
+        def parser = builder.newParser(builder.oneOf(e1, e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input   | tokens       | message
+        ""      | []           | "stopped at offset 0: end of input"
+        "a"     | []           | "stopped at offset 0: [a]"
+        "ab"    | ["ab"]       | "stopped at offset 2: end of input"
+        "ab1"   | ["ab"]       | "stopped at offset 2: [1]"
+        "ab13"  | ["ab"]       | "stopped at offset 2: [13]"
+        "ab12x" | ["ab", "12"] | "extra input at offset 4: [x]"
+        // TODO - wrong branch
+        "abc"   | ["ab"]       | "stopped at offset 2: [c]"
+        // TODO - wrong branch
+        "abc2"  | ["ab"]       | "stopped at offset 2: [c2]"
+        "abc1x" | ["abc", "1"] | "extra input at offset 4: [x]"
     }
 
     @Unroll

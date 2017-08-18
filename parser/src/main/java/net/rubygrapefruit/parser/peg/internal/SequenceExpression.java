@@ -22,6 +22,7 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         BatchingMatchVisitor bestPartialMatch = null;
+        MatchExpression bestPartialExpression = null;
         BatchingMatchVisitor nested = null;
         for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
@@ -29,28 +30,30 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             nested = new BatchingMatchVisitor();
             boolean matched = expression.getMatcher().consume(pos, nested);
             stream.moveTo(pos);
-            nested.forward(expression.collector(visitor));
             if (!matched) {
                 if (bestPartialMatch != null && bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) > 0) {
-                    visitor.failed(bestPartialMatch.getStoppedAt());
+                    bestPartialMatch.forwardRemainder(expression.collector(visitor), visitor);
                 } else {
-                    visitor.failed(nested.getStoppedAt());
+                    nested.forwardRemainder(expression.collector(visitor), visitor);
                 }
                 return false;
             }
+            nested.forwardMatches(expression.collector(visitor), visitor);
             if (pos.diff(start) == 0) {
                 // Matched nothing but was successful, maybe keep it as the best partial match in case of failure
                 if (bestPartialMatch == null || bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
                     // Current expression recognized more than the previous partial match, keep it
                     bestPartialMatch = nested;
+                    bestPartialExpression = expression;
                 }
                 // Else, keep current partial match
             } else {
                 // Matched something, assume it is the best match
                 bestPartialMatch = nested;
+                bestPartialExpression = expression;
             }
         }
-        visitor.matched(stream.tail(), nested.getStoppedAt());
+        nested.forwardRemainder(bestPartialExpression.collector(visitor), visitor);
         return true;
     }
 }

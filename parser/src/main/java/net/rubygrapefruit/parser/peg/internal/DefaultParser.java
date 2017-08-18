@@ -12,7 +12,6 @@ public class DefaultParser implements Parser {
 
     @Override
     public <T extends TokenVisitor> T parse(String input, final T visitor) {
-        CharStream stream = new CharStream(input);
         final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
             @Override
             public void token(CharStream start, CharStream end) {
@@ -20,6 +19,7 @@ public class DefaultParser implements Parser {
             }
         });
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);
+        CharStream stream = new CharStream(input);
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
         resultCollector.done();
         CharStream pos = resultVisitor.stoppedAt;
@@ -50,12 +50,7 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void matched(CharStream endPos, CharStream stoppedAt) {
-            this.stoppedAt = stoppedAt;
-        }
-
-        @Override
-        public void failed(CharStream stoppedAt) {
+        public void stoppedAt(CharStream stoppedAt) {
             this.stoppedAt = stoppedAt;
         }
     }

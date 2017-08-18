@@ -33,7 +33,7 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
             visitor.matched(end);
             return true;
         }
-        visitor.failed(start);
+        visitor.stoppedAt(start);
         return false;
     }
 }

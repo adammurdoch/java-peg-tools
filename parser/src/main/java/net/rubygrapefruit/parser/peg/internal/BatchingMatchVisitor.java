@@ -5,15 +5,16 @@ import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
     private List<Match> tokens;
+    private List<Match> partialTokens;
     private CharStream matchEnd;
     private CharStream stoppedAt;
 
     @Override
     public void token(CharStream start, CharStream end) {
-        if (tokens == null) {
-            tokens = new ArrayList<Match>();
+        if (partialTokens == null) {
+            partialTokens = new ArrayList<Match>();
         }
-        tokens.add(new Match(start, end));
+        partialTokens.add(new Match(start, end));
     }
 
     public CharStream getStoppedAt() {
@@ -24,33 +25,19 @@ public class BatchingMatchVisitor implements MatchVisitor {
     public void matched(CharStream endPos) {
         matchEnd = endPos;
         stoppedAt = endPos;
-    }
-
-    @Override
-    public void matched(CharStream endPos, CharStream stoppedAt) {
-        matchEnd = endPos;
-        this.stoppedAt = stoppedAt;
-    }
-
-    @Override
-    public void failed(CharStream stoppedAt) {
-        this.stoppedAt = stoppedAt;
-    }
-
-    /**
-     * Forwards the result collected by this visitor.
-     */
-    public void forward(ResultCollector visitor) {
-        if (tokens != null) {
-            for (Match token : tokens) {
-                visitor.token(token.start, token.end);
+        if (partialTokens != null && !partialTokens.isEmpty()) {
+            if (tokens == null) {
+                tokens = new ArrayList<Match>(partialTokens.size());
             }
-            visitor.done();
-            tokens.clear();
+            tokens.addAll(partialTokens);
+            partialTokens.clear();
         }
     }
 
     public void reset() {
+        if (partialTokens != null) {
+            partialTokens.clear();
+        }
         if (tokens != null) {
             tokens.clear();
         }
@@ -58,11 +45,71 @@ public class BatchingMatchVisitor implements MatchVisitor {
         matchEnd = null;
     }
 
-    public int matches() {
-        if (tokens == null) {
-            return 0;
+    @Override
+    public void stoppedAt(CharStream stoppedAt) {
+        this.stoppedAt = stoppedAt;
+    }
+
+    /**
+     * Forwards successful match state (matches, match pos) to the given collector.
+     */
+    public void forwardMatches(ResultCollector collector, MatchVisitor visitor) {
+        if (matchEnd == null) {
+            throw new IllegalStateException("No matches");
         }
-        return tokens.size();
+        if (tokens != null) {
+            for (Match token : tokens) {
+                collector.token(token.start, token.end);
+            }
+            tokens.clear();
+        }
+        collector.done();
+        visitor.matched(matchEnd);
+    }
+
+    private void forwardPartialMatch(ResultCollector collector, MatchVisitor visitor) {
+        if (stoppedAt == null) {
+            throw new IllegalStateException("No stop position");
+        }
+        if (partialTokens != null) {
+            for (Match token : partialTokens) {
+                collector.token(token.start, token.end);
+            }
+            partialTokens.clear();
+        }
+        collector.done();
+        visitor.stoppedAt(stoppedAt);
+    }
+
+    /**
+     * Forwards all match state (matches, match pos, partial matches, stop pos) to the given collector.
+     */
+    public void forwardAll(ResultCollector collector, MatchVisitor visitor) {
+        forwardMatches(collector, visitor);
+        forwardPartialMatch(collector, visitor);
+    }
+
+    /**
+     * Forwards remaining match state (matched, partial matches, stop pos) to the given collector.
+     */
+    public void forwardRemainder(ResultCollector collector, MatchVisitor visitor) {
+        if (stoppedAt == null) {
+            throw new IllegalStateException("No stop position");
+        }
+        if (tokens != null) {
+            for (Match token : tokens) {
+                collector.token(token.start, token.end);
+            }
+            tokens.clear();
+        }
+        if (partialTokens != null) {
+            for (Match token : partialTokens) {
+                collector.token(token.start, token.end);
+            }
+            partialTokens.clear();
+        }
+        collector.done();
+        visitor.stoppedAt(stoppedAt);
     }
 
     private static class Match {

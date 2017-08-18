@@ -187,10 +187,8 @@ class ParserBuilderTest extends Specification {
         input     | tokens            | message
         ""        | []                | "stopped at offset 0: end of input"
         "abd"     | []                | "stopped at offset 0: [abd]"
-        // TODO - incomplete tokens
-        "abc"     | []                | "stopped at offset 3: end of input"
-        // TODO - incomplete tokens
-        "abc2"    | []                | "stopped at offset 3: [2]"
+        "abc"     | ["abc"]           | "stopped at offset 3: end of input"
+        "abc2"    | ["abc"]           | "stopped at offset 3: [2]"
         "1"       | ["1"]             | "stopped at offset 1: end of input"
         "13"      | ["1"]             | "stopped at offset 1: [3]"
         "abc11"   | ["abc", "1", "1"] | "stopped at offset 5: end of input"
@@ -213,22 +211,16 @@ class ParserBuilderTest extends Specification {
         input     | tokens                 | message
         ""        | []                     | "stopped at offset 0: end of input"
         "adc"     | []                     | "stopped at offset 0: [adc]"
-        // TODO - incomplete tokens
-        "abc"     | []                     | "stopped at offset 3: end of input"
-        // TODO - incomplete tokens
-        "abc2"    | []                     | "stopped at offset 3: [2]"
+        "abc"     | ["abc"]                | "stopped at offset 3: end of input"
+        "abc2"    | ["abc"]                | "stopped at offset 3: [2]"
         "abc1"    | ["abc", "1"]           | "stopped at offset 4: end of input"
         "abc1x"   | ["abc", "1"]           | "stopped at offset 4: [x]"
-        // TODO - incomplete tokens
-        "abc11"   | ["abc", "1"]           | "stopped at offset 5: end of input"
-        // TODO - incomplete tokens
-        "abc11x"  | ["abc", "1"]           | "stopped at offset 5: [x]"
+        "abc11"   | ["abc", "1", "1"]      | "stopped at offset 5: end of input"
+        "abc11x"  | ["abc", "1", "1"]      | "stopped at offset 5: [x]"
         "abc112"  | ["abc", "1", "1", "2"] | "stopped at offset 6: end of input"
         "abc112x" | ["abc", "1", "1", "2"] | "stopped at offset 6: [x]"
-        // TODO - incomplete tokens
-        "1;"      | []                     | "stopped at offset 1: [;]"
-        // TODO - incomplete tokens
-        "1x"      | []                     | "stopped at offset 1: [x]"
+        "1;"      | ["1"]                  | "stopped at offset 1: [;]"
+        "1x"      | ["1"]                  | "stopped at offset 1: [x]"
         "12"      | ["1", "2"]             | "stopped at offset 2: end of input"
         "x"       | []                     | "stopped at offset 0: [x]"
     }
@@ -248,12 +240,9 @@ class ParserBuilderTest extends Specification {
         input        | tokens                   | message
         ""           | []                       | "stopped at offset 0: end of input"
         "abc"        | ["abc"]                  | "stopped at offset 3: end of input"
-        // TODO - incomplete tokens
-        "abc1"       | ["abc"]                  | "stopped at offset 4: end of input"
-        // TODO - incomplete tokens
-        "abc1x"      | ["abc"]                  | "stopped at offset 4: [x]"
-        // TODO - incomplete tokens
-        "abc1xabc2"  | ["abc"]                  | "stopped at offset 4: [xabc2]"
+        "abc1"       | ["abc", "1"]             | "stopped at offset 4: end of input"
+        "abc1x"      | ["abc", "1"]             | "stopped at offset 4: [x]"
+        "abc1xabc2"  | ["abc", "1"]             | "stopped at offset 4: [xabc2]"
         "abc3"       | ["abc"]                  | "stopped at offset 3: [3]"
         "abc12abc"   | ["abc", "1", "2", "abc"] | "stopped at offset 8: end of input"
         "abc12abc3"  | ["abc", "1", "2", "abc"] | "stopped at offset 8: [3]"
@@ -318,20 +307,15 @@ class ParserBuilderTest extends Specification {
         input           | tokens                                    | message
         ""              | []                                        | "stopped at offset 0: end of input"
         "abc"           | ["abc"]                                   | "stopped at offset 3: end of input"
-        // TODO - incomplete tokens
-        "abc1"          | ["abc"]                                   | "stopped at offset 4: end of input"
-        // TODO - incomplete tokens
-        "abc1x"         | ["abc"]                                   | "stopped at offset 4: [x]"
-        // TODO - incomplete tokens
-        "abc1xabc2"     | ["abc"]                                   | "stopped at offset 4: [xabc2]"
+        "abc1"          | ["abc", "1"]                              | "stopped at offset 4: end of input"
+        "abc1x"         | ["abc", "1"]                              | "stopped at offset 4: [x]"
+        "abc1xabc2"     | ["abc", "1"]                              | "stopped at offset 4: [xabc2]"
         "abc3"          | ["abc"]                                   | "stopped at offset 3: [3]"
         "abc12abc"      | ["abc", "1", "2", "abc"]                  | "stopped at offset 8: end of input"
         "abc12abc3"     | ["abc", "1", "2", "abc"]                  | "stopped at offset 8: [3]"
         "abc12xabc2"    | ["abc", "1", "2"]                         | "stopped at offset 5: [xabc2]"
-        // TODO - incomplete tokens
-        "abc12abc1"     | ["abc", "1", "2", "abc"]                  | "stopped at offset 9: end of input"
-        // TODO - incomplete tokens
-        "abc12abc1x"    | ["abc", "1", "2", "abc"]                  | "stopped at offset 9: [x]"
+        "abc12abc1"     | ["abc", "1", "2", "abc", "1"]             | "stopped at offset 9: end of input"
+        "abc12abc1x"    | ["abc", "1", "2", "abc", "1"]             | "stopped at offset 9: [x]"
         "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | "stopped at offset 10: end of input"
         "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | "stopped at offset 13: end of input"
     }

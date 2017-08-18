@@ -25,10 +25,11 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
             if (!expression.getMatcher().consume(pos, nested)) {
                 break;
             }
+            nested.forwardMatches(expression.collector(visitor), visitor);
             stream.moveTo(pos);
-            nested.forward(expression.collector(visitor));
         }
-        visitor.matched(stream.tail(), nested.getStoppedAt());
+        visitor.matched(stream.tail());
+        nested.forwardRemainder(expression.collector(visitor), visitor);
         return true;
     }
 }

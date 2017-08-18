@@ -28,7 +28,7 @@ public class LetterExpression extends AbstractExpression implements Matcher {
             visitor.matched(end);
             return true;
         }
-        visitor.failed(start);
+        visitor.stoppedAt(start);
         return false;
     }
 }

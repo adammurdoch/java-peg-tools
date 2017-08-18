@@ -110,14 +110,14 @@ class JavaParserTest extends Specification {
         r13.result == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
         r13.failure == "stopped at offset 24: [%; class Thing { }]"
 
-        // TODO - incomplete (not quite right, should complain about an unexpected identifier)
+        // TODO - not quite right, should complain about an unexpected identifier
         def r14 = fail("packageimportclass")
-        r14.result == []
+        r14.result == ["package"]
         r14.failure == "stopped at offset 7: [importclass]"
 
-        // TODO - incomplete (should complain about 'import' keyword)
+        // TODO - should complain about 'import' keyword
         def r15 = fail("package import a;")
-        r15.result == []
+        r15.result == ["package", " ", "import", " "]
         r15.failure == "stopped at offset 15: [a;]"
     }
 

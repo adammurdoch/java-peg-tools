@@ -281,6 +281,28 @@ class ParserBuilderTest extends Specification {
         parse(parser, "") == []
     }
 
+    @Unroll
+    def "reports failure to match zero or more sequence expressions as a group - #input"() {
+        expect:
+        def parser = builder.newParser(builder.zeroOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input         | tokens         | message
+        "{"           | ["{"]          | "stopped at offset 1: end of input"
+        "{x"          | ["{"]          | "stopped at offset 1: [x]"
+        "{abc"        | ["{abc"]       | "stopped at offset 4: end of input"
+        "{abcx"       | ["{abc"]       | "stopped at offset 4: [x]"
+        "{abc}x"      | ["{abc}"]      | "extra input at offset 5: [x]"
+        "{abc}{"      | ["{abc}{"]     | "stopped at offset 6: end of input"
+        "{abc}{abc"   | ["{abc}{abc"]  | "stopped at offset 9: end of input"
+        "{abc}{x"     | ["{abc}{"]     | "stopped at offset 6: [x]"
+        "{abc}{abcx"  | ["{abc}{abc"]  | "stopped at offset 9: [x]"
+        "{abc}{abc}x" | ["{abc}{abc}"] | "extra input at offset 10: [x]"
+    }
+
     def "can parse zero or more expressions with common prefix with following expression"() {
         def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"))
         def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
@@ -318,6 +340,39 @@ class ParserBuilderTest extends Specification {
         "abc12abc1x"    | ["abc", "1", "2", "abc", "1"]             | "stopped at offset 9: [x]"
         "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | "stopped at offset 10: end of input"
         "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | "stopped at offset 13: end of input"
+    }
+
+    @Unroll
+    def "reports failure to match zero or more expression as group with with following expression - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.zeroOrMore(e1).group(), e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input           | tokens                | message
+        ""              | []                    | "stopped at offset 0: end of input"
+        "abc"           | ["abc"]               | "stopped at offset 3: end of input"
+        // TODO - should be a single token?
+        "abc1"          | ["abc", "1"]          | "stopped at offset 4: end of input"
+        // TODO - should be a single token?
+        "abc1x"         | ["abc", "1"]          | "stopped at offset 4: [x]"
+        // TODO - should be a single token?
+        "abc1xabc2"     | ["abc", "1"]          | "stopped at offset 4: [xabc2]"
+        "abc3"          | ["abc"]               | "stopped at offset 3: [3]"
+        "abc12abc"      | ["abc12", "abc"]      | "stopped at offset 8: end of input"
+        "abc12abc3"     | ["abc12", "abc"]      | "stopped at offset 8: [3]"
+        "abc12xabc2"    | ["abc12"]             | "stopped at offset 5: [xabc2]"
+        // TODO - should be a single token?
+        "abc12abc1"     | ["abc12", "abc", "1"] | "stopped at offset 9: end of input"
+        // TODO - should be a single token?
+        "abc12abc1x"    | ["abc12", "abc", "1"] | "stopped at offset 9: [x]"
+        "abc12abc12"    | ["abc12abc12"]        | "stopped at offset 10: end of input"
+        "abc12abc12abc" | ["abc12abc12", "abc"] | "stopped at offset 13: end of input"
     }
 
     def "can parse one or more tokens"() {

@@ -23,7 +23,7 @@ public class DefaultParser implements Parser {
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
         resultCollector.done();
         CharStream pos = resultVisitor.stoppedAt;
-        if (!match) {
+        if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
             visitor.failed("stopped at " + pos.diagnostic());
         } else if (!pos.isAtEnd()) {
             visitor.failed("extra input at " + pos.diagnostic());
@@ -33,6 +33,7 @@ public class DefaultParser implements Parser {
 
     private static class RootExpressionVisitor implements MatchVisitor {
         private final ResultCollector resultCollector;
+        private CharStream matchEnd;
         private CharStream stoppedAt;
 
         RootExpressionVisitor(ResultCollector resultCollector) {
@@ -46,6 +47,7 @@ public class DefaultParser implements Parser {
 
         @Override
         public void matched(CharStream endPos) {
+            matchEnd = endPos;
             stoppedAt = endPos;
         }
 

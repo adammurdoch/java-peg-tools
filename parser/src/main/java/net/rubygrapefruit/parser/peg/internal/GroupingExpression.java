@@ -50,6 +50,7 @@ public class GroupingExpression implements Expression, MatchExpression {
         public void done() {
             if (start != null) {
                 collector.token(start, end);
+                start = null;
             }
         }
     }

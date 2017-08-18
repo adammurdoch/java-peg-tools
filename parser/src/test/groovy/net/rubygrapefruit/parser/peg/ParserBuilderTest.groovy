@@ -303,6 +303,39 @@ class ParserBuilderTest extends Specification {
         parse(parser, "abc2") == ["abc", "2"]
     }
 
+    @Unroll
+    def "reports failure to match zero or more expression with common prefix with following expression - #input"() {
+        def e1 = builder.sequence(builder.chars("abc"), builder.chars("1"), builder.chars("2"))
+        def e2 = builder.sequence(builder.chars("abc"), builder.chars("2"))
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.zeroOrMore(e1), e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input           | tokens                                    | message
+        ""              | []                                        | "stopped at offset 0: end of input"
+        "abc"           | ["abc"]                                   | "stopped at offset 3: end of input"
+        // TODO - incomplete tokens
+        "abc1"          | ["abc"]                                   | "stopped at offset 4: end of input"
+        // TODO - incomplete tokens
+        "abc1x"         | ["abc"]                                   | "stopped at offset 4: [x]"
+        // TODO - incomplete tokens
+        "abc1xabc2"     | ["abc"]                                   | "stopped at offset 4: [xabc2]"
+        "abc3"          | ["abc"]                                   | "stopped at offset 3: [3]"
+        "abc12abc"      | ["abc", "1", "2", "abc"]                  | "stopped at offset 8: end of input"
+        "abc12abc3"     | ["abc", "1", "2", "abc"]                  | "stopped at offset 8: [3]"
+        "abc12xabc2"    | ["abc", "1", "2"]                         | "stopped at offset 5: [xabc2]"
+        // TODO - incomplete tokens
+        "abc12abc1"     | ["abc", "1", "2", "abc"]                  | "stopped at offset 9: end of input"
+        // TODO - incomplete tokens
+        "abc12abc1x"    | ["abc", "1", "2", "abc"]                  | "stopped at offset 9: [x]"
+        "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | "stopped at offset 10: end of input"
+        "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | "stopped at offset 13: end of input"
+    }
+
     def "can parse one or more tokens"() {
         expect:
         def parser = builder.newParser(builder.oneOrMore(builder.chars("abc")))
@@ -412,10 +445,8 @@ class ParserBuilderTest extends Specification {
         "ab1"   | ["ab"]       | "stopped at offset 2: [1]"
         "ab13"  | ["ab"]       | "stopped at offset 2: [13]"
         "ab12x" | ["ab", "12"] | "extra input at offset 4: [x]"
-        // TODO - wrong branch
-        "abc"   | ["ab"]       | "stopped at offset 2: [c]"
-        // TODO - wrong branch
-        "abc2"  | ["ab"]       | "stopped at offset 2: [c2]"
+        "abc"   | ["abc"]      | "stopped at offset 3: end of input"
+        "abc2"  | ["abc"]      | "stopped at offset 3: [2]"
         "abc1x" | ["abc", "1"] | "extra input at offset 4: [x]"
     }
 

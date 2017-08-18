@@ -21,7 +21,7 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        BatchingMatchVisitor partial = null;
+        BatchingMatchVisitor bestPartialMatch = null;
         BatchingMatchVisitor nested = null;
         for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
@@ -31,8 +31,8 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             stream.moveTo(pos);
             nested.forward(expression.collector(visitor));
             if (!matched) {
-                if (partial != null && partial.getStoppedAt().diff(nested.getStoppedAt()) > 0) {
-                    visitor.failed(partial.getStoppedAt());
+                if (bestPartialMatch != null && bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) > 0) {
+                    visitor.failed(bestPartialMatch.getStoppedAt());
                 } else {
                     visitor.failed(nested.getStoppedAt());
                 }
@@ -40,14 +40,14 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             }
             if (pos.diff(start) == 0) {
                 // Matched nothing but was successful, maybe keep it as the best partial match in case of failure
-                if (partial == null || partial.getStoppedAt().diff(nested.getStoppedAt()) < 0) {
+                if (bestPartialMatch == null || bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
                     // Current expression recognized more than the previous partial match, keep it
-                    partial = nested;
+                    bestPartialMatch = nested;
                 }
                 // Else, keep current partial match
             } else {
                 // Matched something, assume it is the best match
-                partial = null;
+                bestPartialMatch = nested;
             }
         }
         visitor.matched(stream.tail(), nested.getStoppedAt());

@@ -92,10 +92,10 @@ class JavaParserTest extends Specification {
         r9.result == []
         r9.failure == "stopped at offset 0: [x]"
 
-        // TODO - incomplete (should have consumed the '.')
+        // TODO - incomplete
         def r10 = fail("package a.b.{")
         r10.result == []
-        r10.failure == "stopped at offset 11: [.{]"
+        r10.failure == "stopped at offset 12: [{]"
 
         // TODO - incomplete
         def r11 = fail("package a.b import c.d")
@@ -107,10 +107,10 @@ class JavaParserTest extends Specification {
         r12.result == ["package", " ", "a.b", ";", " "]
         r12.failure == "stopped at offset 23: [{}]"
 
-        // TODO - incomplete (should have consumed the '.')
+        // TODO - incomplete
         def r13 = fail("package a.b; import a.b.%; class Thing { }")
         r13.result == ["package", " ", "a.b", ";", " "]
-        r13.failure == "stopped at offset 23: [.%; class Thing { }]"
+        r13.failure == "stopped at offset 24: [%; class Thing { }]"
 
         // TODO - incomplete (not quite right, should complain about an unexpected identifier)
         def r14 = fail("packageimportclass")

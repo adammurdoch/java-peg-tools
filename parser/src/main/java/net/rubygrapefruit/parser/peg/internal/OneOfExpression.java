@@ -32,7 +32,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
                 visitor.matched(pos, nested.getStoppedAt());
                 return true;
             }
-            if (bestMatch == null || nested.matches() > bestMatch.matches()) {
+            if (bestMatch == null || bestMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
                 bestMatch = nested;
                 bestMatchExpression = expression;
                 nested = new BatchingMatchVisitor();

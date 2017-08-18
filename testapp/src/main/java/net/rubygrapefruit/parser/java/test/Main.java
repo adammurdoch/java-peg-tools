@@ -68,15 +68,19 @@ public class Main {
     }
 
     private static void showGui() {
+        final Executor executor = Executors.newSingleThreadExecutor();
+        ParseQueue queue = new ParseQueue();
+
         final JTextPane source = new JTextPane();
         final JTextPane parsed = new JTextPane();
 
         Font font = new Font(Font.MONOSPACED, Font.PLAIN, 14);
         source.setFont(font);
-        source.getDocument().addDocumentListener(new TextChangeHandler(parsed, source));
+        source.getDocument().addDocumentListener(new TextChangeHandler(source, queue));
 
         parsed.setFont(font);
         parsed.setEditable(false);
+        executor.execute(new ParseLoop(queue, parsed));
 
         JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(source), new JScrollPane(parsed));
         pane.setResizeWeight(0.5);
@@ -92,17 +96,48 @@ public class Main {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    private static class TextChangeHandler implements DocumentListener {
-        private final JTextPane source;
-        private final Executor executor = Executors.newSingleThreadExecutor();
+    private static class ParseQueue {
         private final Lock lock = new ReentrantLock();
         private final Condition condition = lock.newCondition();
-        private final JavaParser javaParser = new JavaParser();
         private String current;
 
-        TextChangeHandler(JTextPane parsed, JTextPane source) {
+        void onUpdate(String text) {
+            lock.lock();
+            try {
+                current = text;
+                condition.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        String getNext() {
+            String str;
+            lock.lock();
+            try {
+                while (current == null) {
+                    try {
+                        condition.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                str = current;
+                current = null;
+            } finally {
+                lock.unlock();
+            }
+            return str;
+        }
+    }
+
+    private static class TextChangeHandler implements DocumentListener {
+        private final JTextPane source;
+        private final ParseQueue queue;
+
+        TextChangeHandler(JTextPane source, ParseQueue queue) {
             this.source = source;
-            executor.execute(new ParseLoop(parsed));
+            this.queue = queue;
         }
 
         @Override
@@ -121,85 +156,68 @@ public class Main {
         }
 
         private void onUpdate() {
-            lock.lock();
-            try {
-                current = source.getText();
-                condition.signalAll();
-            } finally {
-                lock.unlock();
+            queue.onUpdate(source.getText());
+        }
+    }
+
+    private static class ParseLoop implements Runnable {
+        private final JavaParser javaParser = new JavaParser();
+        private final ParseQueue queue;
+        private final JTextPane parsed;
+        private final Style plain;
+        private final Style broken;
+
+        ParseLoop(ParseQueue queue, JTextPane parsed) {
+            this.queue = queue;
+            this.parsed = parsed;
+            plain = parsed.addStyle("plain", null);
+            broken = parsed.addStyle("broken", null);
+            StyleConstants.setForeground(broken, Color.RED);
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                doOnce();
             }
         }
 
-        private class ParseLoop implements Runnable {
-            private final JTextPane parsed;
-            private final Style plain;
-            private final Style broken;
+        private void doOnce() {
+            String str = queue.getNext();
 
-            ParseLoop(JTextPane parsed) {
-                this.parsed = parsed;
-                plain = parsed.addStyle("plain", null);
-                broken = parsed.addStyle("broken", null);
-                StyleConstants.setForeground(broken, Color.RED);
+            final ResultCollector collector = new ResultCollector();
+            javaParser.parse(str, collector);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Document document = parsed.getDocument();
+                        document.remove(0, document.getLength());
+                        document.insertString(0, collector.builder.toString(), plain);
+                        if (collector.failure != null) {
+                            document.insertString(document.getEndPosition().getOffset() - 1, "\n\nFAILED: " + collector.failure,
+                                    broken);
+                        }
+                    } catch (BadLocationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+
+        private class ResultCollector implements TokenVisitor {
+            final StringBuilder builder = new StringBuilder();
+            String failure = null;
+
+            @Override
+            public void token(String token) {
+                builder.append(token);
             }
 
             @Override
-            public void run() {
-                while (true) {
-                    doOnce();
-                }
-            }
-
-            private void doOnce() {
-                String str;
-                lock.lock();
-                try {
-                    while (current == null) {
-                        try {
-                            condition.await();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    str = current;
-                    current = null;
-                } finally {
-                    lock.unlock();
-                }
-
-                final ResultCollector collector = new ResultCollector();
-                javaParser.parse(str, collector);
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Document document = parsed.getDocument();
-                            document.remove(0, document.getLength());
-                            document.insertString(0, collector.builder.toString(), plain);
-                            if (collector.failure != null) {
-                                document.insertString(document.getEndPosition().getOffset() - 1, "\n\nFAILED: " + collector.failure,
-                                        broken);
-                            }
-                        } catch (BadLocationException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
-            }
-
-            private class ResultCollector implements TokenVisitor {
-                final StringBuilder builder = new StringBuilder();
-                String failure = null;
-
-                @Override
-                public void token(String token) {
-                    builder.append(token);
-                }
-
-                @Override
-                public void failed(String message) {
-                    failure = message;
-                }
+            public void failed(String message) {
+                failure = message;
             }
         }
     }

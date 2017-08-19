@@ -4,11 +4,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SequenceExpression extends AbstractExpression implements Matcher {
+public class SequenceExpression extends AbstractExpression {
     private final List<? extends MatchExpression> expressions;
+    private final SequenceMatcher matcher;
 
     public SequenceExpression(List<? extends MatchExpression> expressions) {
         this.expressions = expressions;
+        SequenceMatcher matcher = null;
+        for (int i = expressions.size() - 1; i >= 0; i--) {
+            matcher = new SequenceMatcher(expressions.get(i), matcher);
+        }
+        this.matcher = matcher;
     }
 
     @Override
@@ -18,70 +24,110 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
 
     @Override
     public Matcher getMatcher() {
-        return this;
+        return matcher;
     }
 
     @Override
     public boolean isAcceptEmpty() {
-        for (MatchExpression expression : expressions) {
-            if (!expression.isAcceptEmpty()) {
-                return false;
-            }
-        }
-        return true;
+        return matcher.isAcceptEmpty();
     }
 
     @Override
     public Set<? extends Terminal> getPrefixes() {
-        Set<Terminal> prefixes = new HashSet<>();
-        for (MatchExpression expression : expressions) {
-            prefixes.addAll(expression.getPrefixes());
-            if (!expression.isAcceptEmpty()) {
-                break;
-            }
-        }
-        return prefixes;
+        return matcher.getPrefixes();
     }
 
-    @Override
-    public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream startAll = stream.tail();
-        BatchingMatchVisitor bestPartialMatch = null;
-        MatchExpression bestPartialExpression = null;
-        BatchingMatchVisitor nested = null;
-        for (MatchExpression expression : expressions) {
+    private static class SequenceMatcher implements Matcher, MatchExpression {
+        private final MatchExpression expression;
+        private final SequenceMatcher next;
+
+        SequenceMatcher(MatchExpression expression, SequenceMatcher next) {
+            this.expression = expression;
+            this.next = next;
+        }
+
+        @Override
+        public ResultCollector collector(TokenCollector collector) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Matcher getMatcher() {
+            return this;
+        }
+
+        @Override
+        public boolean isAcceptEmpty() {
+            return expression.isAcceptEmpty() && next != null && next.isAcceptEmpty();
+        }
+
+        @Override
+        public Set<? extends Terminal> getPrefixes() {
+            if (!expression.isAcceptEmpty()) {
+                return expression.getPrefixes();
+            }
+
+            Set<Terminal> prefixes = new HashSet<Terminal>();
+            prefixes.addAll(expression.getPrefixes());
+            if (next != null) {
+                prefixes.addAll(next.getPrefixes());
+            }
+            return prefixes;
+        }
+
+        @Override
+        public boolean consume(CharStream stream, MatchVisitor visitor) {
+            BatchingMatchVisitor thisMatch = new BatchingMatchVisitor();
             CharStream pos = stream.tail();
-            CharStream start = stream.tail();
-            nested = new BatchingMatchVisitor();
-            boolean matched = expression.getMatcher().consume(pos, nested);
+            CharStream startThis = stream.tail();
+            boolean matched = expression.getMatcher().consume(pos, thisMatch);
             stream.moveTo(pos);
             if (!matched) {
-                if (bestPartialMatch == null || bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
-                    bestPartialMatch = nested;
-                    bestPartialExpression = expression;
-                }
-                if (bestPartialMatch.getStoppedAt().diff(startAll) == 0) {
-                    bestPartialMatch.stoppedAt(startAll, this);
-                }
-                bestPartialMatch.forwardRemainder(bestPartialExpression.collector(visitor), visitor);
+                thisMatch.forwardRemainder(expression.collector(visitor), visitor);
                 return false;
             }
-            nested.forwardMatches(expression.collector(visitor), visitor);
-            if (pos.diff(start) == 0) {
-                // Matched nothing but was successful, maybe keep it as the best partial match in case of failure
-                if (bestPartialMatch == null || bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
-                    // Current expression recognized more than the previous partial match, keep it
-                    bestPartialMatch = nested;
-                    bestPartialExpression = expression;
-                }
-                // Else, keep current partial match
-            } else {
-                // Matched something, assume it is the best match
-                bestPartialMatch = nested;
-                bestPartialExpression = expression;
+            if (next == null) {
+                thisMatch.forwardAll(expression.collector(visitor), visitor);
+                return true;
             }
+            thisMatch.forwardMatches(expression.collector(visitor), visitor);
+            boolean thisRecognizedSomething = thisMatch.getStoppedAt().diff(startThis) > 0;
+
+            BatchingMatchVisitor nextMatch = new BatchingMatchVisitor();
+            CharStream startNext = stream.tail();
+            matched = next.consume(stream, nextMatch);
+            boolean nextRecognizedSomething = nextMatch.getStoppedAt().diff(startNext) > 0;
+            boolean nextRecognizedMore = nextMatch.getStoppedAt().diff(thisMatch.getStoppedAt()) >= 0;
+            if (!matched) {
+                if (thisRecognizedSomething && !nextRecognizedMore) {
+                    // This recognized more than next, assume it is the best choice
+                    thisMatch.forwardRemainder(expression.collector(visitor), visitor);
+                } else if (!thisRecognizedSomething && !nextRecognizedSomething) {
+                    visitor.stoppedAt(startNext, this);
+                } else {
+                    // Assume the next is best choice
+                    nextMatch.forwardRemainder(visitor);
+                }
+                return false;
+            }
+            int nextMatchedSomething = nextMatch.getMatchEnd().diff(startNext);
+            if (nextMatchedSomething > 0) {
+                // Next matched something, assume it is the best choice
+                nextMatch.forwardAll(visitor);
+                return true;
+            }
+            if (nextRecognizedSomething && nextRecognizedMore) {
+                // Next match nothing, recognized something plus recognised more than this, assume it is the best choice
+                nextMatch.forwardAll(visitor);
+                return true;
+            }
+            if (thisRecognizedSomething && !nextRecognizedMore) {
+                // Next matched nothing, this recognised more than next, assume it is the best choice
+                thisMatch.forwardAll(expression.collector(visitor), visitor);
+                return true;
+            }
+            visitor.stoppedAt(startNext, this);
+            return true;
         }
-        nested.forwardRemainder(bestPartialExpression.collector(visitor), visitor);
-        return true;
     }
 }

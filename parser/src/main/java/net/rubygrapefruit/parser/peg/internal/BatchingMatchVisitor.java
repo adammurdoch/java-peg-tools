@@ -18,6 +18,10 @@ public class BatchingMatchVisitor implements MatchVisitor {
         partialTokens.add(new Match(start, end));
     }
 
+    public CharStream getMatchEnd() {
+        return matchEnd;
+    }
+
     public CharStream getStoppedAt() {
         return stoppedAt;
     }
@@ -91,6 +95,26 @@ public class BatchingMatchVisitor implements MatchVisitor {
         forwardPartialMatch(collector, visitor);
     }
 
+    public void forwardAll(MatchVisitor visitor) {
+        if (matchEnd == null) {
+            throw new IllegalStateException("No matches");
+        }
+        if (tokens != null) {
+            for (Match token : tokens) {
+                visitor.token(token.start, token.end);
+            }
+            tokens.clear();
+        }
+        visitor.matched(matchEnd);
+        if (partialTokens != null) {
+            for (Match token : partialTokens) {
+                visitor.token(token.start, token.end);
+            }
+            partialTokens.clear();
+        }
+        visitor.stoppedAt(stoppedAt, nextExpression);
+    }
+
     /**
      * Forwards remaining match state (matched, partial matches, stop pos) to the given collector.
      */
@@ -114,6 +138,25 @@ public class BatchingMatchVisitor implements MatchVisitor {
         visitor.stoppedAt(stoppedAt, nextExpression);
     }
 
+    public void forwardRemainder(MatchVisitor visitor) {
+        if (stoppedAt == null) {
+            throw new IllegalStateException("No stop position");
+        }
+        if (tokens != null) {
+            for (Match token : tokens) {
+                visitor.token(token.start, token.end);
+            }
+            tokens.clear();
+        }
+        if (partialTokens != null) {
+            for (Match token : partialTokens) {
+                visitor.token(token.start, token.end);
+            }
+            partialTokens.clear();
+        }
+        visitor.stoppedAt(stoppedAt, nextExpression);
+    }
+
     private static class Match {
         final CharStream start;
         final CharStream end;
@@ -121,6 +164,11 @@ public class BatchingMatchVisitor implements MatchVisitor {
         Match(CharStream start, CharStream end) {
             this.start = start;
             this.end = end;
+        }
+
+        @Override
+        public String toString() {
+            return "\"" + start.upTo(end) + "\"";
         }
     }
 }

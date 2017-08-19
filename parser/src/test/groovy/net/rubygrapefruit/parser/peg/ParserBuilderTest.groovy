@@ -167,6 +167,26 @@ class ParserBuilderTest extends Specification {
         parse(parser, "") == []
     }
 
+    @Unroll
+    def "reports failure to match optional sequence expression - #input"() {
+        expect:
+        def parser = builder.newParser(builder.optional(builder.sequence(builder.chars("abc"), builder.chars("1"))))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input   | tokens       | message
+        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1"'
+        "abcx"  | ["abc"]      | 'stopped at offset 3: [x]\nexpected: "1"'
+        "abc2"  | ["abc"]      | 'stopped at offset 3: [2]\nexpected: "1"'
+        "abc1z" | ["abc", "1"] | 'extra input at offset 4: [z]'
+        "ab"    | []           | 'extra input at offset 0: [ab]'
+        "1"     | []           | 'extra input at offset 0: [1]'
+        "x"     | []           | 'extra input at offset 0: [x]'
+        "xabc"  | []           | 'extra input at offset 0: [xabc]'
+    }
+
     def "can parse optional sequence expression as a group"() {
         expect:
         def parser = builder.newParser(builder.optional(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
@@ -215,10 +235,8 @@ class ParserBuilderTest extends Specification {
         "adc"     | []                     | 'stopped at offset 0: [adc]\nexpected: "1", ";", "abc"'
         "abc"     | ["abc"]                | 'stopped at offset 3: end of input\nexpected: "1"'
         "abc2"    | ["abc"]                | 'stopped at offset 3: [2]\nexpected: "1"'
-        // TODO - missing an alternative
-        "abc1"    | ["abc", "1"]           | 'stopped at offset 4: end of input\nexpected: ";"'
-        // TODO - missing an alternative
-        "abc1x"   | ["abc", "1"]           | 'stopped at offset 4: [x]\nexpected: ";"'
+        "abc1"    | ["abc", "1"]           | 'stopped at offset 4: end of input\nexpected: "1", ";"'
+        "abc1x"   | ["abc", "1"]           | 'stopped at offset 4: [x]\nexpected: "1", ";"'
         "abc11"   | ["abc", "1", "1"]      | 'stopped at offset 5: end of input\nexpected: "2"'
         "abc11x"  | ["abc", "1", "1"]      | 'stopped at offset 5: [x]\nexpected: "2"'
         "abc112"  | ["abc", "1", "1", "2"] | 'stopped at offset 6: end of input\nexpected: ";"'
@@ -407,6 +425,28 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
         parse(parser, "{abc}{abc}") == ["{", "abc", "}", "{", "abc", "}"]
         parse(parser, "{abc}") == ["{", "abc", "}"]
+    }
+
+    @Unroll
+    def "reports failure to match one or more sequence expressions - #input"() {
+        expect:
+        def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input         | tokens                             | message
+        ""            | []                                 | 'stopped at offset 0: end of input\nexpected: "{"'
+        "{"           | ["{"]                              | 'stopped at offset 1: end of input\nexpected: "abc"'
+        "{x"          | ["{"]                              | 'stopped at offset 1: [x]\nexpected: "abc"'
+        "{abc"        | ["{", "abc"]                       | 'stopped at offset 4: end of input\nexpected: "}"'
+        "{abc;"       | ["{", "abc"]                       | 'stopped at offset 4: [;]\nexpected: "}"'
+        "{abc}x"      | ["{", "abc", "}"]                  | 'extra input at offset 5: [x]'
+        "{abc}{"      | ["{", "abc", "}", "{"]             | 'stopped at offset 6: end of input\nexpected: "abc"'
+        "{abc}{abc;"  | ["{", "abc", "}", "{", "abc"]      | 'stopped at offset 9: [;]\nexpected: "}"'
+        "{abc}{abc}x" | ["{", "abc", "}", "{", "abc", "}"] | 'extra input at offset 10: [x]'
+        "x"           | []                                 | 'stopped at offset 0: [x]\nexpected: "{"'
     }
 
     def "can parse one or more sequence expressions as a group"() {

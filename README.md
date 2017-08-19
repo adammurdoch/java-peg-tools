@@ -28,6 +28,7 @@ The implementation is in the very early stages and can scan the input into token
     - test: A | B where A partially matched, B no match
     - test: A | B where A partially matched and B partially matched
 - Use immutable positions to represent locations in the stream
+- Change contract of `BatchingMatchVisitor` so that it creates the result collector, only if required.
 - Fix `zeroOrMore(optional(x))`, etc
 - Report alternatives from within sequence
 - Fix construction of token from non-terminal on failure

@@ -60,22 +60,24 @@ class JavaParserTest extends Specification {
 
         def r1 = fail(" Thing { }")
         r1.result == [" "]
-        r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "abstract", "class", "interface", "public"'
+        r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "abstract", "class", "import", "interface", "package", "public"'
 
-        // TODO - missing 'extends' and 'implements' as alternatives
         def r2 = fail("class x")
         r2.result == ["class", " ", "x"]
-        r2.failure == 'stopped at offset 7: end of input\nexpected: "{"'
+        r2.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "{"'
 
-        // TODO - incomplete, stops too early
+        // TODO - missing 'extends' and 'implements' as alternatives
+        def r2_1 = fail("class x ")
+        r2_1.result == ["class", " ", "x", " "]
+        r2_1.failure == 'stopped at offset 8: end of input\nexpected: "{"'
+
         def r3 = fail("class Thing extends { }")
-        r3.result == ["class", " ", "Thing", " "]
-        r3.failure == 'stopped at offset 12: [extends { }]\nexpected: "{"'
+        r3.result == ["class", " ", "Thing", " ", "extends", " "]
+        r3.failure == 'stopped at offset 20: [{ }]\nexpected: {letter}'
 
-        // TODO - incomplete, stops too early
         def r3_1 = fail("class Thing implements { }")
-        r3_1.result == ["class", " ", "Thing", " "]
-        r3_1.failure == 'stopped at offset 12: [implements { }]\nexpected: "{"'
+        r3_1.result == ["class", " ", "Thing", " ", "implements", " "]
+        r3_1.failure == 'stopped at offset 23: [{ }]\nexpected: {letter}'
 
         def r4 = fail("class Thing implements A extends B { }")
         r4.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
@@ -85,10 +87,9 @@ class JavaParserTest extends Specification {
         r5.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
         r5.failure == 'stopped at offset 25: [implements B { }]\nexpected: "{"'
 
-        // TODO - missing 'implements' as alternatives
         def r6 = fail("class Thing extends A, B { }")
         r6.result == ["class", " ", "Thing", " ", "extends", " ", "A"]
-        r6.failure == 'stopped at offset 21: [, B { }]\nexpected: "{"'
+        r6.failure == 'stopped at offset 21: [, B { }]\nexpected: "\n", " ", "{"'
 
         // TODO - should really complain that interface can't be abstract
         def r7 = fail("abstract interface Thing extends { }")
@@ -116,7 +117,7 @@ class JavaParserTest extends Specification {
         // TODO - missing '.' as an alternative
         def r12 = fail("package a.b; import a.b{}")
         r12.result == ["package", " ", "a.b", ";", " ", "import", " ", "a.b"]
-        r12.failure == 'stopped at offset 23: [{}]\nexpected: ";"'
+        r12.failure == 'stopped at offset 23: [{}]\nexpected: "\n", " ", ";"'
 
         // TODO - 'a.b' and '.' should be same token
         def r13 = fail("package a.b; import a.b.%; class Thing { }")
@@ -136,12 +137,17 @@ class JavaParserTest extends Specification {
         // TODO - missing '.' as an alternative
         def r16 = fail("package a")
         r16.result == ["package", " ", "a"]
-        r16.failure == 'stopped at offset 9: end of input\nexpected: ";"'
+        r16.failure == 'stopped at offset 9: end of input\nexpected: "\n", " ", ";"'
 
         // TODO - missing 'import' as an alternative
         def r17 = fail("import a; ")
         r17.result == ["import", " ", "a", ";", " "]
         r17.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "interface", "public"'
+
+        // TODO - missing 'class' as an alternative
+        def r18 = fail("public ")
+        r18.result == ["public", " "]
+        r18.failure == 'stopped at offset 7: end of input\nexpected: "interface"'
     }
 
     def List<String> parse(String str) {

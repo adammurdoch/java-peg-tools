@@ -15,7 +15,7 @@ public class CharStream {
 
     @Override
     public String toString() {
-        return "{chars: \"" + input.substring(pos) + "\"}";
+        return "{chars " + pos + " \"" + input.substring(pos) + "\"}";
     }
 
     /**

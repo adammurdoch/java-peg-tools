@@ -9,7 +9,7 @@ public class OneOrMoreExpression extends AbstractExpression {
 
     public OneOrMoreExpression(MatchExpression expression) {
         this.expression = expression;
-        matcher = new SequenceExpression(Arrays.asList(expression, new ZeroOrMoreExpression(expression)));
+        matcher = new SequenceExpression(Arrays.asList(expression, new ZeroOrMoreExpression(expression))).getMatcher();
     }
 
     @Override

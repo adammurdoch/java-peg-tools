@@ -29,21 +29,19 @@ public class DefaultParser implements Parser {
         if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
             StringBuilder builder = new StringBuilder();
             builder.append("stopped at ").append(pos.diagnostic());
-            if (resultVisitor.nextExpression != null) {
-                builder.append("\nexpected: ");
-                Set<String> candidates = new TreeSet<String>();
-                for (Terminal terminal : resultVisitor.nextExpression.getPrefixes()) {
-                    candidates.add(terminal.getDisplayName());
+            builder.append("\nexpected: ");
+            Set<String> candidates = new TreeSet<String>();
+            for (Terminal terminal : resultVisitor.nextExpression.getPrefixes()) {
+                candidates.add(terminal.getDisplayName());
+            }
+            boolean first = true;
+            for (String candidate : candidates) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
                 }
-                boolean first = true;
-                for (String candidate : candidates) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        builder.append(", ");
-                    }
-                    builder.append(candidate);
-                }
+                builder.append(candidate);
             }
             visitor.failed(builder.toString());
         } else if (!pos.isAtEnd()) {

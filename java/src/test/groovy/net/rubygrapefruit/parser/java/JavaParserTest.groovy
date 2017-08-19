@@ -72,6 +72,11 @@ class JavaParserTest extends Specification {
         r3.result == ["class", " ", "Thing", " "]
         r3.failure == 'stopped at offset 12: [extends { }]\nexpected: "{"'
 
+        // TODO - incomplete, stops too early
+        def r3_1 = fail("class Thing implements { }")
+        r3_1.result == ["class", " ", "Thing", " "]
+        r3_1.failure == 'stopped at offset 12: [implements { }]\nexpected: "{"'
+
         def r4 = fail("class Thing implements A extends B { }")
         r4.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
         r4.failure == 'stopped at offset 25: [extends B { }]\nexpected: "{"'
@@ -127,6 +132,16 @@ class JavaParserTest extends Specification {
         def r15 = fail("package import a;")
         r15.result == ["package", " ", "import", " "]
         r15.failure == 'stopped at offset 15: [a;]\nexpected: ";"'
+
+        // TODO - missing '.' as an alternative
+        def r16 = fail("package a")
+        r16.result == ["package", " ", "a"]
+        r16.failure == 'stopped at offset 9: end of input\nexpected: ";"'
+
+        // TODO - missing 'import' as an alternative
+        def r17 = fail("import a; ")
+        r17.result == ["import", " ", "a", ";", " "]
+        r17.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "interface", "public"'
     }
 
     def List<String> parse(String str) {

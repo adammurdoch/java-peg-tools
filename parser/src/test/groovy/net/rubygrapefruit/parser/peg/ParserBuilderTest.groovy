@@ -53,6 +53,12 @@ class ParserBuilderTest extends Specification {
         parse(parser, ";") == [";"]
     }
 
+    def "can parse a string character as a group"() {
+        expect:
+        def parser = builder.newParser(builder.singleChar(";" as char).group())
+        parse(parser, ";") == [";"]
+    }
+
     @Unroll
     def "reports failure to match a string character - #input"() {
         expect:
@@ -67,6 +73,37 @@ class ParserBuilderTest extends Specification {
         "X"   | []     | 'stopped at offset 0: [X]\nexpected: "x"'
         "y"   | []     | 'stopped at offset 0: [y]\nexpected: "x"'
         "yx"  | []     | 'stopped at offset 0: [yx]\nexpected: "x"'
+    }
+
+    def "can parse any letter"() {
+        expect:
+        def parser = builder.newParser(builder.letter())
+        parse(parser, "a") == ["a"]
+        parse(parser, "Z") == ["Z"]
+    }
+
+    def "can parse any letter as group"() {
+        expect:
+        def parser = builder.newParser(builder.letter().group())
+        parse(parser, "a") == ["a"]
+        parse(parser, "Z") == ["Z"]
+    }
+
+    @Unroll
+    def "reports failure to match a letter - #input"() {
+        expect:
+        def parser = builder.newParser(builder.letter())
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input | tokens | message
+        ""    | []     | 'stopped at offset 0: end of input\nexpected: {letter}'
+        "1"   | []     | 'stopped at offset 0: [1]\nexpected: {letter}'
+        " "   | []     | 'stopped at offset 0: [ ]\nexpected: {letter}'
+        "."   | []     | 'stopped at offset 0: [.]\nexpected: {letter}'
+        "1y"  | []     | 'stopped at offset 0: [1y]\nexpected: {letter}'
     }
 
     def "can parse any character"() {
@@ -89,12 +126,6 @@ class ParserBuilderTest extends Specification {
         def result = fail(parser, "")
         result.result == []
         result.failure == "stopped at offset 0: end of input\nexpected: anything"
-    }
-
-    def "can parse a string character as a group"() {
-        expect:
-        def parser = builder.newParser(builder.singleChar(";" as char).group())
-        parse(parser, ";") == [";"]
     }
 
     def "can parse a sequence of tokens"() {
@@ -621,6 +652,42 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
         parse(parser, "abc1abc2") == ["abc", "1", "abc", "2"]
         parse(parser, "abc2") == ["abc", "2"]
+    }
+
+    def "can parse negative predicate"() {
+        def e1 = builder.chars("abc")
+        def e2 = builder.zeroOrMore(builder.letter()).group()
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.not(e1), e2))
+        parse(parser, "") == []
+        parse(parser, "ab") == ["ab"]
+        parse(parser, "cdef") == ["cdef"]
+        parse(parser, "cabc") == ["cabc"]
+        parse(parser, "abd") == ["abd"]
+    }
+
+    @Unroll
+    def "reports failure to match negative predicate - #input"() {
+        def e1 = builder.chars("abc")
+        def e2 = builder.zeroOrMore(builder.letter()).group()
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.not(e1), e2))
+        def result = fail(parser, input)
+        result.result == tokens
+        result.failure == message
+
+        where:
+        input    | tokens | message
+        // TODO - missing alternatives
+        "abc"    | []     | 'stopped at offset 0: [abc]'
+        // TODO - missing alternatives
+        "abca"   | []     | 'stopped at offset 0: [abca]'
+        // TODO - missing alternatives
+        "abc123" | []     | 'stopped at offset 0: [abc123]'
+        // TODO - missing alternatives
+        "123"    | []     | 'extra input at offset 0: [123]'
     }
 
     def List<String> parse(Parser parser, String str) {

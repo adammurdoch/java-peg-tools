@@ -85,6 +85,13 @@ public class ParserBuilder {
     }
 
     /**
+     * Returns an expression that matches anything that does not match the given expression, but does not consume anything.
+     */
+    public Expression not(Expression expression) {
+        return new NotPredicate(matcher(expression));
+    }
+
+    /**
      * Creates a parser for the given expression.
      */
     public Parser newParser(Expression expression) {

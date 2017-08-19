@@ -65,6 +65,10 @@ public class CharStream {
         return "offset " + pos + ": [" + input.substring(pos, Math.min(input.length(), pos + 20)) + "]";
     }
 
+    public void consumeOne() {
+        pos++;
+    }
+
     public boolean isAtEnd() {
         return pos >= input.length();
     }
@@ -76,4 +80,5 @@ public class CharStream {
     public int diff(CharStream start) {
         return pos - start.pos;
     }
+
 }

@@ -69,6 +69,28 @@ class ParserBuilderTest extends Specification {
         "yx"  | []     | 'stopped at offset 0: [yx]\nexpected: "x"'
     }
 
+    def "can parse any character"() {
+        expect:
+        def parser = builder.newParser(builder.anything())
+        parse(parser, ";") == [";"]
+        parse(parser, "a") == ["a"]
+    }
+
+    def "can parse any character as group"() {
+        expect:
+        def parser = builder.newParser(builder.anything().group())
+        parse(parser, ";") == [";"]
+        parse(parser, "a") == ["a"]
+    }
+
+    def "reports failure parsing any character"() {
+        expect:
+        def parser = builder.newParser(builder.anything())
+        def result = fail(parser, "")
+        result.result == []
+        result.failure == "stopped at offset 0: end of input\nexpected: anything"
+    }
+
     def "can parse a string character as a group"() {
         expect:
         def parser = builder.newParser(builder.singleChar(";" as char).group())

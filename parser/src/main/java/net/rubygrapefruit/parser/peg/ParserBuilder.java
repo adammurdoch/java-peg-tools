@@ -36,6 +36,13 @@ public class ParserBuilder {
     }
 
     /**
+     * Matches any single character.
+     */
+    public Expression anything() {
+        return new AnythingExpression();
+    }
+
+    /**
      * Matches one of the given expressions. Order is significant and the first matching expression is selected, regardless of whether later expressions might also match.
      */
     public Expression oneOf(Expression... expressions) {

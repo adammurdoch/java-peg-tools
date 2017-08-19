@@ -2,8 +2,8 @@ package net.rubygrapefruit.parser.peg.internal;
 
 public interface MatchVisitor extends TokenCollector {
     /**
-     * Records a match. All calls made up to the last {@link #matched(CharStream)} call are considered part of the result.
-     * All calls made up to {@link #stoppedAt(CharStream)} are considered potential candidates.
+     * Records a match. All calls made up to the last {@link #matched(CharStream)} call are considered part of the result. All calls made up to {@link
+     * #stoppedAt(CharStream, MatchExpression)} are considered potential candidates.
      *
      * @param start The start of the matching region.
      * @param end The end of the matching region, exclusive.
@@ -18,6 +18,8 @@ public interface MatchVisitor extends TokenCollector {
 
     /**
      * Indicates where matching stopped.
+     *
+     * @param nextExpression Can be null.
      */
-    void stoppedAt(CharStream stoppedAt);
+    void stoppedAt(CharStream stoppedAt, MatchExpression nextExpression);
 }

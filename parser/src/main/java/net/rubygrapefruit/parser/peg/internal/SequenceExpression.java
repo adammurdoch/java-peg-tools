@@ -1,6 +1,8 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SequenceExpression extends AbstractExpression implements Matcher {
     private final List<? extends MatchExpression> expressions;
@@ -20,7 +22,30 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
     }
 
     @Override
+    public boolean isAcceptEmpty() {
+        for (MatchExpression expression : expressions) {
+            if (!expression.isAcceptEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public Set<? extends Terminal> getPrefixes() {
+        Set<Terminal> prefixes = new HashSet<>();
+        for (MatchExpression expression : expressions) {
+            prefixes.addAll(expression.getPrefixes());
+            if (!expression.isAcceptEmpty()) {
+                break;
+            }
+        }
+        return prefixes;
+    }
+
+    @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
+        CharStream startAll = stream.tail();
         BatchingMatchVisitor bestPartialMatch = null;
         MatchExpression bestPartialExpression = null;
         BatchingMatchVisitor nested = null;
@@ -31,11 +56,14 @@ public class SequenceExpression extends AbstractExpression implements Matcher {
             boolean matched = expression.getMatcher().consume(pos, nested);
             stream.moveTo(pos);
             if (!matched) {
-                if (bestPartialMatch != null && bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) > 0) {
-                    bestPartialMatch.forwardRemainder(expression.collector(visitor), visitor);
-                } else {
-                    nested.forwardRemainder(expression.collector(visitor), visitor);
+                if (bestPartialMatch == null || bestPartialMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
+                    bestPartialMatch = nested;
+                    bestPartialExpression = expression;
                 }
+                if (bestPartialMatch.getStoppedAt().diff(startAll) == 0) {
+                    bestPartialMatch.stoppedAt(startAll, this);
+                }
+                bestPartialMatch.forwardRemainder(bestPartialExpression.collector(visitor), visitor);
                 return false;
             }
             nested.forwardMatches(expression.collector(visitor), visitor);

@@ -1,5 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import java.util.Set;
+
 public class OptionalExpression extends AbstractExpression implements Matcher {
     private final MatchExpression expression;
 
@@ -15,6 +17,16 @@ public class OptionalExpression extends AbstractExpression implements Matcher {
     @Override
     public Matcher getMatcher() {
         return this;
+    }
+
+    @Override
+    public boolean isAcceptEmpty() {
+        return true;
+    }
+
+    @Override
+    public Set<? extends Terminal> getPrefixes() {
+        return expression.getPrefixes();
     }
 
     @Override

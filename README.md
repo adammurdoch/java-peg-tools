@@ -1,8 +1,8 @@
 A Java library to create parsers using Parsing Expression Grammars, or [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar). It provides a Java API for describing the parsing expressions and constructing a parser from these expressions.
 
-Includes a sample grammar for parsing Java source.
+Includes a grammar for parsing Java source.
 
-### TODO
+### Parser
 
 The implementation is in the very early stages and can scan the input into tokens, but does not yet provide a parse tree as output or meaningful error reporting.
 
@@ -32,10 +32,10 @@ The implementation is in the very early stages and can scan the input into token
 - Fix construction of token from non-terminal on failure
 - Improve matching when there is a common prefix between alternatives
 
-#### Java grammar
+### Java grammar
 
 Not even slightly complete.
 
-##### Issues
+#### Issues
 
 - Accepts more than one `public` or `abstract` modifier on class declaration

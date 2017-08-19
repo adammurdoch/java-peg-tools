@@ -8,6 +8,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
     private List<Match> partialTokens;
     private CharStream matchEnd;
     private CharStream stoppedAt;
+    private MatchExpression nextExpression;
 
     @Override
     public void token(CharStream start, CharStream end) {
@@ -46,8 +47,9 @@ public class BatchingMatchVisitor implements MatchVisitor {
     }
 
     @Override
-    public void stoppedAt(CharStream stoppedAt) {
+    public void stoppedAt(CharStream stoppedAt, MatchExpression nextExpression) {
         this.stoppedAt = stoppedAt;
+        this.nextExpression = nextExpression;
     }
 
     /**
@@ -78,7 +80,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             partialTokens.clear();
         }
         collector.done();
-        visitor.stoppedAt(stoppedAt);
+        visitor.stoppedAt(stoppedAt, nextExpression);
     }
 
     /**
@@ -109,7 +111,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             partialTokens.clear();
         }
         collector.done();
-        visitor.stoppedAt(stoppedAt);
+        visitor.stoppedAt(stoppedAt, nextExpression);
     }
 
     private static class Match {

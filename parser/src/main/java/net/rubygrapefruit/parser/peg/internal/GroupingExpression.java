@@ -2,6 +2,8 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
+import java.util.Set;
+
 public class GroupingExpression implements Expression, MatchExpression {
     private final MatchExpression expression;
 
@@ -22,6 +24,16 @@ public class GroupingExpression implements Expression, MatchExpression {
     @Override
     public Matcher getMatcher() {
         return expression.getMatcher();
+    }
+
+    @Override
+    public boolean isAcceptEmpty() {
+        return expression.isAcceptEmpty();
+    }
+
+    @Override
+    public Set<? extends Terminal> getPrefixes() {
+        return expression.getPrefixes();
     }
 
     @Override

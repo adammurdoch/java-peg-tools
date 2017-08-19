@@ -1,6 +1,8 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OneOfExpression extends AbstractExpression implements Matcher {
     private final List<? extends MatchExpression> expressions;
@@ -17,6 +19,25 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
     @Override
     public Matcher getMatcher() {
         return this;
+    }
+
+    @Override
+    public boolean isAcceptEmpty() {
+        for (MatchExpression expression : expressions) {
+            if (expression.isAcceptEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Set<Terminal> getPrefixes() {
+        Set<Terminal> prefixes = new HashSet<Terminal>();
+        for (MatchExpression expression : expressions) {
+            prefixes.addAll(expression.getPrefixes());
+        }
+        return prefixes;
     }
 
     @Override

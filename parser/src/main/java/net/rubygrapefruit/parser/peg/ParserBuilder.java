@@ -15,6 +15,9 @@ public class ParserBuilder {
      * Matches the given sequence of characters, case sensitive.
      */
     public Expression chars(String str) {
+        if (str.isEmpty()) {
+            throw new IllegalArgumentException("String should not be empty.");
+        }
         return new CharSequenceExpression(str);
     }
 

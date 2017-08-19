@@ -3,6 +3,9 @@ package net.rubygrapefruit.parser.peg.internal;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 public class DefaultParser implements Parser {
     private final MatchExpression rootExpression;
 
@@ -24,7 +27,25 @@ public class DefaultParser implements Parser {
         resultCollector.done();
         CharStream pos = resultVisitor.stoppedAt;
         if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
-            visitor.failed("stopped at " + pos.diagnostic());
+            StringBuilder builder = new StringBuilder();
+            builder.append("stopped at ").append(pos.diagnostic());
+            if (resultVisitor.nextExpression != null) {
+                builder.append("\nexpected: ");
+                Set<String> candidates = new TreeSet<String>();
+                for (Terminal terminal : resultVisitor.nextExpression.getPrefixes()) {
+                    candidates.add(terminal.getDisplayName());
+                }
+                boolean first = true;
+                for (String candidate : candidates) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        builder.append(", ");
+                    }
+                    builder.append(candidate);
+                }
+            }
+            visitor.failed(builder.toString());
         } else if (!pos.isAtEnd()) {
             visitor.failed("extra input at " + pos.diagnostic());
         }
@@ -35,6 +56,7 @@ public class DefaultParser implements Parser {
         private final ResultCollector resultCollector;
         private CharStream matchEnd;
         private CharStream stoppedAt;
+        private MatchExpression nextExpression;
 
         RootExpressionVisitor(ResultCollector resultCollector) {
             this.resultCollector = resultCollector;
@@ -52,8 +74,9 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void stoppedAt(CharStream stoppedAt) {
+        public void stoppedAt(CharStream stoppedAt, MatchExpression nextExpression) {
             this.stoppedAt = stoppedAt;
+            this.nextExpression = nextExpression;
         }
     }
 }

@@ -2,7 +2,11 @@ package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
 
-public class CharSequenceExpression extends AbstractExpression implements Matcher {
+import java.util.Collections;
+import java.util.Set;
+
+public class CharSequenceExpression extends AbstractExpression implements Matcher, Terminal {
+
     private final String str;
 
     public CharSequenceExpression(String str) {
@@ -16,12 +20,27 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
 
     @Override
     public String toString() {
-        return "\"" + str + "\"";
+        return getDisplayName();
     }
 
     @Override
     public Matcher getMatcher() {
         return this;
+    }
+
+    @Override
+    public boolean isAcceptEmpty() {
+        return false;
+    }
+
+    @Override
+    public Set<? extends Terminal> getPrefixes() {
+        return Collections.singleton(this);
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "\"" + str + "\"";
     }
 
     @Override
@@ -33,7 +52,7 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
             visitor.matched(end);
             return true;
         }
-        visitor.stoppedAt(start);
+        visitor.stoppedAt(start, this);
         return false;
     }
 }

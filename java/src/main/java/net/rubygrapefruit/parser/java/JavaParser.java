@@ -16,9 +16,15 @@ public class JavaParser {
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
 
-        Expression whitespace = builder.oneOf(builder.singleChar(' '), builder.singleChar('\n'));
-        Expression whitespaceSeparator = builder.oneOrMore(whitespace).group();
-        Expression optionalWhitespace = builder.zeroOrMore(whitespace).group();
+        Expression eol = builder.singleChar('\n');
+
+        Expression starComment = builder.sequence(builder.chars("/*"), builder.zeroOrMore(builder.sequence(builder.not(builder.chars("*/")), builder.anything())), builder.chars("*/")).group();
+        Expression lineComment = builder.sequence(builder.chars("//"), builder.zeroOrMore(builder.sequence(builder.not(eol), builder.anything())), builder.optional(eol)).group();
+
+        Expression whitespace = builder.oneOrMore(builder.oneOf(builder.singleChar(' '), eol)).group();
+        Expression separator = builder.oneOf(whitespace, starComment, lineComment);
+        Expression whitespaceSeparator = builder.oneOrMore(separator);
+        Expression optionalWhitespace = builder.zeroOrMore(separator);
 
         Expression classKeyword = builder.chars("class");
         Expression interfaceKeyword = builder.chars("interface");

@@ -96,7 +96,6 @@ class JavaParserTest extends Specification {
         r7.result == ["abstract", " "]
         r7.failure == 'stopped at offset 9: [interface Thing exte]\nexpected: "abstract", "class", "public"'
 
-        // TODO - missing 'extends' as alternatives
         def r8 = fail("interface Thing implements A { }")
         r8.result == ["interface", " ", "Thing", " "]
         r8.failure == 'stopped at offset 16: [implements A { }]\nexpected: "\n", " ", "extends", "{"'
@@ -138,14 +137,19 @@ class JavaParserTest extends Specification {
         r16.result == ["package", " ", "a"]
         r16.failure == 'stopped at offset 9: end of input\nexpected: "\n", " ", ";", {letter}'
 
-        def r17 = fail("import a; ")
-        r17.result == ["import", " ", "a", ";", " "]
-        r17.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "import", "interface", "public"'
+        // TODO - missing {letter} as an alternative
+        def r17 = fail("package a.b")
+        r17.result == ["package", " ", "a.b"]
+        r17.failure == 'stopped at offset 11: end of input\nexpected: "\n", " ", ".", ";"'
+
+        def r18 = fail("import a; ")
+        r18.result == ["import", " ", "a", ";", " "]
+        r18.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "import", "interface", "public"'
 
         // TODO - shouldn't offer public as an alternative
-        def r18 = fail("public ")
-        r18.result == ["public", " "]
-        r18.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "abstract", "class", "interface", "public"'
+        def r19 = fail("public ")
+        r19.result == ["public", " "]
+        r19.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "abstract", "class", "interface", "public"'
     }
 
     def List<String> parse(String str) {

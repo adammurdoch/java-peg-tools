@@ -42,6 +42,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
+        CharStream start = stream.tail();
         BatchingMatchVisitor bestMatch = null;
         MatchExpression bestMatchExpression = null;
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
@@ -59,6 +60,9 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
             } else {
                 nested.reset();
             }
+        }
+        if (start.diff(bestMatch.getStoppedAt()) == 0) {
+            bestMatch.stoppedAt(start, this);
         }
         bestMatch.forwardRemainder(bestMatchExpression.collector(visitor), visitor);
         return false;

@@ -29,6 +29,7 @@ The implementation is in the very early stages and can scan the input into token
     - test: A | B where A partially matched and B partially matched
 - Use immutable positions to represent locations in the stream
 - Fix `zeroOrMore(optional(x))`, etc
+- Report alternatives from within sequence
 - Fix construction of token from non-terminal on failure
 - Improve matching when there is a common prefix between alternatives
 

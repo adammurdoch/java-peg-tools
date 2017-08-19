@@ -58,10 +58,9 @@ class JavaParserTest extends Specification {
         r0.result == []
         r0.failure == 'stopped at offset 0: end of input\nexpected: "\n", " ", "abstract", "class", "import", "interface", "package", "public"'
 
-        // TODO - missing 'abstract' and 'class' as alternatives
         def r1 = fail(" Thing { }")
         r1.result == [" "]
-        r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "interface", "public"'
+        r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "abstract", "class", "interface", "public"'
 
         // TODO - missing 'extends' and 'implements' as alternatives
         def r2 = fail("class x")

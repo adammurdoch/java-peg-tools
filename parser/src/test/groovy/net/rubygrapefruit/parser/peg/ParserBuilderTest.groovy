@@ -491,10 +491,8 @@ class ParserBuilderTest extends Specification {
 
         where:
         input   | tokens       | message
-        // TODO - missing an alternative
-        ""      | []           | 'stopped at offset 0: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "a"     | []           | 'stopped at offset 0: [a]\nexpected: "abc"'
+        ""      | []           | 'stopped at offset 0: end of input\nexpected: "ab", "abc"'
+        "a"     | []           | 'stopped at offset 0: [a]\nexpected: "ab", "abc"'
         "ab"    | ["ab"]       | 'stopped at offset 2: end of input\nexpected: "12"'
         "ab1"   | ["ab"]       | 'stopped at offset 2: [1]\nexpected: "12"'
         "ab13"  | ["ab"]       | 'stopped at offset 2: [13]\nexpected: "12"'
@@ -503,8 +501,7 @@ class ParserBuilderTest extends Specification {
         "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1"'
         "abc2"  | ["abc"]      | 'stopped at offset 3: [2]\nexpected: "1"'
         "abc1x" | ["abc", "1"] | 'extra input at offset 4: [x]'
-        // TODO - missing an alternative
-        "adc"   | []           | 'stopped at offset 0: [adc]\nexpected: "abc"'
+        "adc"   | []           | 'stopped at offset 0: [adc]\nexpected: "ab", "abc"'
     }
 
     @Unroll

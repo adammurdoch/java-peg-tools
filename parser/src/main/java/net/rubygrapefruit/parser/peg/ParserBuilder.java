@@ -16,7 +16,7 @@ public class ParserBuilder {
      */
     public Expression chars(String str) {
         if (str.isEmpty()) {
-            throw new IllegalArgumentException("String should not be empty.");
+            throw new IllegalArgumentException("At least one character required.");
         }
         return new CharSequenceExpression(str);
     }

@@ -8,7 +8,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
     private List<Match> partialTokens;
     private CharStream matchEnd;
     private CharStream stoppedAt;
-    private MatchExpression nextExpression;
+    private MatchPoint matchPoint;
 
     @Override
     public void token(CharStream start, CharStream end) {
@@ -20,6 +20,10 @@ public class BatchingMatchVisitor implements MatchVisitor {
 
     public CharStream getMatchEnd() {
         return matchEnd;
+    }
+
+    public MatchPoint getMatchPoint() {
+        return matchPoint;
     }
 
     public CharStream getStoppedAt() {
@@ -51,9 +55,9 @@ public class BatchingMatchVisitor implements MatchVisitor {
     }
 
     @Override
-    public void stoppedAt(CharStream stoppedAt, MatchExpression nextExpression) {
+    public void stoppedAt(CharStream stoppedAt, MatchPoint matchPoint) {
         this.stoppedAt = stoppedAt;
-        this.nextExpression = nextExpression;
+        this.matchPoint = matchPoint;
     }
 
     /**
@@ -84,7 +88,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             partialTokens.clear();
         }
         collector.done();
-        visitor.stoppedAt(stoppedAt, nextExpression);
+        visitor.stoppedAt(stoppedAt, matchPoint);
     }
 
     /**
@@ -112,7 +116,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             }
             partialTokens.clear();
         }
-        visitor.stoppedAt(stoppedAt, nextExpression);
+        visitor.stoppedAt(stoppedAt, matchPoint);
     }
 
     /**
@@ -135,7 +139,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             partialTokens.clear();
         }
         collector.done();
-        visitor.stoppedAt(stoppedAt, nextExpression);
+        visitor.stoppedAt(stoppedAt, matchPoint);
     }
 
     public void forwardRemainder(MatchVisitor visitor) {
@@ -154,7 +158,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             }
             partialTokens.clear();
         }
-        visitor.stoppedAt(stoppedAt, nextExpression);
+        visitor.stoppedAt(stoppedAt, matchPoint);
     }
 
     private static class Match {

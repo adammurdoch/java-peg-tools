@@ -5,7 +5,7 @@ import net.rubygrapefruit.parser.peg.Expression;
 import java.util.Collections;
 import java.util.Set;
 
-public class CharSequenceExpression extends AbstractExpression implements Matcher, Terminal {
+public class CharSequenceExpression extends AbstractExpression implements Matcher, Terminal, MatchPoint {
 
     private final String str;
 

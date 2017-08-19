@@ -31,7 +31,7 @@ public class DefaultParser implements Parser {
             builder.append("stopped at ").append(pos.diagnostic());
             builder.append("\nexpected: ");
             Set<String> candidates = new TreeSet<String>();
-            for (Terminal terminal : resultVisitor.nextExpression.getPrefixes()) {
+            for (Terminal terminal : resultVisitor.matchPoint.getPrefixes()) {
                 candidates.add(terminal.getDisplayName());
             }
             boolean first = true;
@@ -54,7 +54,7 @@ public class DefaultParser implements Parser {
         private final ResultCollector resultCollector;
         private CharStream matchEnd;
         private CharStream stoppedAt;
-        private MatchExpression nextExpression;
+        private MatchPoint matchPoint;
 
         RootExpressionVisitor(ResultCollector resultCollector) {
             this.resultCollector = resultCollector;
@@ -72,9 +72,9 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void stoppedAt(CharStream stoppedAt, MatchExpression nextExpression) {
+        public void stoppedAt(CharStream stoppedAt, MatchPoint matchPoint) {
             this.stoppedAt = stoppedAt;
-            this.nextExpression = nextExpression;
+            this.matchPoint = matchPoint;
         }
     }
 }

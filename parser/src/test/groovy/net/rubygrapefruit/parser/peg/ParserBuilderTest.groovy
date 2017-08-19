@@ -261,13 +261,11 @@ class ParserBuilderTest extends Specification {
         where:
         input        | tokens                   | message
         ""           | []                       | 'stopped at offset 0: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc"        | ["abc"]                  | 'stopped at offset 3: end of input\nexpected: "2"'
+        "abc"        | ["abc"]                  | 'stopped at offset 3: end of input\nexpected: "1", "2"'
         "abc1"       | ["abc", "1"]             | 'stopped at offset 4: end of input\nexpected: "2"'
         "abc1x"      | ["abc", "1"]             | 'stopped at offset 4: [x]\nexpected: "2"'
         "abc1xabc2"  | ["abc", "1"]             | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc3"       | ["abc"]                  | 'stopped at offset 3: [3]\nexpected: "2"'
+        "abc3"       | ["abc"]                  | 'stopped at offset 3: [3]\nexpected: "1", "2"'
         "abc12abc"   | ["abc", "1", "2", "abc"] | 'stopped at offset 8: end of input\nexpected: "2"'
         "abc12abc3"  | ["abc", "1", "2", "abc"] | 'stopped at offset 8: [3]\nexpected: "2"'
         "abc12xabc2" | ["abc", "1", "2"]        | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
@@ -354,23 +352,19 @@ class ParserBuilderTest extends Specification {
         where:
         input           | tokens                                    | message
         ""              | []                                        | 'stopped at offset 0: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc"           | ["abc"]                                   | 'stopped at offset 3: end of input\nexpected: "2"'
+        "abc"           | ["abc"]                                   | 'stopped at offset 3: end of input\nexpected: "1", "2"'
         "abc1"          | ["abc", "1"]                              | 'stopped at offset 4: end of input\nexpected: "2"'
         "abc1x"         | ["abc", "1"]                              | 'stopped at offset 4: [x]\nexpected: "2"'
         "abc1xabc2"     | ["abc", "1"]                              | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc3"          | ["abc"]                                   | 'stopped at offset 3: [3]\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc12abc"      | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: end of input\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc12abc3"     | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: [3]\nexpected: "2"'
+        "abc3"          | ["abc"]                                   | 'stopped at offset 3: [3]\nexpected: "1", "2"'
+        "abc12abc"      | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: end of input\nexpected: "1", "2"'
+        "abc12abc3"     | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: [3]\nexpected: "1", "2"'
         "abc12xabc2"    | ["abc", "1", "2"]                         | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
         "abc12abc1"     | ["abc", "1", "2", "abc", "1"]             | 'stopped at offset 9: end of input\nexpected: "2"'
         "abc12abc1x"    | ["abc", "1", "2", "abc", "1"]             | 'stopped at offset 9: [x]\nexpected: "2"'
         "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | 'stopped at offset 10: end of input\nexpected: "abc"'
         // TODO - missing an alternative
-        "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | 'stopped at offset 13: end of input\nexpected: "2"'
+        "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | 'stopped at offset 13: end of input\nexpected: "1", "2"'
     }
 
     @Unroll
@@ -387,23 +381,18 @@ class ParserBuilderTest extends Specification {
         where:
         input           | tokens                | message
         ""              | []                    | 'stopped at offset 0: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc"           | ["abc"]               | 'stopped at offset 3: end of input\nexpected: "2"'
+        "abc"           | ["abc"]               | 'stopped at offset 3: end of input\nexpected: "1", "2"'
         "abc1"          | ["abc1"]              | 'stopped at offset 4: end of input\nexpected: "2"'
         "abc1x"         | ["abc1"]              | 'stopped at offset 4: [x]\nexpected: "2"'
         "abc1xabc2"     | ["abc1"]              | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc3"          | ["abc"]               | 'stopped at offset 3: [3]\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc12abc"      | ["abc12", "abc"]      | 'stopped at offset 8: end of input\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc12abc3"     | ["abc12", "abc"]      | 'stopped at offset 8: [3]\nexpected: "2"'
+        "abc3"          | ["abc"]               | 'stopped at offset 3: [3]\nexpected: "1", "2"'
+        "abc12abc"      | ["abc12", "abc"]      | 'stopped at offset 8: end of input\nexpected: "1", "2"'
+        "abc12abc3"     | ["abc12", "abc"]      | 'stopped at offset 8: [3]\nexpected: "1", "2"'
         "abc12xabc2"    | ["abc12"]             | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
         "abc12abc1"     | ["abc12", "abc1"]     | 'stopped at offset 9: end of input\nexpected: "2"'
         "abc12abc1x"    | ["abc12", "abc1"]     | 'stopped at offset 9: [x]\nexpected: "2"'
         "abc12abc12"    | ["abc12abc12"]        | 'stopped at offset 10: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc12abc12abc" | ["abc12abc12", "abc"] | 'stopped at offset 13: end of input\nexpected: "2"'
+        "abc12abc12abc" | ["abc12abc12", "abc"] | 'stopped at offset 13: end of input\nexpected: "1", "2"'
     }
 
     def "can parse one or more tokens"() {
@@ -559,10 +548,8 @@ class ParserBuilderTest extends Specification {
         input   | tokens       | message
         ""      | []           | 'stopped at offset 0: end of input\nexpected: "abc"'
         "ab"    | []           | 'stopped at offset 0: [ab]\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "2"'
-        // TODO - missing an alternative
-        "abc3"  | ["abc"]      | 'stopped at offset 3: [3]\nexpected: "2"'
+        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1", "2"'
+        "abc3"  | ["abc"]      | 'stopped at offset 3: [3]\nexpected: "1", "2"'
         "abc1"  | ["abc", "1"] | 'stopped at offset 4: end of input\nexpected: "2"'
         "abc1x" | ["abc", "1"] | 'stopped at offset 4: [x]\nexpected: "2"'
         "abc2"  | ["abc", "2"] | 'stopped at offset 4: end of input\nexpected: "2"'

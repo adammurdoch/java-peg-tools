@@ -1,10 +1,11 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class OneOfExpression extends AbstractExpression implements Matcher {
+public class OneOfExpression extends AbstractExpression implements Matcher, MatchPoint {
     private final List<? extends MatchExpression> expressions;
 
     public OneOfExpression(List<? extends MatchExpression> expressions) {
@@ -43,28 +44,49 @@ public class OneOfExpression extends AbstractExpression implements Matcher {
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         CharStream start = stream.tail();
-        BatchingMatchVisitor bestMatch = null;
-        MatchExpression bestMatchExpression = null;
-        BatchingMatchVisitor nested = new BatchingMatchVisitor();
+        CharStream bestPos = null;
+        List<Candidate> candidates = new ArrayList<Candidate>(3);
         for (MatchExpression expression : expressions) {
             CharStream pos = stream.tail();
+            BatchingMatchVisitor nested = new BatchingMatchVisitor();
             if (expression.getMatcher().consume(pos, nested)) {
                 nested.forwardAll(expression.collector(visitor), visitor);
                 stream.moveTo(pos);
                 return true;
             }
-            if (bestMatch == null || bestMatch.getStoppedAt().diff(nested.getStoppedAt()) <= 0) {
-                bestMatch = nested;
-                bestMatchExpression = expression;
-                nested = new BatchingMatchVisitor();
-            } else {
-                nested.reset();
+            if (bestPos == null || nested.getStoppedAt().diff(bestPos) > 0) {
+                bestPos = nested.getStoppedAt();
+                candidates.clear();
+                candidates.add(new Candidate(expression, nested));
+            } else if (nested.getStoppedAt().diff(bestPos) == 0) {
+                candidates.add(new Candidate(expression, nested));
             }
         }
-        if (start.diff(bestMatch.getStoppedAt()) == 0) {
-            bestMatch.stoppedAt(start, this);
+        Candidate bestOption = candidates.get(candidates.size() - 1);
+        bestOption.result.forwardRemainder(bestOption.expression.collector(visitor), visitor);
+        if (start.diff(bestPos) == 0) {
+            visitor.stoppedAt(start, this);
+        } else if (candidates.size() > 1) {
+            visitor.stoppedAt(bestPos, mergedOptions(candidates));
         }
-        bestMatch.forwardRemainder(bestMatchExpression.collector(visitor), visitor);
         return false;
+    }
+
+    private MatchPoint mergedOptions(List<Candidate> candidates) {
+        final List<MatchPoint> points = new ArrayList<MatchPoint>(candidates.size());
+        for (Candidate candidate : candidates) {
+            points.add(candidate.result.getMatchPoint());
+        }
+        return new CompositeMatchPoint(points);
+    }
+
+    private static class Candidate {
+        final BatchingMatchVisitor result;
+        final MatchExpression expression;
+
+        Candidate(MatchExpression expression, BatchingMatchVisitor result) {
+            this.result = result;
+            this.expression = expression;
+        }
     }
 }

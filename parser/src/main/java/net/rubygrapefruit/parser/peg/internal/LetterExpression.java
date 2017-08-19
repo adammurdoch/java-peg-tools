@@ -5,7 +5,7 @@ import net.rubygrapefruit.parser.peg.Expression;
 import java.util.Collections;
 import java.util.Set;
 
-public class LetterExpression extends AbstractExpression implements Matcher, Terminal {
+public class LetterExpression extends AbstractExpression implements Matcher, Terminal, MatchPoint {
     @Override
     public Expression group() {
         return this;

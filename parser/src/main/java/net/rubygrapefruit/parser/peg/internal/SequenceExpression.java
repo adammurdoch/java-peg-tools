@@ -1,5 +1,6 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class SequenceExpression extends AbstractExpression {
         return matcher.getPrefixes();
     }
 
-    private static class SequenceMatcher implements Matcher, MatchExpression {
+    private static class SequenceMatcher implements Matcher, MatchExpression, MatchPoint {
         private final MatchExpression expression;
         private final SequenceMatcher next;
 
@@ -103,7 +104,12 @@ public class SequenceExpression extends AbstractExpression {
                     // This recognized more than next, assume it is the best choice
                     thisMatch.forwardRemainder(expression.collector(visitor), visitor);
                 } else if (!thisRecognizedSomething && !nextRecognizedSomething) {
+                    // Neither recognized anything
                     visitor.stoppedAt(startNext, this);
+                } else if (thisMatch.getMatchPoint() != null && thisMatch.getStoppedAt().diff(nextMatch.getStoppedAt()) == 0) {
+                    // Recognized something, up to the same point
+                    nextMatch.forwardRemainder(visitor);
+                    visitor.stoppedAt(thisMatch.getStoppedAt(), new CompositeMatchPoint(Arrays.asList(thisMatch.getMatchPoint(), nextMatch.getMatchPoint())));
                 } else {
                     // Assume the next is best choice
                     nextMatch.forwardRemainder(visitor);

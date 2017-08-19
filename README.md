@@ -32,7 +32,9 @@ The implementation is in the very early stages and can scan the input into token
 - Fix `zeroOrMore(optional(x))`, etc
 - Report alternatives from within sequence
 - Fix construction of token from non-terminal on failure
-- Improve matching when there is a common prefix between alternatives
+- Improve matching when there is a common prefix between sequence expressions
+- Improve alternatives for mismatched negative predicate
+- Test coverage for non-ascii characters
 
 ### Java grammar
 

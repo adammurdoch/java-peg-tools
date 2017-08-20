@@ -36,7 +36,7 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
     public ResultCollector collector(TokenCollector collector) {
         return new ResultCollector() {
             @Override
-            public void token(CharStream start, CharStream end) {
+            public void token(TextRegion token) {
             }
 
             @Override

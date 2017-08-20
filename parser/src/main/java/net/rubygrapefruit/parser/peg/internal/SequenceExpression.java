@@ -122,6 +122,7 @@ public class SequenceExpression extends AbstractExpression {
                 nextMatch.forwardAll(visitor);
                 return true;
             }
+            // next matched nothing
             if (nextRecognizedSomething && nextRecognizedMore) {
                 // Next match nothing, recognized something plus recognised more than this, assume it is the best choice
                 nextMatch.forwardAll(visitor);

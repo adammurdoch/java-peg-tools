@@ -81,4 +81,7 @@ public class CharStream {
         return pos - start.pos;
     }
 
+    public CharStream end() {
+        return new CharStream(input, input.length());
+    }
 }

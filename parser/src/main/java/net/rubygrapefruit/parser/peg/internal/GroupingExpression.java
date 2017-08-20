@@ -51,17 +51,17 @@ public class GroupingExpression implements Expression, MatchExpression {
         }
 
         @Override
-        public void token(CharStream start, CharStream end) {
+        public void token(TextRegion token) {
             if (this.start == null) {
-                this.start = start;
+                this.start = token.start;
             }
-            this.end = end;
+            this.end = token.end;
         }
 
         @Override
         public void done() {
             if (start != null) {
-                collector.token(start, end);
+                collector.token(new TextRegion(start, end));
                 start = null;
             }
         }

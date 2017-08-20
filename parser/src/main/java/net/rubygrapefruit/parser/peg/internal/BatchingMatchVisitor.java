@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
-    private List<Match> tokens;
-    private List<Match> partialTokens;
+    private List<TextRegion> tokens;
+    private List<TextRegion> partialTokens;
     private CharStream matchEnd;
     private CharStream stoppedAt;
     private MatchPoint matchPoint;
 
     @Override
-    public void token(CharStream start, CharStream end) {
+    public void token(TextRegion token) {
         if (partialTokens == null) {
-            partialTokens = new ArrayList<Match>();
+            partialTokens = new ArrayList<TextRegion>();
         }
-        partialTokens.add(new Match(start, end));
+        partialTokens.add(token);
     }
 
     public CharStream getMatchEnd() {
@@ -36,22 +36,11 @@ public class BatchingMatchVisitor implements MatchVisitor {
         stoppedAt = endPos;
         if (partialTokens != null && !partialTokens.isEmpty()) {
             if (tokens == null) {
-                tokens = new ArrayList<Match>(partialTokens.size());
+                tokens = new ArrayList<TextRegion>(partialTokens.size());
             }
             tokens.addAll(partialTokens);
             partialTokens.clear();
         }
-    }
-
-    public void reset() {
-        if (partialTokens != null) {
-            partialTokens.clear();
-        }
-        if (tokens != null) {
-            tokens.clear();
-        }
-        stoppedAt = null;
-        matchEnd = null;
     }
 
     @Override
@@ -68,8 +57,8 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No matches");
         }
         if (tokens != null) {
-            for (Match token : tokens) {
-                collector.token(token.start, token.end);
+            for (TextRegion token : tokens) {
+                collector.token(token);
             }
             tokens.clear();
         }
@@ -82,8 +71,8 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (partialTokens != null) {
-            for (Match token : partialTokens) {
-                collector.token(token.start, token.end);
+            for (TextRegion token : partialTokens) {
+                collector.token(token);
             }
             partialTokens.clear();
         }
@@ -104,15 +93,15 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No matches");
         }
         if (tokens != null) {
-            for (Match token : tokens) {
-                visitor.token(token.start, token.end);
+            for (TextRegion token : tokens) {
+                visitor.token(token);
             }
             tokens.clear();
         }
         visitor.matched(matchEnd);
         if (partialTokens != null) {
-            for (Match token : partialTokens) {
-                visitor.token(token.start, token.end);
+            for (TextRegion token : partialTokens) {
+                visitor.token(token);
             }
             partialTokens.clear();
         }
@@ -127,14 +116,14 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (tokens != null) {
-            for (Match token : tokens) {
-                collector.token(token.start, token.end);
+            for (TextRegion token : tokens) {
+                collector.token(token);
             }
             tokens.clear();
         }
         if (partialTokens != null) {
-            for (Match token : partialTokens) {
-                collector.token(token.start, token.end);
+            for (TextRegion token : partialTokens) {
+                collector.token(token);
             }
             partialTokens.clear();
         }
@@ -147,32 +136,17 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (tokens != null) {
-            for (Match token : tokens) {
-                visitor.token(token.start, token.end);
+            for (TextRegion token : tokens) {
+                visitor.token(token);
             }
             tokens.clear();
         }
         if (partialTokens != null) {
-            for (Match token : partialTokens) {
-                visitor.token(token.start, token.end);
+            for (TextRegion token : partialTokens) {
+                visitor.token(token);
             }
             partialTokens.clear();
         }
         visitor.stoppedAt(stoppedAt, matchPoint);
-    }
-
-    private static class Match {
-        final CharStream start;
-        final CharStream end;
-
-        Match(CharStream start, CharStream end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        @Override
-        public String toString() {
-            return "\"" + start.upTo(end) + "\"";
-        }
     }
 }

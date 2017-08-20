@@ -40,7 +40,7 @@ public class AnythingExpression extends AbstractExpression implements Matcher, T
         CharStream start = stream.tail();
         stream.consumeOne();
         CharStream end = stream.tail();
-        visitor.token(start, end);
+        visitor.token(new TextRegion(start, end));
         visitor.matched(end);
         return true;
     }

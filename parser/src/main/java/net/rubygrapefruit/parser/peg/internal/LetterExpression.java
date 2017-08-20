@@ -42,7 +42,7 @@ public class LetterExpression extends AbstractExpression implements Matcher, Ter
         String token = stream.consumeLetter();
         if (token != null) {
             CharStream end = stream.tail();
-            visitor.token(start, end);
+            visitor.token(new TextRegion(start, end));
             visitor.matched(end);
             return true;
         }

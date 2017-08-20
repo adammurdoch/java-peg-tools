@@ -48,7 +48,7 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
         CharStream start = stream.tail();
         if (stream.consume(str)) {
             CharStream end = stream.tail();
-            visitor.token(start, end);
+            visitor.token(new TextRegion(start, end));
             visitor.matched(end);
             return true;
         }

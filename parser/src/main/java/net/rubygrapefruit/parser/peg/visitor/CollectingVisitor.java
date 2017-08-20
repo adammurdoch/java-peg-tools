@@ -1,5 +1,6 @@
 package net.rubygrapefruit.parser.peg.visitor;
 
+import net.rubygrapefruit.parser.peg.Region;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
 import java.util.ArrayList;
@@ -18,12 +19,12 @@ public class CollectingVisitor implements TokenVisitor {
     }
 
     @Override
-    public void token(String token) {
-        result.add(token);
+    public void token(Region match) {
+        result.add(match.getText());
     }
 
     @Override
-    public void failed(String message) {
+    public void failed(String message, Region remainder) {
         this.failure = message;
     }
 }

@@ -17,8 +17,8 @@ public class DefaultParser implements Parser {
     public <T extends TokenVisitor> T parse(String input, final T visitor) {
         final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
             @Override
-            public void token(CharStream start, CharStream end) {
-                visitor.token(start.upTo(end));
+            public void token(TextRegion token) {
+                visitor.token(token);
             }
         });
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);
@@ -45,9 +45,9 @@ public class DefaultParser implements Parser {
                     builder.append(candidate);
                 }
             }
-            visitor.failed(builder.toString());
+            visitor.failed(builder.toString(), new TextRegion(pos, pos.end()));
         } else if (!pos.isAtEnd()) {
-            visitor.failed("extra input at " + pos.diagnostic());
+            visitor.failed("extra input at " + pos.diagnostic(), new TextRegion(pos, pos.end()));
         }
         return visitor;
     }
@@ -63,8 +63,8 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void token(CharStream start, CharStream end) {
-            resultCollector.token(start, end);
+        public void token(TextRegion token) {
+            resultCollector.token(token);
         }
 
         @Override

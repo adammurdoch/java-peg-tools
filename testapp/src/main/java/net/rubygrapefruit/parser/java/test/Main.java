@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.java.test;
 
 import net.rubygrapefruit.parser.java.JavaParser;
+import net.rubygrapefruit.parser.peg.Region;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
 import javax.swing.*;
@@ -48,16 +49,17 @@ public class Main {
             }
             parser.parse(stringBuilder.toString(), new TokenVisitor() {
                 @Override
-                public void token(String token) {
-                    if (token.matches("\\s+")) {
+                public void token(Region match) {
+                    String text = match.getText();
+                    if (text.matches("\\s+")) {
                         System.out.print(" ");
                     } else {
-                        System.out.print(token);
+                        System.out.print(text);
                     }
                 }
 
                 @Override
-                public void failed(String message) {
+                public void failed(String message, Region remainder) {
                     System.out.println();
                     System.out.println("FAILED: " + message);
                 }
@@ -211,12 +213,12 @@ public class Main {
             String failure = null;
 
             @Override
-            public void token(String token) {
-                builder.append(token);
+            public void token(Region match) {
+                builder.append(match.getText());
             }
 
             @Override
-            public void failed(String message) {
+            public void failed(String message, Region remainder) {
                 failure = message;
             }
         }

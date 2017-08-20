@@ -43,3 +43,4 @@ Not even slightly complete.
 #### Issues
 
 - Accepts duplicate modifiers on class, interface, field declarations
+- Tighten up rules for field and method declarations inside class and interface declarations

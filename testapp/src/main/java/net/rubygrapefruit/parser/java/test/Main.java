@@ -200,6 +200,7 @@ public class Main {
         private final Style plain;
         private final Style broken;
         private final Style comment;
+        private final Style identifier;
         private final Style keyword;
 
         ParseLoop(ParseQueue queue, JTextPane parsed, JTextPane status) {
@@ -207,13 +208,17 @@ public class Main {
             this.parsed = parsed;
             this.status = status;
             plain = parsed.addStyle("plain", null);
+            StyleConstants.setForeground(plain, new Color(109, 109, 109));
             broken = parsed.addStyle("broken", null);
             StyleConstants.setForeground(broken, Color.WHITE);
             StyleConstants.setBackground(broken, Color.RED);
             comment = parsed.addStyle("comment", null);
-            StyleConstants.setForeground(comment, new Color(160, 160, 160));
+            StyleConstants.setForeground(comment, new Color(89, 136, 61));
+            identifier = parsed.addStyle("identifier", null);
+            StyleConstants.setForeground(identifier, new Color(130, 100, 176));
+            StyleConstants.setBold(identifier, true);
             keyword = parsed.addStyle("keyword", null);
-            StyleConstants.setForeground(keyword, Color.BLUE);
+            StyleConstants.setForeground(keyword, new Color(53, 132, 172));
             StyleConstants.setBold(keyword, true);
         }
 
@@ -225,7 +230,7 @@ public class Main {
         }
 
         private void doOnce() {
-            String str = queue.getNext();
+            final String str = queue.getNext();
 
             final ResultCollector collector = new ResultCollector();
             javaParser.parse(str, collector);
@@ -239,9 +244,10 @@ public class Main {
                         for (Span span : collector.spans) {
                             document.insertString(document.getLength(), span.text, span.style);
                         }
-                        status.getDocument().remove(0, status.getDocument().getLength());
                         if (collector.failure != null) {
-                            status.getDocument().insertString(0, collector.failure, plain);
+                            status.setText(collector.failure);
+                        } else {
+                            status.setText("");
                         }
                     } catch (BadLocationException e) {
                         throw new RuntimeException(e);
@@ -262,6 +268,9 @@ public class Main {
                         break;
                     case Keyword:
                         spans.add(new Span(match.getText(), keyword));
+                        break;
+                    case Identifier:
+                        spans.add(new Span(match.getText(), identifier));
                         break;
                     default:
                         spans.add(new Span(match.getText(), plain));

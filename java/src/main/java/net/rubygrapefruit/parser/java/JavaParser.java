@@ -4,6 +4,7 @@ import net.rubygrapefruit.parser.peg.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Parses Java source into a sequence of tokens.
@@ -15,7 +16,9 @@ public class JavaParser {
     private final Expression starComment;
     private final Expression lineComment;
     private final Expression whitespace;
-    private final HashSet<Expression> keywords;
+    private final Set<Expression> keywords;
+    private final Expression identifier;
+    private final Expression qualified;
 
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
@@ -40,7 +43,9 @@ public class JavaParser {
         Expression importKeyword = builder.chars("import");
         Expression extendsKeyword = builder.chars("extends");
         Expression implementsKeyword = builder.chars("implements");
-        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword));
+        Expression voidKeyword = builder.chars("void");
+        Expression staticKeyword = builder.chars("static");
+        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword, voidKeyword, staticKeyword));
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
@@ -49,10 +54,12 @@ public class JavaParser {
         Expression semiColon = builder.singleChar(';');
         Expression star = builder.singleChar('*');
         Expression comma = builder.singleChar(',');
+        Expression leftParen = builder.singleChar('(');
+        Expression rightParen = builder.singleChar(')');
 
-        Expression identifier = letters.group();
-        Expression qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
-        Expression starImport = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters)), dot, star).group();
+        identifier = letters.group();
+        qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
+        Expression starImport = builder.sequence(qualified, dot, star);
 
         Expression packageDeclaration = builder.sequence(packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon, optionalWhitespace);
         Expression optionalPackageDeclaration = builder.optional(packageDeclaration);
@@ -60,15 +67,21 @@ public class JavaParser {
         Expression importDeclaration = builder.sequence(importKeyword, whitespaceSeparator, builder.oneOf(starImport, qualified), optionalWhitespace, semiColon, optionalWhitespace);
         Expression importDeclarations = builder.zeroOrMore(importDeclaration);
 
-        Expression identifierList = builder.sequence(identifier, builder.zeroOrMore(builder.sequence(optionalWhitespace, comma, optionalWhitespace, identifier)));
+        Expression identifierList = builder.sequence(
+                identifier, builder.zeroOrMore(builder.sequence(optionalWhitespace, comma, optionalWhitespace, identifier)));
         Expression superClassDeclaration = builder.sequence(whitespaceSeparator, extendsKeyword, whitespaceSeparator, identifier);
         Expression superTypesDeclaration = builder.sequence(whitespaceSeparator, extendsKeyword, whitespaceSeparator, identifierList);
         Expression implementsDeclaration = builder.sequence(whitespaceSeparator, implementsKeyword, whitespaceSeparator, identifierList);
 
         Expression fieldModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(privateKeyword, finalKeyword), whitespaceSeparator));
         Expression fieldDeclaration = builder.sequence(fieldModifiers, identifier, whitespaceSeparator, identifier, optionalWhitespace, semiColon);
-        Expression fieldDeclarations = builder.zeroOrMore(builder.sequence(fieldDeclaration, optionalWhitespace));
-        Expression typeBody = builder.sequence(leftCurly, optionalWhitespace, fieldDeclarations, rightCurly);
+
+        Expression methodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
+        Expression methodDeclaration = builder.sequence(methodModifiers, builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, rightParen, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+
+        Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, methodDeclaration), optionalWhitespace));
+
+        Expression typeBody = builder.sequence(leftCurly, optionalWhitespace, classMembers, rightCurly);
 
         Expression classModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, abstractKeyword), whitespaceSeparator));
         Expression classDeclaration = builder.sequence(classModifiers, classKeyword, whitespaceSeparator, identifier, builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, typeBody);
@@ -99,6 +112,8 @@ public class JavaParser {
                     token = JavaToken.Whitespace;
                 } else if (keywords.contains(expression)){
                     token = JavaToken.Keyword;
+                } else if (expression == identifier || expression == qualified){
+                    token = JavaToken.Identifier;
                 } else {
                     token = JavaToken.Punctuation;
                 }

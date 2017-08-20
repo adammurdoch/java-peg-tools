@@ -48,8 +48,8 @@ class JavaParserTest extends Specification {
         expect:
         parse("import thing; class Thing { }") == ["import", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
         parse("import a.b.c; class Thing { }") == ["import", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parse("import a.b.c.*; class Thing { }") == ["import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
-        parse("import thing; import a.b; import a.b.c.*; class Thing { }") == ["import", " ", "thing", ";", " ", "import", " ", "a.b", ";", " ", "import", " ", "a.b.c.*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import a.b.c.*; class Thing { }") == ["import", " ", "a.b.c", ".", "*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
+        parse("import thing; import a.b; import a.b.c.*; class Thing { }") == ["import", " ", "thing", ";", " ", "import", " ", "a.b", ";", " ", "import", " ", "a.b.c", ".", "*", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
     }
 
     def "can parse line comments"() {
@@ -84,6 +84,8 @@ class Y{} /* comment //
         parse("class X{String x;}") == ["class", " ", "X", "{", "String", " ", "x", ";", "}"]
         parse("class X{final String abc;}") == ["class", " ", "X", "{", "final", " ", "String", " ", "abc", ";", "}"]
         parse("class X{private final String x;}") == ["class", " ", "X", "{", "private", " ", "final", " ", "String", " ", "x", ";", "}"]
+        parse("class X{String x;String y;}") == ["class", " ", "X", "{", "String", " ", "x", ";", "String", " ", "y", ";", "}"]
+
         parse("""class X{
 String abc;
 final Long xyz;
@@ -94,6 +96,21 @@ int d;
 // ignore
    ;
    }""") == ["class", " ", "X", "{", "String", "   ", "/* */", "\n   ", "x", "\n", "// ignore\n", "   ", ";", "\n   ", "}"]
+    }
+
+    def "can parse method declarations"() {
+        expect:
+        parse("class X{void x(){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", ")", "{", "}", "}"]
+        parse("class X{String x(){}}") == ["class", " ", "X", "{", "String", " ", "x", "(", ")", "{", "}", "}"]
+        parse("class X{public static String x(){}}") == ["class", " ", "X", "{", "public", " ", "static", " ", "String", " ", "x", "(", ")", "{", "}", "}"]
+
+        parse("class X{void x(){}String y(){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", ")", "{", "}", "String", " ", "y", "(", ")", "{", "}", "}"]
+
+        parse("""class X{
+public  /* */static  String  x ( ) {
+// comment
+}
+}""") == ["class", " ", "X", "{", "\n", "public", "  ", "/* */", "static", "  ", "String", "  ", "x", " ", "(", " ", ")", " ", "{", "\n", "// comment\n", "}", "\n", "}"]
     }
 
     def "stops parsing on first error"() {
@@ -116,7 +133,7 @@ int d;
 
         def r2_2 = fail("class x{12")
         r2_2.tokens == ["class", " ", "x", "{"]
-        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "final", "private", "}", {letter}'
+        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "final", "private", "public", "static", "void", "}", {letter}'
 
         def r3 = fail("class Thing extends { }")
         r3.tokens == ["class", " ", "Thing", " ", "extends", " "]
@@ -222,7 +239,7 @@ int d;
         // TODO - too many alternatives, should be '*/' only
         def r24 = fail("class X { String x; /* }")
         r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
-        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "}", {letter}'
+        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "public", "static", "void", "}", {letter}'
     }
 
     def List<String> parse(String str) {

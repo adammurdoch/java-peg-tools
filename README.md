@@ -42,4 +42,4 @@ Not even slightly complete.
 
 #### Issues
 
-- Accepts more than one `public` or `abstract` modifier on class declaration
+- Accepts duplicate modifiers on class, interface, field declarations

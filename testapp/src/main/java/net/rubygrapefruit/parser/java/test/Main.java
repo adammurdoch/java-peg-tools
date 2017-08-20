@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
@@ -51,11 +53,15 @@ public class Main {
             parser.parse(stringBuilder.toString(), new TokenVisitor<JavaToken>() {
                 @Override
                 public void token(JavaToken type, Region match) {
-                    String text = match.getText();
-                    if (text.matches("\\s+")) {
-                        System.out.print(" ");
-                    } else {
-                        System.out.print(text);
+                    switch (type) {
+                        case Whitespace:
+                            System.out.print(" ");
+                            break;
+                        case Comment:
+                            System.out.print("/*..*/");
+                            break;
+                        default:
+                            System.out.print(match.getText());
                     }
                 }
 
@@ -86,18 +92,15 @@ public class Main {
         parsed.setEditable(false);
 
         status.setFont(font);
+        status.setPreferredSize(new Dimension(150, 100));
         status.setEditable(false);
 
-        JPanel result = new JPanel();
-        result.setLayout(new BorderLayout());
-        result.add(new JScrollPane(parsed), BorderLayout.CENTER);
-        result.add(status, BorderLayout.NORTH);
-
-        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(source), result);
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(source), new JScrollPane(parsed));
         pane.setResizeWeight(0.5);
 
         JPanel root = new JPanel();
         root.setLayout(new BorderLayout());
+        root.add(status, BorderLayout.NORTH);
         root.add(pane, BorderLayout.CENTER);
 
         JFrame frame = new JFrame("Parser test");
@@ -196,6 +199,8 @@ public class Main {
         private final JTextPane status;
         private final Style plain;
         private final Style broken;
+        private final Style comment;
+        private final Style keyword;
 
         ParseLoop(ParseQueue queue, JTextPane parsed, JTextPane status) {
             this.queue = queue;
@@ -203,7 +208,13 @@ public class Main {
             this.status = status;
             plain = parsed.addStyle("plain", null);
             broken = parsed.addStyle("broken", null);
-            StyleConstants.setForeground(broken, Color.RED);
+            StyleConstants.setForeground(broken, Color.WHITE);
+            StyleConstants.setBackground(broken, Color.RED);
+            comment = parsed.addStyle("comment", null);
+            StyleConstants.setForeground(comment, new Color(160, 160, 160));
+            keyword = parsed.addStyle("keyword", null);
+            StyleConstants.setForeground(keyword, Color.BLUE);
+            StyleConstants.setBold(keyword, true);
         }
 
         @Override
@@ -225,13 +236,12 @@ public class Main {
                     try {
                         Document document = parsed.getDocument();
                         document.remove(0, document.getLength());
-                        document.insertString(0, collector.builder.toString(), plain);
-                        document.insertString(document.getLength(), collector.failureBuilder.toString(), broken);
+                        for (Span span : collector.spans) {
+                            document.insertString(document.getLength(), span.text, span.style);
+                        }
                         status.getDocument().remove(0, status.getDocument().getLength());
                         if (collector.failure != null) {
-                            status.getDocument().insertString(0, "FAILED: " + collector.failure, broken);
-                        } else {
-                            status.getDocument().insertString(0, "OK", plain);
+                            status.getDocument().insertString(0, collector.failure, plain);
                         }
                     } catch (BadLocationException e) {
                         throw new RuntimeException(e);
@@ -241,20 +251,38 @@ public class Main {
         }
 
         private class ResultCollector implements TokenVisitor<JavaToken> {
-            final StringBuilder builder = new StringBuilder();
-            final StringBuilder failureBuilder = new StringBuilder();
+            final List<Span> spans = new ArrayList<Span>();
             String failure = null;
 
             @Override
-            public void token(JavaToken expression, Region match) {
-                builder.append(match.getText());
+            public void token(JavaToken type, Region match) {
+                switch (type) {
+                    case Comment:
+                        spans.add(new Span(match.getText(), comment));
+                        break;
+                    case Keyword:
+                        spans.add(new Span(match.getText(), keyword));
+                        break;
+                    default:
+                        spans.add(new Span(match.getText(), plain));
+                }
             }
 
             @Override
             public void failed(String message, Region remainder) {
+                spans.add(new Span(remainder.getText(), broken));
                 failure = message;
-                failureBuilder.append(remainder.getText());
             }
+        }
+    }
+
+    private static class Span {
+        final String text;
+        final Style style;
+
+        public Span(String text, Style style) {
+            this.text = text;
+            this.style = style;
         }
     }
 }

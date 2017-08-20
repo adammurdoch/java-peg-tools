@@ -2,6 +2,9 @@ package net.rubygrapefruit.parser.java;
 
 import net.rubygrapefruit.parser.peg.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 /**
  * Parses Java source into a sequence of tokens.
  *
@@ -9,16 +12,20 @@ import net.rubygrapefruit.parser.peg.*;
  */
 public class JavaParser {
     private final Parser parser;
+    private final Expression starComment;
+    private final Expression lineComment;
+    private final Expression whitespace;
+    private final HashSet<Expression> keywords;
 
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
 
         Expression eol = builder.singleChar('\n');
 
-        Expression starComment = builder.sequence(builder.chars("/*"), builder.zeroOrMore(builder.sequence(builder.not(builder.chars("*/")), builder.anything())), builder.chars("*/")).group();
-        Expression lineComment = builder.sequence(builder.chars("//"), builder.zeroOrMore(builder.sequence(builder.not(eol), builder.anything())), builder.optional(eol)).group();
+        starComment = builder.sequence(builder.chars("/*"), builder.zeroOrMore(builder.sequence(builder.not(builder.chars("*/")), builder.anything())), builder.chars("*/")).group();
+        lineComment = builder.sequence(builder.chars("//"), builder.zeroOrMore(builder.sequence(builder.not(eol), builder.anything())), builder.optional(eol)).group();
 
-        Expression whitespace = builder.oneOrMore(builder.oneOf(builder.singleChar(' '), eol)).group();
+        whitespace = builder.oneOrMore(builder.oneOf(builder.singleChar(' '), eol)).group();
         Expression separator = builder.oneOf(whitespace, starComment, lineComment);
         Expression whitespaceSeparator = builder.oneOrMore(separator);
         Expression optionalWhitespace = builder.zeroOrMore(separator);
@@ -33,6 +40,7 @@ public class JavaParser {
         Expression importKeyword = builder.chars("import");
         Expression extendsKeyword = builder.chars("extends");
         Expression implementsKeyword = builder.chars("implements");
+        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword));
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
@@ -83,8 +91,18 @@ public class JavaParser {
     public <T extends TokenVisitor<JavaToken>> T parse(String input, final T visitor) {
         parser.parse(input, new TokenVisitor<Expression>(){
             @Override
-            public void token(Expression type, Region match) {
-                visitor.token(null, match);
+            public void token(Expression expression, Region match) {
+                JavaToken token;
+                if (expression == lineComment || expression == starComment) {
+                    token = JavaToken.Comment;
+                } else if (expression == whitespace) {
+                    token = JavaToken.Whitespace;
+                } else if (keywords.contains(expression)){
+                    token = JavaToken.Keyword;
+                } else {
+                    token = JavaToken.Punctuation;
+                }
+                visitor.token(token, match);
             }
 
             @Override

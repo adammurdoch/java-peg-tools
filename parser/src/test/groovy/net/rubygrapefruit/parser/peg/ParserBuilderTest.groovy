@@ -8,8 +8,9 @@ class ParserBuilderTest extends Specification {
     def builder = new ParserBuilder()
 
     def "can parse a string token"() {
-        expect:
         def expression = builder.chars("abc")
+
+        expect:
         def parser = builder.newParser(expression)
         def result = parse(parser, "abc")
         result.tokens == ["abc"]
@@ -45,21 +46,33 @@ class ParserBuilderTest extends Specification {
     }
 
     def "can parse a string token as a group"() {
+        def expression = builder.chars("abc").group()
+
         expect:
-        def parser = builder.newParser(builder.chars("abc").group())
-        tokens(parser, "abc") == ["abc"]
+        def parser = builder.newParser(expression)
+        def result = parse(parser, "abc")
+        result.tokens == ["abc"]
+        result.values == [expression]
     }
 
     def "can parse a string character"() {
+        def expression = builder.singleChar(";" as char)
+
         expect:
-        def parser = builder.newParser(builder.singleChar(";" as char))
-        tokens(parser, ";") == [";"]
+        def parser = builder.newParser(expression)
+        def result = parse(parser, ";")
+        result.tokens == [";"]
+        result.values == [expression]
     }
 
     def "can parse a string character as a group"() {
+        def expression = builder.singleChar(";" as char).group()
+
         expect:
-        def parser = builder.newParser(builder.singleChar(";" as char).group())
-        tokens(parser, ";") == [";"]
+        def parser = builder.newParser(expression)
+        def result = parse(parser, ";")
+        result.tokens == [";"]
+        result.values == [expression]
     }
 
     @Unroll
@@ -132,33 +145,51 @@ class ParserBuilderTest extends Specification {
     }
 
     def "can parse a sequence of tokens"() {
-        expect:
-        def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
-        tokens(parser, "abc123") == ["abc", "123"]
-    }
-
-    def "can parse a sequence of tokens as a group"() {
-        expect:
-        def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")).group())
-        tokens(parser, "abc123") == ["abc123"]
-    }
-
-    def "can parse a sequence of sequence expressions"() {
-        def e1 = builder.sequence(builder.chars("{"), builder.chars("123"), builder.chars("}"))
-        def e2 = builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))
+        def e1 = builder.chars("abc")
+        def e2 = builder.chars("123")
 
         expect:
         def parser = builder.newParser(builder.sequence(e1, e2))
-        tokens(parser, "{123}{abc}") == ["{", "123", "}", "{", "abc", "}"]
+        def result = parse(parser, "abc123")
+        result.tokens == ["abc", "123"]
+        result.values == [e1, e2]
+    }
+
+    def "can parse a sequence of tokens as a group"() {
+        def expression = builder.sequence(builder.chars("abc"), builder.chars("123")).group()
+
+        expect:
+        def parser = builder.newParser(expression)
+        def result = parse(parser, "abc123")
+        result.tokens == ["abc123"]
+        result.values == [expression]
+    }
+
+    def "can parse a sequence of sequence expressions"() {
+        def t1 = builder.chars("{")
+        def t2 = builder.chars("}")
+        def t3 = builder.chars("123")
+        def t4 = builder.chars("abc")
+        def e1 = builder.sequence(t1, t3, t2)
+        def e2 = builder.sequence(t1, t4, t2)
+
+        expect:
+        def parser = builder.newParser(builder.sequence(e1, e2))
+        def result = parse(parser, "{123}{abc}")
+        result.tokens == ["{", "123", "}", "{", "abc", "}"]
+        result.values == [t1, t3, t2, t1, t4, t2]
     }
 
     def "can parse a sequence of sequence expressions as a group"() {
         def e1 = builder.sequence(builder.chars("{"), builder.chars("123"), builder.chars("}"))
         def e2 = builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))
+        def expression = builder.sequence(e1, e2).group()
 
         expect:
-        def parser = builder.newParser(builder.sequence(e1, e2).group())
-        tokens(parser, "{123}{abc}") == ["{123}{abc}"]
+        def parser = builder.newParser(expression)
+        def result = parse(parser, "{123}{abc}")
+        result.tokens == ["{123}{abc}"]
+        result.values == [expression]
     }
 
     @Unroll
@@ -203,10 +234,18 @@ class ParserBuilderTest extends Specification {
     }
 
     def "can parse optional token"() {
+        def expression = builder.chars("abc")
+
         expect:
-        def parser = builder.newParser(builder.optional(builder.chars("abc")))
-        tokens(parser, "abc") == ["abc"]
-        tokens(parser, "") == []
+        def parser = builder.newParser(builder.optional(expression))
+
+        def result = parse(parser, "abc")
+        result.tokens == ["abc"]
+        result.values == [expression]
+
+        def result2 = parse(parser, "")
+        result2.tokens == []
+        result2.values == []
     }
 
     def "can parse optional token as a group"() {

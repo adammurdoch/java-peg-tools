@@ -218,6 +218,11 @@ int d;
         def r23 = fail("class X { String; }")
         r23.result == ["class", " ", "X", " ", "{", " ", "String"]
         r23.failure == 'stopped at offset 16: [; }]\nexpected: "\n", " ", "/*", "//", {letter}'
+
+        // TODO - too many alternatives, should be '*/' only
+        def r24 = fail("class X { String x; /* }")
+        r24.result == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
+        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "}", {letter}'
     }
 
     def List<String> parse(String str) {

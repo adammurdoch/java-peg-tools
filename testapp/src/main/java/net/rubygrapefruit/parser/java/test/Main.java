@@ -24,8 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        if (args.length == 1 && args[0].equals("--gui")) {
-            showGui();
+        if (args.length >= 1 && args[0].equals("--gui")) {
+            showGui(args);
         } else {
             parseFiles(args);
         }
@@ -69,12 +69,13 @@ public class Main {
         }
     }
 
-    private static void showGui() {
+    private static void showGui(String[] args) throws IOException {
         final Executor executor = Executors.newSingleThreadExecutor();
         ParseQueue queue = new ParseQueue();
 
-        final JTextPane source = new JTextPane();
-        final JTextPane parsed = new JTextPane();
+        JTextPane source = new JTextPane();
+        JTextPane parsed = new JTextPane();
+        JTextPane status = new JTextPane();
 
         Font font = new Font(Font.MONOSPACED, Font.PLAIN, 14);
         source.setFont(font);
@@ -82,9 +83,16 @@ public class Main {
 
         parsed.setFont(font);
         parsed.setEditable(false);
-        executor.execute(new ParseLoop(queue, parsed));
 
-        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(source), new JScrollPane(parsed));
+        status.setFont(font);
+        status.setEditable(false);
+
+        JPanel result = new JPanel();
+        result.setLayout(new BorderLayout());
+        result.add(new JScrollPane(parsed), BorderLayout.CENTER);
+        result.add(status, BorderLayout.NORTH);
+
+        JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(source), result);
         pane.setResizeWeight(0.5);
 
         JPanel root = new JPanel();
@@ -96,6 +104,24 @@ public class Main {
         frame.setSize(1000, 800);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        executor.execute(new ParseLoop(queue, parsed, status));
+
+        if (args.length >= 2) {
+            File file = new File(args[1]);
+            StringBuilder builder = new StringBuilder((int) file.length());
+            char[] buffer = new char[1024];
+            FileReader reader = new FileReader(file);
+            while (true) {
+                int nread = reader.read(buffer);
+                if (nread < 0) {
+                    break;
+                }
+                builder.append(buffer, 0, nread);
+            }
+            String str = builder.toString();
+            source.setText(str);
+        }
     }
 
     private static class ParseQueue {
@@ -166,12 +192,14 @@ public class Main {
         private final JavaParser javaParser = new JavaParser();
         private final ParseQueue queue;
         private final JTextPane parsed;
+        private final JTextPane status;
         private final Style plain;
         private final Style broken;
 
-        ParseLoop(ParseQueue queue, JTextPane parsed) {
+        ParseLoop(ParseQueue queue, JTextPane parsed, JTextPane status) {
             this.queue = queue;
             this.parsed = parsed;
+            this.status = status;
             plain = parsed.addStyle("plain", null);
             broken = parsed.addStyle("broken", null);
             StyleConstants.setForeground(broken, Color.RED);
@@ -197,9 +225,12 @@ public class Main {
                         Document document = parsed.getDocument();
                         document.remove(0, document.getLength());
                         document.insertString(0, collector.builder.toString(), plain);
+                        document.insertString(document.getLength(), collector.failureBuilder.toString(), broken);
+                        status.getDocument().remove(0, status.getDocument().getLength());
                         if (collector.failure != null) {
-                            document.insertString(document.getEndPosition().getOffset() - 1, "\n\nFAILED: " + collector.failure,
-                                    broken);
+                            status.getDocument().insertString(0, "FAILED: " + collector.failure, broken);
+                        } else {
+                            status.getDocument().insertString(0, "OK", plain);
                         }
                     } catch (BadLocationException e) {
                         throw new RuntimeException(e);
@@ -210,6 +241,7 @@ public class Main {
 
         private class ResultCollector implements TokenVisitor {
             final StringBuilder builder = new StringBuilder();
+            final StringBuilder failureBuilder = new StringBuilder();
             String failure = null;
 
             @Override
@@ -220,6 +252,7 @@ public class Main {
             @Override
             public void failed(String message, Region remainder) {
                 failure = message;
+                failureBuilder.append(remainder.getText());
             }
         }
     }

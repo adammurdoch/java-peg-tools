@@ -17,7 +17,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.chars("abc"))
         def result = fail(parser, "abc123")
-        result.result == ["abc"]
+        result.tokens == ["abc"]
         result.failure == "extra input at offset 3: [123]"
     }
 
@@ -26,7 +26,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.chars("abc"))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -64,7 +64,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.singleChar("x" as char))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -94,7 +94,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.letter())
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -124,7 +124,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.anything())
         def result = fail(parser, "")
-        result.result == []
+        result.tokens == []
         result.failure == "stopped at offset 0: end of input\nexpected: anything"
     }
 
@@ -163,7 +163,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.chars("abc"), builder.chars("123")))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -184,7 +184,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(e1, e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -225,7 +225,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.optional(builder.sequence(builder.chars("abc"), builder.chars("1"))))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -255,7 +255,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -279,7 +279,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.optional(e1), builder.optional(e2), builder.chars(";")))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -308,7 +308,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.optional(e1), e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -361,7 +361,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.zeroOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -399,7 +399,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.zeroOrMore(e1), e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -428,7 +428,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.zeroOrMore(e1).group(), e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -474,7 +474,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -568,7 +568,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.oneOf(e1, e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -594,7 +594,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.oneOf(e1, e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -675,7 +675,7 @@ class ParserBuilderTest extends Specification {
         expect:
         def parser = builder.newParser(builder.sequence(builder.not(e1), e2))
         def result = fail(parser, input)
-        result.result == tokens
+        result.tokens == tokens
         result.failure == message
 
         where:
@@ -693,7 +693,7 @@ class ParserBuilderTest extends Specification {
     def List<String> parse(Parser parser, String str) {
         def visitor = parser.parse(str, new CollectingVisitor())
         assert visitor.failure == null
-        return visitor.result
+        return visitor.tokens
     }
 
     def CollectingVisitor fail(Parser parser, String str) {

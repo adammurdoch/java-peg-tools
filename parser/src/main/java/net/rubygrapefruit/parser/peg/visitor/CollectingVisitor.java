@@ -6,12 +6,17 @@ import net.rubygrapefruit.parser.peg.TokenVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CollectingVisitor implements TokenVisitor {
-    private final List<String> result = new ArrayList<String>();
+public class CollectingVisitor<T> implements TokenVisitor<T> {
+    private final List<String> tokens = new ArrayList<String>();
+    private final List<T> values = new ArrayList<T>();
     private String failure;
 
-    public List<String> getResult() {
-        return result;
+    public List<String> getTokens() {
+        return tokens;
+    }
+
+    public List<T> getValues() {
+        return values;
     }
 
     public String getFailure() {
@@ -19,8 +24,9 @@ public class CollectingVisitor implements TokenVisitor {
     }
 
     @Override
-    public void token(Region match) {
-        result.add(match.getText());
+    public void token(T value, Region match) {
+        values.add(value);
+        tokens.add(match.getText());
     }
 
     @Override

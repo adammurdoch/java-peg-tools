@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.java.test;
 
 import net.rubygrapefruit.parser.java.JavaParser;
+import net.rubygrapefruit.parser.java.JavaToken;
 import net.rubygrapefruit.parser.peg.Region;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
@@ -47,9 +48,9 @@ public class Main {
                 }
                 stringBuilder.append(chars, 0, nread);
             }
-            parser.parse(stringBuilder.toString(), new TokenVisitor() {
+            parser.parse(stringBuilder.toString(), new TokenVisitor<JavaToken>() {
                 @Override
-                public void token(Region match) {
+                public void token(JavaToken type, Region match) {
                     String text = match.getText();
                     if (text.matches("\\s+")) {
                         System.out.print(" ");
@@ -239,13 +240,13 @@ public class Main {
             });
         }
 
-        private class ResultCollector implements TokenVisitor {
+        private class ResultCollector implements TokenVisitor<JavaToken> {
             final StringBuilder builder = new StringBuilder();
             final StringBuilder failureBuilder = new StringBuilder();
             String failure = null;
 
             @Override
-            public void token(Region match) {
+            public void token(JavaToken expression, Region match) {
                 builder.append(match.getText());
             }
 

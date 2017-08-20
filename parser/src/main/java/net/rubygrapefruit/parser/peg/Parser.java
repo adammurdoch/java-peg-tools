@@ -7,11 +7,11 @@ package net.rubygrapefruit.parser.peg;
  */
 public interface Parser {
     /**
-     * Parses as much of the given string as possible.
+     * Parses as much of the given string as possible, forwarding the results to the given visitor.
      *
      * @param input The string to parse.
      * @param visitor The visitor to receive the results.
      * @return the visitor.
      */
-    <T extends TokenVisitor> T parse(String input, T visitor);
+    <T extends TokenVisitor<Expression>> T parse(String input, T visitor);
 }

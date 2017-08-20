@@ -1,5 +1,6 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
@@ -14,11 +15,11 @@ public class DefaultParser implements Parser {
     }
 
     @Override
-    public <T extends TokenVisitor> T parse(String input, final T visitor) {
+    public <T extends TokenVisitor<Expression>> T parse(String input, final T visitor) {
         final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
             @Override
             public void token(TextRegion token) {
-                visitor.token(token);
+                visitor.token(null, token);
             }
         });
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);

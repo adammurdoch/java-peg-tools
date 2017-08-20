@@ -99,134 +99,134 @@ int d;
     def "stops parsing on first error"() {
         expect:
         def r0 = fail("")
-        r0.result == []
+        r0.tokens == []
         r0.failure == 'stopped at offset 0: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
 
         def r1 = fail(" Thing { }")
-        r1.result == [" "]
+        r1.tokens == [" "]
         r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
 
         def r2 = fail("class x")
-        r2.result == ["class", " ", "x"]
+        r2.tokens == ["class", " ", "x"]
         r2.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "{", {letter}'
 
         def r2_1 = fail("class x ")
-        r2_1.result == ["class", " ", "x", " "]
+        r2_1.tokens == ["class", " ", "x", " "]
         r2_1.failure == 'stopped at offset 8: end of input\nexpected: "\n", " ", "/*", "//", "extends", "implements", "{"'
 
         def r2_2 = fail("class x{12")
-        r2_2.result == ["class", " ", "x", "{"]
+        r2_2.tokens == ["class", " ", "x", "{"]
         r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "final", "private", "}", {letter}'
 
         def r3 = fail("class Thing extends { }")
-        r3.result == ["class", " ", "Thing", " ", "extends", " "]
+        r3.tokens == ["class", " ", "Thing", " ", "extends", " "]
         r3.failure == 'stopped at offset 20: [{ }]\nexpected: "\n", " ", "/*", "//", {letter}'
 
         def r3_1 = fail("class Thing implements { }")
-        r3_1.result == ["class", " ", "Thing", " ", "implements", " "]
+        r3_1.tokens == ["class", " ", "Thing", " ", "implements", " "]
         r3_1.failure == 'stopped at offset 23: [{ }]\nexpected: "\n", " ", "/*", "//", {letter}'
 
         def r4 = fail("class Thing implements A extends B { }")
-        r4.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        r4.tokens == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
         r4.failure == 'stopped at offset 25: [extends B { }]\nexpected: "\n", " ", ",", "/*", "//", "{"'
 
         def r5 = fail("class Thing implements A implements B { }")
-        r5.result == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
+        r5.tokens == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
         r5.failure == 'stopped at offset 25: [implements B { }]\nexpected: "\n", " ", ",", "/*", "//", "{"'
 
         def r6 = fail("class Thing extends A, B { }")
-        r6.result == ["class", " ", "Thing", " ", "extends", " ", "A"]
+        r6.tokens == ["class", " ", "Thing", " ", "extends", " ", "A"]
         r6.failure == 'stopped at offset 21: [, B { }]\nexpected: "\n", " ", "/*", "//", "{", {letter}'
 
         // TODO - should really complain that interface can't be abstract
         // TODO - shouldn't offer abstract as an alternative
         def r7 = fail("abstract interface Thing extends { }")
-        r7.result == ["abstract", " "]
+        r7.tokens == ["abstract", " "]
         r7.failure == 'stopped at offset 9: [interface Thing exte]\nexpected: "abstract", "class", "public"'
 
         def r8 = fail("interface Thing implements A { }")
-        r8.result == ["interface", " ", "Thing", " "]
+        r8.tokens == ["interface", " ", "Thing", " "]
         r8.failure == 'stopped at offset 16: [implements A { }]\nexpected: "\n", " ", "/*", "//", "extends", "{"'
 
         def r9 = fail("x")
-        r9.result == []
+        r9.tokens == []
         r9.failure == 'stopped at offset 0: [x]\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
 
         // TODO - 'a.b' and '.' should be in same token
         def r10 = fail("package a.b.{")
-        r10.result == ["package", " ", "a.b", "."]
+        r10.tokens == ["package", " ", "a.b", "."]
         r10.failure == 'stopped at offset 12: [{]\nexpected: {letter}'
 
         def r11 = fail("package a.b import c.d")
-        r11.result == ["package", " ", "a.b", " "]
+        r11.tokens == ["package", " ", "a.b", " "]
         r11.failure == 'stopped at offset 12: [import c.d]\nexpected: "\n", " ", "/*", "//", ";"'
 
         def r12 = fail("package a.b; import a.b{}")
-        r12.result == ["package", " ", "a.b", ";", " ", "import", " ", "a.b"]
+        r12.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b"]
         r12.failure == 'stopped at offset 23: [{}]\nexpected: "\n", " ", ".", "/*", "//", ";"'
 
         // TODO - 'a.b' and '.' should be same token
         // TODO missing '*' alternative
         def r13 = fail("package a.b; import a.b.%; class Thing { }")
-        r13.result == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
+        r13.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
         r13.failure == 'stopped at offset 24: [%; class Thing { }]\nexpected: {letter}'
 
         // TODO - not quite right, should complain about an unexpected identifier
         def r14 = fail("packageimportclass")
-        r14.result == ["package"]
+        r14.tokens == ["package"]
         r14.failure == 'stopped at offset 7: [importclass]\nexpected: "\n", " ", "/*", "//"'
 
         // TODO - should complain about 'import' keyword instead of accepting it
         def r15 = fail("package import a;")
-        r15.result == ["package", " ", "import", " "]
+        r15.tokens == ["package", " ", "import", " "]
         r15.failure == 'stopped at offset 15: [a;]\nexpected: "\n", " ", "/*", "//", ";"'
 
         // TODO - missing '.' as an alternative
         def r16 = fail("package a")
-        r16.result == ["package", " ", "a"]
+        r16.tokens == ["package", " ", "a"]
         r16.failure == 'stopped at offset 9: end of input\nexpected: "\n", " ", "/*", "//", ";", {letter}'
 
         // TODO - missing {letter} as an alternative
         def r17 = fail("package a.b")
-        r17.result == ["package", " ", "a.b"]
+        r17.tokens == ["package", " ", "a.b"]
         r17.failure == 'stopped at offset 11: end of input\nexpected: "\n", " ", ".", "/*", "//", ";"'
 
         // TODO - missing '*' as an alternative
         def r18 = fail("import a.")
-        r18.result == ["import", " ", "a", "."]
+        r18.tokens == ["import", " ", "a", "."]
         r18.failure == 'stopped at offset 9: end of input\nexpected: {letter}'
 
         def r19 = fail("import a; ")
-        r19.result == ["import", " ", "a", ";", " "]
+        r19.tokens == ["import", " ", "a", ";", " "]
         r19.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "import", "interface", "public"'
 
         // TODO - missing 'public' as an alternative
         def r20 = fail("public ")
-        r20.result == ["public", " "]
+        r20.tokens == ["public", " "]
         r20.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "interface", "public"'
 
         // TODO - too many alternatives, should be '\n' only
         def r21 = fail("// abc")
-        r21.result == ["// abc"]
+        r21.tokens == ["// abc"]
         r21.failure == 'stopped at offset 6: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
 
         // TODO - expectation should be something like 'anything up to */'
         def r22 = fail("/* abc")
-        r22.result == ["/* abc"]
+        r22.tokens == ["/* abc"]
         r22.failure == 'stopped at offset 6: end of input\nexpected: "*/", anything'
 
         def r23 = fail("class X { String; }")
-        r23.result == ["class", " ", "X", " ", "{", " ", "String"]
+        r23.tokens == ["class", " ", "X", " ", "{", " ", "String"]
         r23.failure == 'stopped at offset 16: [; }]\nexpected: "\n", " ", "/*", "//", {letter}'
 
         // TODO - too many alternatives, should be '*/' only
         def r24 = fail("class X { String x; /* }")
-        r24.result == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
+        r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
         r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "}", {letter}'
     }
 
     def List<String> parse(String str) {
-        return parser.parse(str, new CollectingVisitor()).result
+        return parser.parse(str, new CollectingVisitor()).tokens
     }
 
     def CollectingVisitor fail(String str) {

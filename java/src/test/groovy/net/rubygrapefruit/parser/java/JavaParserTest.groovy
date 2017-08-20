@@ -37,7 +37,7 @@ class JavaParserTest extends Specification {
         parse("interface Thing extends A,B{ }") == ["interface", " ", "Thing", " ", "extends", " ", "A", ",", "B", "{", " ", "}"]
     }
 
-    def "can parse optional package declaration"() {
+    def "can parse optional package statement"() {
         expect:
         parse("package thing; class Thing { }") == ["package", " ", "thing", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
         parse("package a.b.c; class Thing { }") == ["package", " ", "a.b.c", ";", " ", "class", " ", "Thing", " ", "{", " ", "}"]
@@ -79,6 +79,23 @@ class Y{} /* comment //
         parse("class/*  */Y/*  */extends/* */B/* */{/* */}") == ["class", "/*  */", "Y", "/*  */", "extends", "/* */", "B", "/* */", "{", "/* */", "}"]
     }
 
+    def "can parse field declarations"() {
+        expect:
+        parse("class X{String x;}") == ["class", " ", "X", "{", "String", " ", "x", ";", "}"]
+        parse("class X{final String abc;}") == ["class", " ", "X", "{", "final", " ", "String", " ", "abc", ";", "}"]
+        parse("class X{private final String x;}") == ["class", " ", "X", "{", "private", " ", "final", " ", "String", " ", "x", ";", "}"]
+        parse("""class X{
+String abc;
+final Long xyz;
+int d;
+}""") == ["class", " ", "X", "{", "\n", "String", " ", "abc", ";", "\n", "final", " ", "Long", " ", "xyz", ";", "\n", "int", " ", "d", ";", "\n", "}"]
+        parse("""class X{String   /* */
+   x
+// ignore
+   ;
+   }""") == ["class", " ", "X", "{", "String", "   ", "/* */", "\n   ", "x", "\n", "// ignore\n", "   ", ";", "\n   ", "}"]
+    }
+
     def "stops parsing on first error"() {
         expect:
         def r0 = fail("")
@@ -96,6 +113,10 @@ class Y{} /* comment //
         def r2_1 = fail("class x ")
         r2_1.result == ["class", " ", "x", " "]
         r2_1.failure == 'stopped at offset 8: end of input\nexpected: "\n", " ", "/*", "//", "extends", "implements", "{"'
+
+        def r2_2 = fail("class x{12")
+        r2_2.result == ["class", " ", "x", "{"]
+        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "final", "private", "}", {letter}'
 
         def r3 = fail("class Thing extends { }")
         r3.result == ["class", " ", "Thing", " ", "extends", " "]
@@ -193,6 +214,10 @@ class Y{} /* comment //
         def r22 = fail("/* abc")
         r22.result == ["/* abc"]
         r22.failure == 'stopped at offset 6: end of input\nexpected: "*/", anything'
+
+        def r23 = fail("class X { String; }")
+        r23.result == ["class", " ", "X", " ", "{", " ", "String"]
+        r23.failure == 'stopped at offset 16: [; }]\nexpected: "\n", " ", "/*", "//", {letter}'
     }
 
     def List<String> parse(String str) {

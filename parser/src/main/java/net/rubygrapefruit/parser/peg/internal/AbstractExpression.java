@@ -25,7 +25,7 @@ public abstract class AbstractExpression implements Expression, MatchExpression 
         }
 
         @Override
-        public void token(TextRegion token) {
+        public void token(MatchResult token) {
             collector.token(token);
         }
     }

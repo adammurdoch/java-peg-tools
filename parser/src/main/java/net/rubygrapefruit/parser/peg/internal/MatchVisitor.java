@@ -5,7 +5,7 @@ public interface MatchVisitor extends TokenCollector {
      * Records a match. All calls made up to the last {@link #matched(CharStream)} call are considered part of the result. All calls made up to {@link #stoppedAt(CharStream, MatchPoint)} are considered potential candidates.
      */
     @Override
-    void token(TextRegion token);
+    void token(MatchResult token);
 
     /**
      * Accepts all input up to the given position. May be called zero or more times.

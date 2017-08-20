@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BatchingMatchVisitor implements MatchVisitor {
-    private List<TextRegion> tokens;
-    private List<TextRegion> partialTokens;
+    private List<MatchResult> tokens;
+    private List<MatchResult> partialTokens;
     private CharStream matchEnd;
     private CharStream stoppedAt;
     private MatchPoint matchPoint;
 
     @Override
-    public void token(TextRegion token) {
+    public void token(MatchResult token) {
         if (partialTokens == null) {
-            partialTokens = new ArrayList<TextRegion>();
+            partialTokens = new ArrayList<MatchResult>();
         }
         partialTokens.add(token);
     }
@@ -36,7 +36,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
         stoppedAt = endPos;
         if (partialTokens != null && !partialTokens.isEmpty()) {
             if (tokens == null) {
-                tokens = new ArrayList<TextRegion>(partialTokens.size());
+                tokens = new ArrayList<MatchResult>(partialTokens.size());
             }
             tokens.addAll(partialTokens);
             partialTokens.clear();
@@ -57,7 +57,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No matches");
         }
         if (tokens != null) {
-            for (TextRegion token : tokens) {
+            for (MatchResult token : tokens) {
                 collector.token(token);
             }
             tokens.clear();
@@ -71,7 +71,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (partialTokens != null) {
-            for (TextRegion token : partialTokens) {
+            for (MatchResult token : partialTokens) {
                 collector.token(token);
             }
             partialTokens.clear();
@@ -93,14 +93,14 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No matches");
         }
         if (tokens != null) {
-            for (TextRegion token : tokens) {
+            for (MatchResult token : tokens) {
                 visitor.token(token);
             }
             tokens.clear();
         }
         visitor.matched(matchEnd);
         if (partialTokens != null) {
-            for (TextRegion token : partialTokens) {
+            for (MatchResult token : partialTokens) {
                 visitor.token(token);
             }
             partialTokens.clear();
@@ -116,13 +116,13 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (tokens != null) {
-            for (TextRegion token : tokens) {
+            for (MatchResult token : tokens) {
                 collector.token(token);
             }
             tokens.clear();
         }
         if (partialTokens != null) {
-            for (TextRegion token : partialTokens) {
+            for (MatchResult token : partialTokens) {
                 collector.token(token);
             }
             partialTokens.clear();
@@ -136,13 +136,13 @@ public class BatchingMatchVisitor implements MatchVisitor {
             throw new IllegalStateException("No stop position");
         }
         if (tokens != null) {
-            for (TextRegion token : tokens) {
+            for (MatchResult token : tokens) {
                 visitor.token(token);
             }
             tokens.clear();
         }
         if (partialTokens != null) {
-            for (TextRegion token : partialTokens) {
+            for (MatchResult token : partialTokens) {
                 visitor.token(token);
             }
             partialTokens.clear();

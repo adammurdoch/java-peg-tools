@@ -4,5 +4,5 @@ public interface TokenCollector {
     /**
      * Called when a matcher accepts some text.
      */
-    void token(TextRegion token);
+    void token(MatchResult token);
 }

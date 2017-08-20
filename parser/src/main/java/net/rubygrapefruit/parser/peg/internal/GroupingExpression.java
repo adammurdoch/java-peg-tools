@@ -38,20 +38,22 @@ public class GroupingExpression implements Expression, MatchExpression {
 
     @Override
     public ResultCollector collector(TokenCollector collector) {
-        return new TokenMergingMatchVisitor(collector);
+        return new TokenMergingMatchVisitor(this, collector);
     }
 
     private static class TokenMergingMatchVisitor implements ResultCollector {
+        private GroupingExpression expression;
         private final TokenCollector collector;
-        CharStream start;
-        CharStream end;
+        private CharStream start;
+        private CharStream end;
 
-        TokenMergingMatchVisitor(TokenCollector collector) {
+        TokenMergingMatchVisitor(GroupingExpression expression, TokenCollector collector) {
+            this.expression = expression;
             this.collector = collector;
         }
 
         @Override
-        public void token(TextRegion token) {
+        public void token(MatchResult token) {
             if (this.start == null) {
                 this.start = token.start;
             }
@@ -61,7 +63,7 @@ public class GroupingExpression implements Expression, MatchExpression {
         @Override
         public void done() {
             if (start != null) {
-                collector.token(new TextRegion(start, end));
+                collector.token(new MatchResult(expression, start, end));
                 start = null;
             }
         }

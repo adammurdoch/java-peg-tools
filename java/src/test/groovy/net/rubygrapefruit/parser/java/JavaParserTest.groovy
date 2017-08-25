@@ -111,6 +111,10 @@ public  /* */static  String  x ( ) {
 // comment
 }
 }""") == ["class", " ", "X", "{", "\n", "public", "  ", "/* */", "static", "  ", "String", "  ", "x", " ", "(", " ", ")", " ", "{", "\n", "// comment\n", "}", "\n", "}"]
+
+        parse("class X{void x(String s){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", "String", " ", "s", ")", "{", "}", "}"]
+        parse("class X{void x(String abc,long y,int xyz){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", "String", " ", "abc", ",", "long", " ", "y", ",", "int", " ", "xyz", ")", "{", "}", "}"]
+        parse("class X{void x( String/* */abc  , long  y  , int xyz ){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", " ", "String", "/* */", "abc", "  ", ",", " ", "long", "  ", "y", "  ", ",", " ", "int", " ", "xyz", " ", ")", "{", "}", "}"]
     }
 
     def "can parse interface method declarations"() {
@@ -123,6 +127,9 @@ public  /* */static  String  x ( ) {
 /* */String  x ( ) ;
 // comment
 }""") == ["interface", " ", "X", "{", "\n", "/* */", "String", "  ", "x", " ", "(", " ", ")", " ", ";", "\n", "// comment\n", "}"]
+
+        parse("interface X{void x(int abc);}") == ["interface", " ", "X", "{", "void", " ", "x", "(", "int", " ", "abc", ")", ";", "}"]
+        parse("interface X{void x(int abc,String c);}") == ["interface", " ", "X", "{", "void", " ", "x", "(", "int", " ", "abc", ",", "String", " ", "c", ")", ";", "}"]
     }
 
     def "stops parsing on first error"() {
@@ -229,7 +236,7 @@ public  /* */static  String  x ( ) {
         r19.tokens == ["import", " ", "a", ";", " "]
         r19.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "import", "interface", "public"'
 
-        // TODO - missing 'public' as an alternative
+        // TODO - shouldn't offer 'public' as an alternative
         def r20 = fail("public ")
         r20.tokens == ["public", " "]
         r20.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "interface", "public"'
@@ -260,6 +267,16 @@ public  /* */static  String  x ( ) {
         def r27 = fail("interface X { String x() { } }")
         r27.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")", " "]
         r27.failure == 'stopped at offset 25: [{ } }]\nexpected: "\n", " ", "/*", "//", ";"'
+
+        // TODO - missing ',' and separator as alternatives
+        def r28 = fail("interface X { String x(int a}")
+        r28.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a"]
+        r28.failure == 'stopped at offset 28: [}]\nexpected: ")", {letter}'
+
+        // TODO - missing letter and separator as alternatives
+        def r29 = fail("interface X { String x(int a,int b}")
+        r29.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a", ",", "int", " ", "b"]
+        r29.failure == 'stopped at offset 34: [}]\nexpected: ")", ","'
     }
 
     def List<String> parse(String str) {

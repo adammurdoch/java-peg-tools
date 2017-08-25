@@ -77,8 +77,9 @@ public class JavaParser {
         Expression fieldDeclaration = builder.sequence(fieldModifiers, identifier, whitespaceSeparator, identifier, optionalWhitespace, semiColon);
 
         Expression methodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
-        Expression classMethodDeclaration = builder.sequence(methodModifiers, builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, rightParen, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
-        Expression interfaceMethodDeclaration = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, rightParen, optionalWhitespace, semiColon);
+        Expression methodSignature = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, builder.optional(builder.sequence(identifier, whitespaceSeparator, identifier, optionalWhitespace, builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier, whitespaceSeparator, identifier, optionalWhitespace)))), rightParen);
+        Expression classMethodDeclaration = builder.sequence(methodModifiers, methodSignature, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression interfaceMethodDeclaration = builder.sequence(methodSignature, optionalWhitespace, semiColon);
 
         Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, classMethodDeclaration), optionalWhitespace));
         Expression interfaceMembers = builder.zeroOrMore(builder.sequence(interfaceMethodDeclaration, optionalWhitespace));

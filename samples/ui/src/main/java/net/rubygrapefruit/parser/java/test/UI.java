@@ -168,10 +168,10 @@ public class UI {
             comment = parsed.addStyle("comment", null);
             StyleConstants.setForeground(comment, new Color(89, 136, 61));
             identifier = parsed.addStyle("identifier", null);
-            StyleConstants.setForeground(identifier, new Color(130, 100, 176));
+            StyleConstants.setForeground(identifier, new Color(120, 84, 165));
             StyleConstants.setBold(identifier, true);
             keyword = parsed.addStyle("keyword", null);
-            StyleConstants.setForeground(keyword, new Color(53, 132, 172));
+            StyleConstants.setForeground(keyword, new Color(42, 104, 136));
             StyleConstants.setBold(keyword, true);
         }
 

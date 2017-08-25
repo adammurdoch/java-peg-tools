@@ -24,6 +24,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * A very simple UI that shows syntax highlighted Java source code.
+ */
 public class UI {
     public static void main(String[] args) throws IOException {
         showGui(args);
@@ -64,7 +67,7 @@ public class UI {
 
         executor.execute(new ParseLoop(queue, parsed, status));
 
-        if (args.length >= 2) {
+        if (args.length >= 1) {
             File file = new File(args[1]);
             StringBuilder builder = new StringBuilder((int) file.length());
             char[] buffer = new char[1024];
@@ -78,6 +81,8 @@ public class UI {
             }
             String str = builder.toString();
             source.setText(str);
+        } else {
+            source.setText("package a.b.c;\n\nimport a.b.C;\n\n/**\n * A class\n */\nclass X implements Y {\n\n    // Some thing\n    private final String s;\n\n    /**\n     * Does something\n     */\n    public void m(String a) {\n    }\n}");
         }
     }
 

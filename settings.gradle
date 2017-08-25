@@ -1,1 +1,4 @@
-include 'parser', 'java', 'testapp'
+include 'parser', 'java', 'highlighter', 'ui'
+
+project(':highlighter').projectDir = file("samples/highlighter")
+project(':ui').projectDir = file("samples/ui")

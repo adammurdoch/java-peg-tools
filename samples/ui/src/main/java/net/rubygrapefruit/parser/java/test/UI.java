@@ -13,7 +13,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -25,56 +24,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Main {
+public class UI {
     public static void main(String[] args) throws IOException {
-        if (args.length >= 1 && args[0].equals("--gui")) {
-            showGui(args);
-        } else {
-            parseFiles(args);
-        }
-    }
-
-    private static void parseFiles(String[] args) throws IOException {
-        JavaParser parser = new JavaParser();
-        for (String arg : args) {
-            File file = new File(arg);
-            System.out.println("-------");
-            System.out.println("PARSING " + file.getName());
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            StringBuilder stringBuilder = new StringBuilder();
-            char[] chars = new char[4096];
-            while (true) {
-                int nread = reader.read(chars, 0, chars.length);
-                if (nread < 0) {
-                    break;
-                }
-                stringBuilder.append(chars, 0, nread);
-            }
-            parser.parse(stringBuilder.toString(), new TokenVisitor<JavaToken>() {
-                @Override
-                public void token(JavaToken type, Region match) {
-                    switch (type) {
-                        case Whitespace:
-                            System.out.print(" ");
-                            break;
-                        case Comment:
-                            System.out.print("/*..*/");
-                            break;
-                        default:
-                            System.out.print(match.getText());
-                    }
-                }
-
-                @Override
-                public void failed(String message, Region remainder) {
-                    System.out.println();
-                    System.out.println("FAILED: " + message);
-                }
-            });
-            System.out.println();
-            System.out.println("-------");
-            System.out.println();
-        }
+        showGui(args);
     }
 
     private static void showGui(String[] args) throws IOException {

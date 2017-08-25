@@ -1,0 +1,7 @@
+apply plugin: 'application'
+
+dependencies {
+    implementation project(':java')
+}
+
+mainClassName = 'net.rubygrapefruit.parser.java.test.UI'

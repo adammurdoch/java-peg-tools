@@ -43,4 +43,6 @@ Not even slightly complete.
 #### Issues
 
 - Accepts duplicate modifiers on class, interface, field declarations
+- Abstract methods
+- Static methods on interfaces, interface method modifiers
 - Tighten up rules for field and method declarations inside class and interface declarations

@@ -98,7 +98,7 @@ int d;
    }""") == ["class", " ", "X", "{", "String", "   ", "/* */", "\n   ", "x", "\n", "// ignore\n", "   ", ";", "\n   ", "}"]
     }
 
-    def "can parse method declarations"() {
+    def "can parse class method declarations"() {
         expect:
         parse("class X{void x(){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", ")", "{", "}", "}"]
         parse("class X{String x(){}}") == ["class", " ", "X", "{", "String", " ", "x", "(", ")", "{", "}", "}"]
@@ -111,6 +111,18 @@ public  /* */static  String  x ( ) {
 // comment
 }
 }""") == ["class", " ", "X", "{", "\n", "public", "  ", "/* */", "static", "  ", "String", "  ", "x", " ", "(", " ", ")", " ", "{", "\n", "// comment\n", "}", "\n", "}"]
+    }
+
+    def "can parse interface method declarations"() {
+        expect:
+        parse("interface X{void x();}") == ["interface", " ", "X", "{", "void", " ", "x", "(", ")", ";", "}"]
+        parse("interface X{String x();}") == ["interface", " ", "X", "{", "String", " ", "x", "(", ")", ";", "}"]
+        parse("interface X{void x();String y();}") == ["interface", " ", "X", "{", "void", " ", "x", "(", ")", ";", "String", " ", "y", "(", ")", ";", "}"]
+
+        parse("""interface X{
+/* */String  x ( ) ;
+// comment
+}""") == ["interface", " ", "X", "{", "\n", "/* */", "String", "  ", "x", " ", "(", " ", ")", " ", ";", "\n", "// comment\n", "}"]
     }
 
     def "stops parsing on first error"() {
@@ -240,6 +252,14 @@ public  /* */static  String  x ( ) {
         def r24 = fail("class X { String x; /* }")
         r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
         r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "public", "static", "void", "}", {letter}'
+
+        def r25 = fail("class X { String x(); }")
+        r25.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")"]
+        r25.failure == 'stopped at offset 20: [; }]\nexpected: "\n", " ", "/*", "//", "{"'
+
+        def r27 = fail("interface X { String x() { } }")
+        r27.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")", " "]
+        r27.failure == 'stopped at offset 25: [{ } }]\nexpected: "\n", " ", "/*", "//", ";"'
     }
 
     def List<String> parse(String str) {

@@ -132,6 +132,14 @@ public  /* */static  String  x ( ) {
         parse("interface X{void x(int abc,String c);}") == ["interface", " ", "X", "{", "void", " ", "x", "(", "int", " ", "abc", ",", "String", " ", "c", ")", ";", "}"]
     }
 
+    def "can parse method annotations"() {
+        expect:
+        parse("interface X{@Override void x();}") == ["interface", " ", "X", "{", "@", "Override", " ", "void", " ", "x", "(", ")", ";", "}"]
+        parse("interface X{@Override @Deprecated int x();}") == ["interface", " ", "X", "{", "@", "Override", " ", "@" , "Deprecated", " ", "int", " ", "x", "(", ")", ";", "}"]
+        parse("interface X{@Override@Deprecated int x();}") == ["interface", " ", "X", "{", "@", "Override", "@", "Deprecated", " ", "int", " ", "x", "(", ")", ";", "}"]
+        parse("interface X{  @  Override@/* */Deprecated int x();}") == ["interface", " ", "X", "{", "  ", "@", "  ", "Override", "@", "/* */", "Deprecated", " ", "int", " ", "x", "(", ")", ";", "}"]
+    }
+
     def "stops parsing on first error"() {
         expect:
         def r0 = fail("")
@@ -152,7 +160,7 @@ public  /* */static  String  x ( ) {
 
         def r2_2 = fail("class x{12")
         r2_2.tokens == ["class", " ", "x", "{"]
-        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "final", "private", "public", "static", "void", "}", {letter}'
+        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "@", "final", "private", "public", "static", "void", "}", {letter}'
 
         def r3 = fail("class Thing extends { }")
         r3.tokens == ["class", " ", "Thing", " ", "extends", " "]
@@ -255,10 +263,11 @@ public  /* */static  String  x ( ) {
         r23.tokens == ["class", " ", "X", " ", "{", " ", "String"]
         r23.failure == 'stopped at offset 16: [; }]\nexpected: "\n", " ", "/*", "//", {letter}'
 
+        // TODO - missing tokens, should have stopped at end of input
         // TODO - too many alternatives, should be '*/' only
         def r24 = fail("class X { String x; /* }")
         r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
-        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "final", "private", "public", "static", "void", "}", {letter}'
+        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "@", "final", "private", "public", "static", "void", "}", {letter}'
 
         def r25 = fail("class X { String x(); }")
         r25.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")"]
@@ -277,6 +286,15 @@ public  /* */static  String  x ( ) {
         def r29 = fail("interface X { String x(int a,int b}")
         r29.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a", ",", "int", " ", "b"]
         r29.failure == 'stopped at offset 34: [}]\nexpected: ")", ","'
+
+        def r30 = fail("interface X { @@ String x(int a,int b}")
+        r30.tokens == ["interface", " ", "X", " ", "{", " ", "@"]
+        r30.failure == 'stopped at offset 15: [@ String x(int a,int]\nexpected: "\n", " ", "/*", "//", {letter}'
+
+        // TODO - missing whitespace as an alternative, shouldn't suggest void
+        def r31 = fail("interface X { @a")
+        r31.tokens == ["interface", " ", "X", " ", "{", " ", "@", "a"]
+        r31.failure == 'stopped at offset 16: end of input\nexpected: "@", "void", {letter}'
     }
 
     def List<String> parse(String str) {

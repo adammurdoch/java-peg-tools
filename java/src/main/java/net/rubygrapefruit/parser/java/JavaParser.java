@@ -56,6 +56,7 @@ public class JavaParser {
         Expression comma = builder.singleChar(',');
         Expression leftParen = builder.singleChar('(');
         Expression rightParen = builder.singleChar(')');
+        Expression at = builder.singleChar('@');
 
         identifier = letters.group();
         qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
@@ -76,10 +77,12 @@ public class JavaParser {
         Expression fieldModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(privateKeyword, finalKeyword), whitespaceSeparator));
         Expression fieldDeclaration = builder.sequence(fieldModifiers, identifier, whitespaceSeparator, identifier, optionalWhitespace, semiColon);
 
-        Expression methodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
+        Expression annotation = builder.sequence(at, optionalWhitespace, identifier);
+        Expression annotations = builder.zeroOrMore(builder.sequence(annotation, optionalWhitespace));
+        Expression classMethodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
         Expression methodSignature = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, builder.optional(builder.sequence(identifier, whitespaceSeparator, identifier, optionalWhitespace, builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier, whitespaceSeparator, identifier, optionalWhitespace)))), rightParen);
-        Expression classMethodDeclaration = builder.sequence(methodModifiers, methodSignature, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
-        Expression interfaceMethodDeclaration = builder.sequence(methodSignature, optionalWhitespace, semiColon);
+        Expression classMethodDeclaration = builder.sequence(annotations, classMethodModifiers, methodSignature, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression interfaceMethodDeclaration = builder.sequence(annotations, methodSignature, optionalWhitespace, semiColon);
 
         Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, classMethodDeclaration), optionalWhitespace));
         Expression interfaceMembers = builder.zeroOrMore(builder.sequence(interfaceMethodDeclaration, optionalWhitespace));

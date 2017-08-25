@@ -47,7 +47,8 @@ public class JavaParser {
         Expression staticKeyword = builder.chars("static");
         Expression returnKeyword = builder.chars("return");
         Expression thisKeyword = builder.chars("this");
-        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword, voidKeyword, staticKeyword, returnKeyword, thisKeyword));
+        Expression newKeyword = builder.chars("new");
+        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword, voidKeyword, staticKeyword, returnKeyword, thisKeyword, newKeyword));
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
@@ -59,6 +60,9 @@ public class JavaParser {
         Expression leftParen = builder.singleChar('(');
         Expression rightParen = builder.singleChar(')');
         Expression at = builder.singleChar('@');
+
+        Expression literalTrue = builder.chars("true");
+        Expression literalFalse = builder.chars("false");
 
         identifier = letters.group();
         qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
@@ -79,7 +83,14 @@ public class JavaParser {
         Expression fieldModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(privateKeyword, finalKeyword), whitespaceSeparator));
         Expression fieldDeclaration = builder.sequence(fieldModifiers, identifier, whitespaceSeparator, identifier, optionalWhitespace, semiColon);
 
-        Expression statement = builder.sequence(returnKeyword, whitespaceSeparator, thisKeyword, optionalWhitespace, semiColon);
+        Expression methodParams = builder.optional(builder.sequence(identifier, optionalWhitespace,
+                builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier)), optionalWhitespace));
+
+        Expression newExpression = builder.sequence(newKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodParams, optionalWhitespace, rightParen);
+
+        Expression expression = builder.oneOf(thisKeyword, literalTrue, literalFalse, newExpression);
+
+        Expression statement = builder.sequence(returnKeyword, whitespaceSeparator, expression, optionalWhitespace, semiColon);
         Expression statements = builder.zeroOrMore(builder.sequence(statement, optionalWhitespace));
 
         Expression annotation = builder.sequence(at, optionalWhitespace, identifier);

@@ -146,6 +146,20 @@ public  /* */static  String  x ( ) {
         parse("class X{X x(){  return/* */this  ;  }}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "  ", "return", "/* */", "this", "  ", ";", "  ", "}", "}"]
     }
 
+    def "can parse boolean literal expression"() {
+        expect:
+        parse("class X{boolean x(){return true;}}") == ["class", " ", "X", "{", "boolean", " ", "x", "(", ")", "{", "return", " ", "true", ";", "}", "}"]
+        parse("class X{boolean x(){return false;}}") == ["class", " ", "X", "{", "boolean", " ", "x", "(", ")", "{", "return", " ", "false", ";", "}", "}"]
+    }
+
+    def "can parse new expression"() {
+        expect:
+        parse("class X{A x(){return new A();}}") == ["class", " ", "X", "{", "A", " ", "x", "(", ")", "{", "return", " ", "new", " ", "A", "(", ")", ";", "}", "}"]
+        parse("class X{A x(){return new A(this);}}") == ["class", " ", "X", "{", "A", " ", "x", "(", ")", "{", "return", " ", "new", " ", "A", "(", "this", ")", ";", "}", "}"]
+        parse("class X{A x(){return new A(false,true,this);}}") == ["class", " ", "X", "{", "A", " ", "x", "(", ")", "{", "return", " ", "new", " ", "A", "(", "false", ",", "true", ",", "this", ")", ";", "}", "}"]
+        parse("class X{A x(){return   new A/* */(  false ,   this/* */)  ;}}") == ["class", " ", "X", "{", "A", " ", "x", "(", ")", "{", "return", "   ", "new", " ", "A", "/* */", "(", "  ", "false", " ", ",", "   ", "this", "/* */", ")", "  ", ";", "}", "}"]
+    }
+
     def "stops parsing on first error"() {
         expect:
         def r0 = fail("")
@@ -308,11 +322,35 @@ public  /* */static  String  x ( ) {
 
         def r33 = fail("class X {String m(){return }")
         r33.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " "]
-        r33.failure == 'stopped at offset 27: [}]\nexpected: "\n", " ", "/*", "//", "this"'
+        r33.failure == 'stopped at offset 27: [}]\nexpected: "\n", " ", "/*", "//", "false", "new", "this", "true"'
 
         def r34 = fail("class X {String m(){return this}")
         r34.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "this"]
         r34.failure == 'stopped at offset 31: [}]\nexpected: "\n", " ", "/*", "//", ";"'
+
+        def r35 = fail("class X {String m(){return new}")
+        r35.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new"]
+        r35.failure == 'stopped at offset 30: [}]\nexpected: "\n", " ", "/*", "//"'
+
+        def r36 = fail("class X {String m(){return new 78}")
+        r36.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " "]
+        r36.failure == 'stopped at offset 31: [78}]\nexpected: "\n", " ", "/*", "//", {letter}'
+
+        def r37 = fail("class X {String m(){return new A(}")
+        r37.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "("]
+        r37.failure == 'stopped at offset 33: [}]\nexpected: "\n", " ", ")", "/*", "//", {letter}'
+
+        def r38 = fail("class X {String m(){return new A(a b c}")
+        r38.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", " "]
+        r38.failure == 'stopped at offset 35: [b c}]\nexpected: "\n", " ", ")", ",", "/*", "//"'
+
+        def r39 = fail("class X {String m(){return new A(a, }")
+        r39.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", ",", " "]
+        r39.failure == 'stopped at offset 36: [}]\nexpected: "\n", " ", "/*", "//", {letter}'
+
+        def r40 = fail("class X {String m(){return new A(a, b}")
+        r40.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", ",", " ", "b"]
+        r40.failure == 'stopped at offset 37: [}]\nexpected: "\n", " ", ")", ",", "/*", "//"'
     }
 
     def List<String> parse(String str) {

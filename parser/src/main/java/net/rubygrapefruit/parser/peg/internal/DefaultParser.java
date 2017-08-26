@@ -26,10 +26,11 @@ public class DefaultParser implements Parser {
         CharStream stream = new CharStream(input);
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
         resultCollector.done();
-        CharStream pos = resultVisitor.stoppedAt;
+        StreamPos pos = resultVisitor.stoppedAt;
         if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
             StringBuilder builder = new StringBuilder();
-            builder.append("stopped at ").append(pos.diagnostic());
+            stream.moveTo(pos);
+            builder.append("stopped at ").append(stream.diagnostic());
             Set<String> candidates = new TreeSet<String>();
             for (Terminal terminal : resultVisitor.matchPoint.getPrefixes()) {
                 candidates.add(terminal.getDisplayName());
@@ -46,17 +47,17 @@ public class DefaultParser implements Parser {
                     builder.append(candidate);
                 }
             }
-            visitor.failed(builder.toString(), new DefaultRegion(pos, pos.end()));
+            visitor.failed(builder.toString(), new DefaultRegion(pos, stream.end()));
         } else if (!pos.isAtEnd()) {
-            visitor.failed("extra input at " + pos.diagnostic(), new DefaultRegion(pos, pos.end()));
+            visitor.failed("extra input at " + stream.diagnostic(), new DefaultRegion(pos, stream.end()));
         }
         return visitor;
     }
 
     private static class RootExpressionVisitor implements MatchVisitor {
         private final ResultCollector resultCollector;
-        private CharStream matchEnd;
-        private CharStream stoppedAt;
+        private StreamPos matchEnd;
+        private StreamPos stoppedAt;
         private MatchPoint matchPoint;
 
         RootExpressionVisitor(ResultCollector resultCollector) {
@@ -69,13 +70,13 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        public void matched(CharStream endPos) {
+        public void matched(StreamPos endPos) {
             matchEnd = endPos;
             stoppedAt = endPos;
         }
 
         @Override
-        public void stoppedAt(CharStream stoppedAt, MatchPoint matchPoint) {
+        public void stoppedAt(StreamPos stoppedAt, MatchPoint matchPoint) {
             this.stoppedAt = stoppedAt;
             this.matchPoint = matchPoint;
         }

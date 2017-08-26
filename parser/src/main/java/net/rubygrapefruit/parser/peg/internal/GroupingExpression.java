@@ -44,8 +44,8 @@ public class GroupingExpression implements Expression, MatchExpression {
     private static class TokenMergingMatchVisitor implements ResultCollector {
         private GroupingExpression expression;
         private final TokenCollector collector;
-        private CharStream start;
-        private CharStream end;
+        private StreamPos start;
+        private StreamPos end;
 
         TokenMergingMatchVisitor(GroupingExpression expression, TokenCollector collector) {
             this.expression = expression;

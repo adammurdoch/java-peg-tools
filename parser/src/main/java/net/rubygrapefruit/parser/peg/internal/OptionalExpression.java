@@ -31,13 +31,13 @@ public class OptionalExpression extends AbstractExpression implements Matcher {
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream pos = stream.tail();
+        CharStream tail = stream.tail();
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
-        if (expression.getMatcher().consume(pos, nested)) {
+        if (expression.getMatcher().consume(tail, nested)) {
             nested.forwardAll(expression.collector(visitor), visitor);
-            stream.moveTo(pos);
+            stream.moveTo(tail);
         } else {
-            visitor.matched(stream.tail());
+            visitor.matched(stream.current());
             nested.forwardRemainder(expression.collector(visitor), visitor);
         }
         return true;

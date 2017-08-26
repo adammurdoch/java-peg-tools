@@ -33,15 +33,14 @@ public class AnythingExpression extends AbstractExpression implements Matcher, T
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        if (stream.isAtEnd()) {
-            visitor.stoppedAt(stream.tail(), this);
-            return false;
+        StreamPos start = stream.current();
+        if (stream.consumeOne()) {
+            StreamPos end = stream.current();
+            visitor.token(new MatchResult(this, start, end));
+            visitor.matched(end);
+            return true;
         }
-        CharStream start = stream.tail();
-        stream.consumeOne();
-        CharStream end = stream.tail();
-        visitor.token(new MatchResult(this, start, end));
-        visitor.matched(end);
-        return true;
+        visitor.stoppedAt(start, this);
+        return false;
     }
 }

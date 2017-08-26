@@ -43,15 +43,15 @@ public class OneOfExpression extends AbstractExpression implements Matcher, Matc
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream start = stream.tail();
-        CharStream bestPos = null;
+        StreamPos start = stream.current();
+        StreamPos bestPos = null;
         List<Candidate> candidates = new ArrayList<Candidate>(3);
         for (MatchExpression expression : expressions) {
-            CharStream pos = stream.tail();
+            CharStream tail = stream.tail();
             BatchingMatchVisitor nested = new BatchingMatchVisitor();
-            if (expression.getMatcher().consume(pos, nested)) {
+            if (expression.getMatcher().consume(tail, nested)) {
                 nested.forwardAll(expression.collector(visitor), visitor);
-                stream.moveTo(pos);
+                stream.moveTo(tail);
                 return true;
             }
             if (bestPos == null || nested.getStoppedAt().diff(bestPos) > 0) {

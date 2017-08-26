@@ -38,10 +38,9 @@ public class LetterExpression extends AbstractExpression implements Matcher, Ter
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream start = stream.tail();
-        String token = stream.consumeLetter();
-        if (token != null) {
-            CharStream end = stream.tail();
+        StreamPos start = stream.current();
+        if (stream.consumeLetter()) {
+            StreamPos end = stream.current();
             visitor.token(new MatchResult(this, start, end));
             visitor.matched(end);
             return true;

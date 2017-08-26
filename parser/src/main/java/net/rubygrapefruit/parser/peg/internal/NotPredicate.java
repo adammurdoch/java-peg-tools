@@ -49,10 +49,10 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         // TODO - use a visitor that does nothing
         if (expression.getMatcher().consume(stream.tail(), new BatchingMatchVisitor())) {
-            visitor.stoppedAt(stream.tail(), this);
+            visitor.stoppedAt(stream.current(), this);
             return false;
         } else {
-            visitor.matched(stream.tail());
+            visitor.matched(stream.current());
             return true;
         }
     }

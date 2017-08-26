@@ -6,8 +6,8 @@ import java.util.List;
 public class BatchingMatchVisitor implements MatchVisitor {
     private List<MatchResult> tokens;
     private List<MatchResult> partialTokens;
-    private CharStream matchEnd;
-    private CharStream stoppedAt;
+    private StreamPos matchEnd;
+    private StreamPos stoppedAt;
     private MatchPoint matchPoint;
 
     @Override
@@ -18,7 +18,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
         partialTokens.add(token);
     }
 
-    public CharStream getMatchEnd() {
+    public StreamPos getMatchEnd() {
         return matchEnd;
     }
 
@@ -26,12 +26,12 @@ public class BatchingMatchVisitor implements MatchVisitor {
         return matchPoint;
     }
 
-    public CharStream getStoppedAt() {
+    public StreamPos getStoppedAt() {
         return stoppedAt;
     }
 
     @Override
-    public void matched(CharStream endPos) {
+    public void matched(StreamPos endPos) {
         matchEnd = endPos;
         stoppedAt = endPos;
         if (partialTokens != null && !partialTokens.isEmpty()) {
@@ -44,7 +44,7 @@ public class BatchingMatchVisitor implements MatchVisitor {
     }
 
     @Override
-    public void stoppedAt(CharStream stoppedAt, MatchPoint matchPoint) {
+    public void stoppedAt(StreamPos stoppedAt, MatchPoint matchPoint) {
         this.stoppedAt = stoppedAt;
         this.matchPoint = matchPoint;
     }

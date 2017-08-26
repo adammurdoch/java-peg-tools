@@ -1,5 +1,8 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+/**
+ * A stream of characters with a mutable position.
+ */
 public class CharStream {
     private final String input;
     private int pos = 0;
@@ -19,10 +22,18 @@ public class CharStream {
     }
 
     /**
-     * Returns a {@link CharStream} that contains the tail of this char stream. Changes made to the other stream are not visible.
+     * Returns a {@link CharStream} that contains the tail of this char stream. Changes made to the other stream are not visible through this stream.
      */
     public CharStream tail() {
         return new CharStream(input, pos);
+    }
+
+    public StreamPos current() {
+        return new StreamPos(input, pos);
+    }
+
+    public void moveTo(StreamPos pos) {
+        this.pos = pos.getOffset();
     }
 
     public void moveTo(CharStream stream) {
@@ -43,19 +54,28 @@ public class CharStream {
     }
 
     /**
-     * Consumes up to the given delimit or the end of input. Does not consume the given string.
-     * @return The consumed chars, or null if none.
+     * Consumes a letter from the stream, if present.
+     *
+     * @return true if consumed, false if not.
      */
-    public String consumeLetter() {
+    public boolean consumeLetter() {
         if (pos >= input.length()) {
-            return null;
+            return false;
         }
         char ch = input.charAt(pos);
         if (Character.isAlphabetic(ch)) {
             pos++;
-            return Character.toString(ch);
+            return true;
         }
-        return null;
+        return false;
+    }
+
+    public boolean consumeOne() {
+        if (pos >= input.length()) {
+            return false;
+        }
+        pos++;
+        return true;
     }
 
     public String diagnostic() {
@@ -65,23 +85,11 @@ public class CharStream {
         return "offset " + pos + ": [" + input.substring(pos, Math.min(input.length(), pos + 20)) + "]";
     }
 
-    public void consumeOne() {
-        pos++;
-    }
-
     public boolean isAtEnd() {
         return pos >= input.length();
     }
 
-    public String upTo(CharStream end) {
-        return input.substring(pos, end.pos);
-    }
-
-    public int diff(CharStream start) {
-        return pos - start.pos;
-    }
-
-    public CharStream end() {
-        return new CharStream(input, input.length());
+    public StreamPos end() {
+        return new StreamPos(input, input.length());
     }
 }

@@ -79,10 +79,10 @@ public class SequenceExpression extends AbstractExpression {
         @Override
         public boolean consume(CharStream stream, MatchVisitor visitor) {
             BatchingMatchVisitor thisMatch = new BatchingMatchVisitor();
-            CharStream pos = stream.tail();
-            CharStream startThis = stream.tail();
-            boolean matched = expression.getMatcher().consume(pos, thisMatch);
-            stream.moveTo(pos);
+            CharStream tail = stream.tail();
+            StreamPos startThis = stream.current();
+            boolean matched = expression.getMatcher().consume(tail, thisMatch);
+            stream.moveTo(tail);
             if (!matched) {
                 thisMatch.forwardRemainder(expression.collector(visitor), visitor);
                 return false;
@@ -95,7 +95,7 @@ public class SequenceExpression extends AbstractExpression {
             boolean thisRecognizedSomething = thisMatch.getStoppedAt().diff(startThis) > 0;
 
             BatchingMatchVisitor nextMatch = new BatchingMatchVisitor();
-            CharStream startNext = stream.tail();
+            StreamPos startNext = stream.current();
             matched = next.consume(stream, nextMatch);
             boolean nextRecognizedSomething = nextMatch.getStoppedAt().diff(startNext) > 0;
             boolean nextRecognizedMore = nextMatch.getStoppedAt().diff(thisMatch.getStoppedAt()) >= 0;

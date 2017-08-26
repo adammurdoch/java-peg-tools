@@ -3,10 +3,10 @@ package net.rubygrapefruit.parser.peg.internal;
 import net.rubygrapefruit.parser.peg.Region;
 
 class DefaultRegion implements Region {
-    final CharStream start;
-    final CharStream end;
+    final StreamPos start;
+    final StreamPos end;
 
-    DefaultRegion(CharStream start, CharStream end) {
+    DefaultRegion(StreamPos start, StreamPos end) {
         this.start = start;
         this.end = end;
     }

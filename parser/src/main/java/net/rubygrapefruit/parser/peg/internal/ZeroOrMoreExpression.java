@@ -33,14 +33,14 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         while (true) {
-            CharStream pos = stream.tail();
-            if (!expression.getMatcher().consume(pos, nested)) {
+            CharStream tail = stream.tail();
+            if (!expression.getMatcher().consume(tail, nested)) {
                 break;
             }
             nested.forwardMatches(expression.collector(visitor), visitor);
-            stream.moveTo(pos);
+            stream.moveTo(tail);
         }
-        visitor.matched(stream.tail());
+        visitor.matched(stream.current());
         nested.forwardRemainder(expression.collector(visitor), visitor);
         return true;
     }

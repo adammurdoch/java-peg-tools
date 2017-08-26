@@ -45,9 +45,9 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
-        CharStream start = stream.tail();
+        StreamPos start = stream.current();
         if (stream.consume(str)) {
-            CharStream end = stream.tail();
+            StreamPos end = stream.current();
             visitor.token(new MatchResult(this, start, end));
             visitor.matched(end);
             return true;

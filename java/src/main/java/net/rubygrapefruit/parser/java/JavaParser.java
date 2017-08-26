@@ -59,6 +59,8 @@ public class JavaParser {
         Expression comma = builder.singleChar(',');
         Expression leftParen = builder.singleChar('(');
         Expression rightParen = builder.singleChar(')');
+        Expression leftAngle = builder.singleChar('<');
+        Expression rightAngle = builder.singleChar('>');
         Expression at = builder.singleChar('@');
 
         Expression literalTrue = builder.chars("true");
@@ -106,11 +108,13 @@ public class JavaParser {
         Expression classBody = builder.sequence(leftCurly, optionalWhitespace, classMembers, rightCurly);
         Expression interfaceBody = builder.sequence(leftCurly, optionalWhitespace, interfaceMembers, rightCurly);
 
+        Expression typeParam = builder.sequence(optionalWhitespace, leftAngle, optionalWhitespace, identifier, optionalWhitespace, rightAngle);
+
         Expression classModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, abstractKeyword), whitespaceSeparator));
-        Expression classDeclaration = builder.sequence(classModifiers, classKeyword, whitespaceSeparator, identifier, builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, classBody);
+        Expression classDeclaration = builder.sequence(classModifiers, classKeyword, whitespaceSeparator, identifier, builder.optional(typeParam), builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, classBody);
 
         Expression interfaceModifiers = builder.optional(builder.sequence(publicKeyword, whitespaceSeparator));
-        Expression interfaceDeclaration = builder.sequence(interfaceModifiers, interfaceKeyword, whitespaceSeparator, identifier, builder.optional(superTypesDeclaration), optionalWhitespace, interfaceBody);
+        Expression interfaceDeclaration = builder.sequence(interfaceModifiers, interfaceKeyword, whitespaceSeparator, identifier, builder.optional(typeParam), builder.optional(superTypesDeclaration), optionalWhitespace, interfaceBody);
         Expression typeDeclaration = builder.oneOf(classDeclaration, interfaceDeclaration);
 
         Expression compilationUnit = builder.sequence(optionalWhitespace, optionalPackageDeclaration, importDeclarations, typeDeclaration, optionalWhitespace);

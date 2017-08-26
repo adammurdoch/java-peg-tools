@@ -26,6 +26,13 @@ class JavaParserTest extends Specification {
         parse("class Thing implements A, B { }") == ["class", " ", "Thing", " ", "implements", " ", "A", ",", " ", "B", " ", "{", " ", "}"]
         parse("class Thing extends A implements B { }") == ["class", " ", "Thing", " ", "extends", " ", "A", " ", "implements", " ", "B", " ", "{", " ", "}"]
         parse("class Thing extends A implements B,C{ }") == ["class", " ", "Thing", " ", "extends", " ", "A", " ", "implements", " ", "B", ",", "C", "{", " ", "}"]
+
+        parse("class Thing<T>{}") == ["class", " ", "Thing", "<", "T", ">", "{", "}"]
+        // TODO - should not require whitespace before `extends`
+        parse("class Thing<T> extends A{}") == ["class", " ", "Thing", "<", "T", ">", " ", "extends", " ", "A", "{", "}"]
+        // TODO - should not require whitespace before `implements`
+        parse("class Thing<T> implements A,B{}") == ["class", " ", "Thing", "<", "T", ">", " ", "implements", " ", "A", ",", "B", "{", "}"]
+        parse("class Thing  < T/* */>  {}") == ["class", " ", "Thing", "  ", "<", " ", "T", "/* */", ">", "  ", "{", "}"]
     }
 
     def "can parse Java interface definition"() {
@@ -35,6 +42,11 @@ class JavaParserTest extends Specification {
         parse("interface Thing extends OtherThing { }") == ["interface", " ", "Thing", " ", "extends", " ", "OtherThing", " ", "{", " ", "}"]
         parse("interface Thing extends A, B { }") == ["interface", " ", "Thing", " ", "extends", " ", "A", ",", " ", "B", " ", "{", " ", "}"]
         parse("interface Thing extends A,B{ }") == ["interface", " ", "Thing", " ", "extends", " ", "A", ",", "B", "{", " ", "}"]
+
+        parse("interface Thing<T>{ }") == ["interface", " ", "Thing", "<", "T", ">", "{", " ", "}"]
+        // TODO - should not require whitespace before `extends`
+        parse("interface Thing<T> extends A{ }") == ["interface", " ", "Thing", "<", "T", ">", " ", "extends", " ", "A" , "{", " ", "}"]
+        parse("interface Thing <  T/* */> { }") == ["interface", " ", "Thing", " ", "<", "  ", "T", "/* */", ">", " ", "{", " ", "}"]
     }
 
     def "can parse optional package statement"() {
@@ -172,11 +184,11 @@ public  /* */static  String  x ( ) {
 
         def r2 = fail("class x")
         r2.tokens == ["class", " ", "x"]
-        r2.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "{", {letter}'
+        r2.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "<", "{", {letter}'
 
         def r2_1 = fail("class x ")
         r2_1.tokens == ["class", " ", "x", " "]
-        r2_1.failure == 'stopped at offset 8: end of input\nexpected: "\n", " ", "/*", "//", "extends", "implements", "{"'
+        r2_1.failure == 'stopped at offset 8: end of input\nexpected: "\n", " ", "/*", "//", "<", "extends", "implements", "{"'
 
         def r2_2 = fail("class x{12")
         r2_2.tokens == ["class", " ", "x", "{"]
@@ -210,7 +222,7 @@ public  /* */static  String  x ( ) {
 
         def r8 = fail("interface Thing implements A { }")
         r8.tokens == ["interface", " ", "Thing", " "]
-        r8.failure == 'stopped at offset 16: [implements A { }]\nexpected: "\n", " ", "/*", "//", "extends", "{"'
+        r8.failure == 'stopped at offset 16: [implements A { }]\nexpected: "\n", " ", "/*", "//", "<", "extends", "{"'
 
         def r9 = fail("x")
         r9.tokens == []

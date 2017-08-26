@@ -4,8 +4,12 @@ import net.rubygrapefruit.parser.java.JavaParser;
 import net.rubygrapefruit.parser.java.JavaToken;
 import net.rubygrapefruit.parser.peg.Region;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
+import net.rubygrapefruit.parser.sample.util.FileCollector;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A Java source code syntax highlighter that generates HTML from Java source files.
@@ -13,15 +17,14 @@ import java.io.*;
  * Usage: `java Highlighter output-file source-files-or-directories
  */
 public class Highlighter {
-    int count;
-    int failed;
+    private final AtomicInteger count = new AtomicInteger();
+    private final AtomicInteger failed = new AtomicInteger();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         new Highlighter().parseFiles(args);
     }
 
-    private void parseFiles(String[] args) throws IOException {
-        JavaParser parser = new JavaParser();
+    private void parseFiles(final String[] args) throws IOException, InterruptedException {
         File output = new File(args[0]);
         final PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "utf8"));
         out.println("<!DOCTYPE html>");
@@ -39,43 +42,33 @@ public class Highlighter {
         out.println("</style>");
         out.println("</head>");
         out.println("<body>");
-        long start = System.nanoTime();
+
+        List<File> files = new ArrayList<>();
         for (int i = 1; i < args.length; i++) {
-            parse(parser, new File(args[i]), out);
+            String arg = args[i];
+            files.add(new File(arg));
         }
+        long start = System.nanoTime();
+        final JavaParser parser = new JavaParser();
+        new FileCollector().process(files, new FileCollector.Worker() {
+            @Override
+            public void handle(File file, String content) throws Exception {
+                parse(parser, file, content, out);
+            }
+        }, 1);
         long end = System.nanoTime();
         out.println("</body>");
         out.println("</html>");
         out.flush();
 
-        System.out.println(String.format("Parsed %d files with %d errors in %dms", count, failed, (end-start)/1000000));
+        System.out.println(String.format("Parsed %d files with %d errors in %dms", count.get(), failed.get(), (end-start)/1000000));
     }
 
-    private void parse(JavaParser parser, File file, final PrintWriter out) throws IOException {
-        if (file.isFile()) {
-            parseFile(parser, file, out);
-        } else if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
-                parse(parser, child, out);
-            }
-        }
-    }
-
-    private void parseFile(JavaParser parser, File file, final PrintWriter out) throws IOException {
-        count++;
+    private void parse(JavaParser parser, File file, String content, final PrintWriter out) throws IOException {
+        count.incrementAndGet();
         out.println("<h1>" + file.getName() + "</h1>");
         out.println("<pre class='code'>");
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        StringBuilder stringBuilder = new StringBuilder();
-        char[] chars = new char[4096];
-        while (true) {
-            int nread = reader.read(chars, 0, chars.length);
-            if (nread < 0) {
-                break;
-            }
-            stringBuilder.append(chars, 0, nread);
-        }
-        parser.parse(stringBuilder.toString(), new TokenVisitor<JavaToken>() {
+        parser.parse(content, new TokenVisitor<JavaToken>() {
             @Override
             public void token(JavaToken type, Region match) {
                 switch (type) {
@@ -101,7 +94,7 @@ public class Highlighter {
 
             @Override
             public void failed(String message, Region remainder) {
-                failed++;
+                failed.incrementAndGet();
                 out.print("<span class='remainder'>");
                 appendText(remainder.getText(), out);
                 out.println("</span>");

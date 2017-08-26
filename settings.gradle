@@ -1,4 +1,11 @@
-include 'parser', 'java', 'highlighter', 'ui'
+include 'parser'
+include 'java'
+include 'util'
+include 'highlighter'
+include 'ui'
+include 'benchmark'
 
+project(':util').projectDir = file("samples/util")
 project(':highlighter').projectDir = file("samples/highlighter")
 project(':ui').projectDir = file("samples/ui")
+project(':benchmark').projectDir = file("samples/benchmark")

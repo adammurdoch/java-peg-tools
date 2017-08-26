@@ -5,4 +5,4 @@ dependencies {
     implementation project(':util')
 }
 
-mainClassName = 'net.rubygrapefruit.parser.java.test.Highlighter'
+mainClassName = 'net.rubygrapefruit.parser.java.test.Benchmark'

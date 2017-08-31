@@ -3,28 +3,39 @@ package net.rubygrapefruit.parser.peg.internal;
 /**
  * An immutable position in a stream of characters.
  */
-public class StreamPos {
-    private final String input;
-    private int pos = 0;
+public interface StreamPos {
+    /**
+     * Returns the offset from the start of the stream, base 0.
+     */
+    int getOffset();
 
-    public StreamPos(String input, int pos) {
-        this.input = input;
-        this.pos = pos;
-    }
+    /**
+     * Base 1
+     */
+    int getLine();
 
-    public int getOffset() {
-        return pos;
-    }
+    /**
+     * Base 1
+     */
+    int getColumn();
 
-    public boolean isAtEnd() {
-        return pos >= input.length();
-    }
+    /**
+     * Is this position the end of the stream?
+     */
+    boolean isAtEnd();
 
-    public String upTo(StreamPos end) {
-        return input.substring(pos, end.pos);
-    }
+    /**
+     * Returns the line containing this position, excluding the line ending.
+     */
+    String getCurrentLine();
 
-    public int diff(StreamPos start) {
-        return pos - start.pos;
-    }
+    /**
+     * Returns the text between this position and the given end position (exclusive).
+     */
+    String upTo(StreamPos end);
+
+    /**
+     * Returns the number of characters between this position and the other. Returns > 0 when this position is after the other, < 0 when this position is before the other.
+     */
+    int diff(StreamPos start);
 }

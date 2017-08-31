@@ -40,7 +40,7 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
 
     @Override
     public String getDisplayName() {
-        return "\"" + str + "\"";
+        return "\"" + str.replace("\n", "\\n") + "\"";
     }
 
     @Override

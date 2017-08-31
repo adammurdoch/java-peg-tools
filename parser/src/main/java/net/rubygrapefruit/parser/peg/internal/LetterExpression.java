@@ -23,7 +23,7 @@ public class LetterExpression extends AbstractExpression implements Matcher, Ter
 
     @Override
     public String getDisplayName() {
-        return "{letter}";
+        return "letter";
     }
 
     @Override

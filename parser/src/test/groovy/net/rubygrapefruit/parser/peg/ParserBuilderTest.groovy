@@ -22,7 +22,9 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.chars("abc"))
         def result = fail(parser, "abc123")
         result.tokens == ["abc"]
-        result.failure == "extra input at offset 3: [123]"
+        result.failure == '''line 1: unexpected characters
+abc123
+   ^'''
     }
 
     @Unroll
@@ -35,14 +37,26 @@ class ParserBuilderTest extends Specification {
 
         where:
         input  | tokens | message
-        ""     | []     | 'stopped at offset 0: end of input\nexpected: "abc"'
+        ""     | []     | '''line 1: expected "abc"
+
+^'''
         // TODO - should report missing char
-        "ab"   | []     | 'stopped at offset 0: [ab]\nexpected: "abc"'
+        "ab"   | []     | '''line 1: expected "abc"
+ab
+^'''
         // TODO - should report missing char
-        "abd"  | []     | 'stopped at offset 0: [abd]\nexpected: "abc"'
-        "ABC"  | []     | 'stopped at offset 0: [ABC]\nexpected: "abc"'
-        "123"  | []     | 'stopped at offset 0: [123]\nexpected: "abc"'
-        "1abc" | []     | 'stopped at offset 0: [1abc]\nexpected: "abc"'
+        "abd"  | []     | '''line 1: expected "abc"
+abd
+^'''
+        "ABC"  | []     | '''line 1: expected "abc"
+ABC
+^'''
+        "123"  | []     | '''line 1: expected "abc"
+123
+^'''
+        "1abc" | []     | '''line 1: expected "abc"
+1abc
+^'''
     }
 
     def "can parse a string token as a group"() {
@@ -76,7 +90,7 @@ class ParserBuilderTest extends Specification {
     }
 
     @Unroll
-    def "reports failure to match a string character - #input"() {
+    def "reports failure to match a single character - #input"() {
         expect:
         def parser = builder.newParser(builder.singleChar("x" as char))
         def result = fail(parser, input)
@@ -85,10 +99,18 @@ class ParserBuilderTest extends Specification {
 
         where:
         input | tokens | message
-        ""    | []     | 'stopped at offset 0: end of input\nexpected: "x"'
-        "X"   | []     | 'stopped at offset 0: [X]\nexpected: "x"'
-        "y"   | []     | 'stopped at offset 0: [y]\nexpected: "x"'
-        "yx"  | []     | 'stopped at offset 0: [yx]\nexpected: "x"'
+        ""    | []     | '''line 1: expected "x"
+
+^'''
+        "X"   | []     | '''line 1: expected "x"
+X
+^'''
+        "y"   | []     | '''line 1: expected "x"
+y
+^'''
+        "yx"  | []     | '''line 1: expected "x"
+yx
+^'''
     }
 
     def "can parse any letter"() {
@@ -115,11 +137,21 @@ class ParserBuilderTest extends Specification {
 
         where:
         input | tokens | message
-        ""    | []     | 'stopped at offset 0: end of input\nexpected: {letter}'
-        "1"   | []     | 'stopped at offset 0: [1]\nexpected: {letter}'
-        " "   | []     | 'stopped at offset 0: [ ]\nexpected: {letter}'
-        "."   | []     | 'stopped at offset 0: [.]\nexpected: {letter}'
-        "1y"  | []     | 'stopped at offset 0: [1y]\nexpected: {letter}'
+        ""    | []     | '''line 1: expected letter
+
+^'''
+        "1"   | []     | '''line 1: expected letter
+1
+^'''
+        " "   | []     | '''line 1: expected letter
+ 
+^'''
+        "."   | []     | '''line 1: expected letter
+.
+^'''
+        "1y"  | []     | '''line 1: expected letter
+1y
+^'''
     }
 
     def "can parse any character"() {
@@ -141,7 +173,9 @@ class ParserBuilderTest extends Specification {
         def parser = builder.newParser(builder.anything())
         def result = fail(parser, "")
         result.tokens == []
-        result.failure == "stopped at offset 0: end of input\nexpected: anything"
+        result.failure == '''line 1: expected anything
+
+^'''
     }
 
     def "can parse a sequence of tokens"() {
@@ -202,12 +236,24 @@ class ParserBuilderTest extends Specification {
 
         where:
         input     | tokens  | message
-        ""        | []      | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "abc"     | ["abc"] | 'stopped at offset 3: end of input\nexpected: "123"'
-        "abc124"  | ["abc"] | 'stopped at offset 3: [124]\nexpected: "123"'
-        "1abc123" | []      | 'stopped at offset 0: [1abc123]\nexpected: "abc"'
-        "abcx123" | ["abc"] | 'stopped at offset 3: [x123]\nexpected: "123"'
-        "abc1123" | ["abc"] | 'stopped at offset 3: [1123]\nexpected: "123"'
+        ""        | []      | '''line 1: expected "abc"
+
+^'''
+        "abc"     | ["abc"] | '''line 1: expected "123"
+abc
+   ^'''
+        "abc124"  | ["abc"] | '''line 1: expected "123"
+abc124
+   ^'''
+        "1abc123" | []      | '''line 1: expected "abc"
+1abc123
+^'''
+        "abcx123" | ["abc"] | '''line 1: expected "123"
+abcx123
+   ^'''
+        "abc1123" | ["abc"] | '''line 1: expected "123"
+abc1123
+   ^'''
     }
 
     @Unroll
@@ -223,14 +269,30 @@ class ParserBuilderTest extends Specification {
 
         where:
         input       | tokens              | message
-        ""          | []                  | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "ab"        | []                  | 'stopped at offset 0: [ab]\nexpected: "abc"'
-        "abc"       | ["abc"]             | 'stopped at offset 3: end of input\nexpected: "1"'
-        "abc2"      | ["abc"]             | 'stopped at offset 3: [2]\nexpected: "1"'
-        "abc124"    | ["abc", "1"]        | 'stopped at offset 4: [24]\nexpected: "abc"'
-        "abc1abc"   | ["abc", "1", "abc"] | 'stopped at offset 7: end of input\nexpected: "2"'
-        "abc1abc1"  | ["abc", "1", "abc"] | 'stopped at offset 7: [1]\nexpected: "2"'
-        "1abc1abc2" | []                  | 'stopped at offset 0: [1abc1abc2]\nexpected: "abc"'
+        ""          | []                  | '''line 1: expected "abc"
+
+^'''
+        "ab"        | []                  | '''line 1: expected "abc"
+ab
+^'''
+        "abc"       | ["abc"]             | '''line 1: expected "1"
+abc
+   ^'''
+        "abc2"      | ["abc"]             | '''line 1: expected "1"
+abc2
+   ^'''
+        "abc124"    | ["abc", "1"]        | '''line 1: expected "abc"
+abc124
+    ^'''
+        "abc1abc"   | ["abc", "1", "abc"] | '''line 1: expected "2"
+abc1abc
+       ^'''
+        "abc1abc1"  | ["abc", "1", "abc"] | '''line 1: expected "2"
+abc1abc1
+       ^'''
+        "1abc1abc2" | []                  | '''line 1: expected "abc"
+1abc1abc2
+^'''
     }
 
     def "can parse optional token"() {
@@ -272,14 +334,31 @@ class ParserBuilderTest extends Specification {
 
         where:
         input   | tokens       | message
-        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1"'
-        "abcx"  | ["abc"]      | 'stopped at offset 3: [x]\nexpected: "1"'
-        "abc2"  | ["abc"]      | 'stopped at offset 3: [2]\nexpected: "1"'
-        "abc1z" | ["abc", "1"] | 'extra input at offset 4: [z]'
-        "ab"    | []           | 'extra input at offset 0: [ab]'
-        "1"     | []           | 'extra input at offset 0: [1]'
-        "x"     | []           | 'extra input at offset 0: [x]'
-        "xabc"  | []           | 'extra input at offset 0: [xabc]'
+        "abc"   | ["abc"]      | '''line 1: expected "1"
+abc
+   ^'''
+        "abcx"  | ["abc"]      | '''line 1: expected "1"
+abcx
+   ^'''
+        "abc2"  | ["abc"]      | '''line 1: expected "1"
+abc2
+   ^'''
+        "abc1z" | ["abc", "1"] | '''line 1: unexpected characters
+abc1z
+    ^'''
+        // TODO - should partially match
+        "ab"    | []           | '''line 1: unexpected characters
+ab
+^'''
+        "1"     | []           | '''line 1: unexpected characters
+1
+^'''
+        "x"     | []           | '''line 1: unexpected characters
+x
+^'''
+        "xabc"  | []           | '''line 1: unexpected characters
+xabc
+^'''
     }
 
     def "can parse optional sequence expression as a group"() {
@@ -302,15 +381,33 @@ class ParserBuilderTest extends Specification {
 
         where:
         input     | tokens            | message
-        ""        | []                | 'stopped at offset 0: end of input\nexpected: "1", "abc"'
-        "abd"     | []                | 'stopped at offset 0: [abd]\nexpected: "1", "abc"'
-        "abc"     | ["abc"]           | 'stopped at offset 3: end of input\nexpected: "1"'
-        "abc2"    | ["abc"]           | 'stopped at offset 3: [2]\nexpected: "1"'
-        "1"       | ["1"]             | 'stopped at offset 1: end of input\nexpected: "2"'
-        "13"      | ["1"]             | 'stopped at offset 1: [3]\nexpected: "2"'
-        "abc11"   | ["abc", "1", "1"] | 'stopped at offset 5: end of input\nexpected: "2"'
-        "abc113"  | ["abc", "1", "1"] | 'stopped at offset 5: [3]\nexpected: "2"'
-        "1abc112" | ["1"]             | 'stopped at offset 1: [abc112]\nexpected: "2"'
+        ""        | []                | '''line 1: expected "1" or "abc"
+
+^'''
+        "abd"     | []                | '''line 1: expected "1" or "abc"
+abd
+^'''
+        "abc"     | ["abc"]           | '''line 1: expected "1"
+abc
+   ^'''
+        "abc2"    | ["abc"]           | '''line 1: expected "1"
+abc2
+   ^'''
+        "1"       | ["1"]             | '''line 1: expected "2"
+1
+ ^'''
+        "13"      | ["1"]             | '''line 1: expected "2"
+13
+ ^'''
+        "abc11"   | ["abc", "1", "1"] | '''line 1: expected "2"
+abc11
+     ^'''
+        "abc113"  | ["abc", "1", "1"] | '''line 1: expected "2"
+abc113
+     ^'''
+        "1abc112" | ["1"]             | '''line 1: expected "2"
+1abc112
+ ^'''
     }
 
     @Unroll
@@ -326,20 +423,48 @@ class ParserBuilderTest extends Specification {
 
         where:
         input     | tokens                 | message
-        ""        | []                     | 'stopped at offset 0: end of input\nexpected: "1", ";", "abc"'
-        "adc"     | []                     | 'stopped at offset 0: [adc]\nexpected: "1", ";", "abc"'
-        "abc"     | ["abc"]                | 'stopped at offset 3: end of input\nexpected: "1"'
-        "abc2"    | ["abc"]                | 'stopped at offset 3: [2]\nexpected: "1"'
-        "abc1"    | ["abc", "1"]           | 'stopped at offset 4: end of input\nexpected: "1", ";"'
-        "abc1x"   | ["abc", "1"]           | 'stopped at offset 4: [x]\nexpected: "1", ";"'
-        "abc11"   | ["abc", "1", "1"]      | 'stopped at offset 5: end of input\nexpected: "2"'
-        "abc11x"  | ["abc", "1", "1"]      | 'stopped at offset 5: [x]\nexpected: "2"'
-        "abc112"  | ["abc", "1", "1", "2"] | 'stopped at offset 6: end of input\nexpected: ";"'
-        "abc112x" | ["abc", "1", "1", "2"] | 'stopped at offset 6: [x]\nexpected: ";"'
-        "1;"      | ["1"]                  | 'stopped at offset 1: [;]\nexpected: "2"'
-        "1x"      | ["1"]                  | 'stopped at offset 1: [x]\nexpected: "2"'
-        "12"      | ["1", "2"]             | 'stopped at offset 2: end of input\nexpected: ";"'
-        "x"       | []                     | 'stopped at offset 0: [x]\nexpected: "1", ";", "abc"'
+        ""        | []                     | '''line 1: expected "1", ";" or "abc"
+
+^'''
+        "adc"     | []                     | '''line 1: expected "1", ";" or "abc"
+adc
+^'''
+        "abc"     | ["abc"]                | '''line 1: expected "1"
+abc
+   ^'''
+        "abc2"    | ["abc"]                | '''line 1: expected "1"
+abc2
+   ^'''
+        "abc1"    | ["abc", "1"]           | '''line 1: expected "1" or ";"
+abc1
+    ^'''
+        "abc1x"   | ["abc", "1"]           | '''line 1: expected "1" or ";"
+abc1x
+    ^'''
+        "abc11"   | ["abc", "1", "1"]      | '''line 1: expected "2"
+abc11
+     ^'''
+        "abc11x"  | ["abc", "1", "1"]      | '''line 1: expected "2"
+abc11x
+     ^'''
+        "abc112"  | ["abc", "1", "1", "2"] | '''line 1: expected ";"
+abc112
+      ^'''
+        "abc112x" | ["abc", "1", "1", "2"] | '''line 1: expected ";"
+abc112x
+      ^'''
+        "1;"      | ["1"]                  | '''line 1: expected "2"
+1;
+ ^'''
+        "1x"      | ["1"]                  | '''line 1: expected "2"
+1x
+ ^'''
+        "12"      | ["1", "2"]             | '''line 1: expected ";"
+12
+  ^'''
+        "x"       | []                     | '''line 1: expected "1", ";" or "abc"
+x
+^'''
     }
 
     @Unroll
@@ -355,15 +480,33 @@ class ParserBuilderTest extends Specification {
 
         where:
         input        | tokens                   | message
-        ""           | []                       | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "abc"        | ["abc"]                  | 'stopped at offset 3: end of input\nexpected: "1", "2"'
-        "abc1"       | ["abc", "1"]             | 'stopped at offset 4: end of input\nexpected: "2"'
-        "abc1x"      | ["abc", "1"]             | 'stopped at offset 4: [x]\nexpected: "2"'
-        "abc1xabc2"  | ["abc", "1"]             | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        "abc3"       | ["abc"]                  | 'stopped at offset 3: [3]\nexpected: "1", "2"'
-        "abc12abc"   | ["abc", "1", "2", "abc"] | 'stopped at offset 8: end of input\nexpected: "2"'
-        "abc12abc3"  | ["abc", "1", "2", "abc"] | 'stopped at offset 8: [3]\nexpected: "2"'
-        "abc12xabc2" | ["abc", "1", "2"]        | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
+        ""           | []                       | '''line 1: expected "abc"
+
+^'''
+        "abc"        | ["abc"]                  | '''line 1: expected "1" or "2"
+abc
+   ^'''
+        "abc1"       | ["abc", "1"]             | '''line 1: expected "2"
+abc1
+    ^'''
+        "abc1x"      | ["abc", "1"]             | '''line 1: expected "2"
+abc1x
+    ^'''
+        "abc1xabc2"  | ["abc", "1"]             | '''line 1: expected "2"
+abc1xabc2
+    ^'''
+        "abc3"       | ["abc"]                  | '''line 1: expected "1" or "2"
+abc3
+   ^'''
+        "abc12abc"   | ["abc", "1", "2", "abc"] | '''line 1: expected "2"
+abc12abc
+        ^'''
+        "abc12abc3"  | ["abc", "1", "2", "abc"] | '''line 1: expected "2"
+abc12abc3
+        ^'''
+        "abc12xabc2" | ["abc", "1", "2"]        | '''line 1: expected "abc"
+abc12xabc2
+     ^'''
     }
 
     def "can parse zero or more tokens"() {
@@ -408,18 +551,38 @@ class ParserBuilderTest extends Specification {
 
         where:
         input         | tokens         | message
-        "{"           | ["{"]          | 'stopped at offset 1: end of input\nexpected: "abc"'
-        "{x"          | ["{"]          | 'stopped at offset 1: [x]\nexpected: "abc"'
-        "{abc"        | ["{abc"]       | 'stopped at offset 4: end of input\nexpected: "}"'
-        "{abcx"       | ["{abc"]       | 'stopped at offset 4: [x]\nexpected: "}"'
+        "{"           | ["{"]          | '''line 1: expected "abc"
+{
+ ^'''
+        "{x"          | ["{"]          | '''line 1: expected "abc"
+{x
+ ^'''
+        "{abc"        | ["{abc"]       | '''line 1: expected "}"
+{abc
+    ^'''
+        "{abcx"       | ["{abc"]       | '''line 1: expected "}"
+{abcx
+    ^'''
         // TODO - missing an alternative
-        "{abc}x"      | ["{abc}"]      | 'extra input at offset 5: [x]'
-        "{abc}{"      | ["{abc}{"]     | 'stopped at offset 6: end of input\nexpected: "abc"'
-        "{abc}{abc"   | ["{abc}{abc"]  | 'stopped at offset 9: end of input\nexpected: "}"'
-        "{abc}{x"     | ["{abc}{"]     | 'stopped at offset 6: [x]\nexpected: "abc"'
-        "{abc}{abcx"  | ["{abc}{abc"]  | 'stopped at offset 9: [x]\nexpected: "}"'
+        "{abc}x"      | ["{abc}"]      | '''line 1: unexpected characters
+{abc}x
+     ^'''
+        "{abc}{"      | ["{abc}{"]     | '''line 1: expected "abc"
+{abc}{
+      ^'''
+        "{abc}{abc"   | ["{abc}{abc"]  | '''line 1: expected "}"
+{abc}{abc
+         ^'''
+        "{abc}{x"     | ["{abc}{"]     | '''line 1: expected "abc"
+{abc}{x
+      ^'''
+        "{abc}{abcx"  | ["{abc}{abc"]  | '''line 1: expected "}"
+{abc}{abcx
+         ^'''
         // TODO - missing an alternative
-        "{abc}{abc}x" | ["{abc}{abc}"] | 'extra input at offset 10: [x]'
+        "{abc}{abc}x" | ["{abc}{abc}"] | '''line 1: unexpected characters
+{abc}{abc}x
+          ^'''
     }
 
     def "can parse zero or more expressions with common prefix with following expression"() {
@@ -446,20 +609,45 @@ class ParserBuilderTest extends Specification {
 
         where:
         input           | tokens                                    | message
-        ""              | []                                        | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "abc"           | ["abc"]                                   | 'stopped at offset 3: end of input\nexpected: "1", "2"'
-        "abc1"          | ["abc", "1"]                              | 'stopped at offset 4: end of input\nexpected: "2"'
-        "abc1x"         | ["abc", "1"]                              | 'stopped at offset 4: [x]\nexpected: "2"'
-        "abc1xabc2"     | ["abc", "1"]                              | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        "abc3"          | ["abc"]                                   | 'stopped at offset 3: [3]\nexpected: "1", "2"'
-        "abc12abc"      | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: end of input\nexpected: "1", "2"'
-        "abc12abc3"     | ["abc", "1", "2", "abc"]                  | 'stopped at offset 8: [3]\nexpected: "1", "2"'
-        "abc12xabc2"    | ["abc", "1", "2"]                         | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
-        "abc12abc1"     | ["abc", "1", "2", "abc", "1"]             | 'stopped at offset 9: end of input\nexpected: "2"'
-        "abc12abc1x"    | ["abc", "1", "2", "abc", "1"]             | 'stopped at offset 9: [x]\nexpected: "2"'
-        "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | 'stopped at offset 10: end of input\nexpected: "abc"'
-        // TODO - missing an alternative
-        "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | 'stopped at offset 13: end of input\nexpected: "1", "2"'
+        ""              | []                                        | '''line 1: expected "abc"
+
+^'''
+        "abc"           | ["abc"]                                   | '''line 1: expected "1" or "2"
+abc
+   ^'''
+        "abc1"          | ["abc", "1"]                              | '''line 1: expected "2"
+abc1
+    ^'''
+        "abc1x"         | ["abc", "1"]                              | '''line 1: expected "2"
+abc1x
+    ^'''
+        "abc1xabc2"     | ["abc", "1"]                              | '''line 1: expected "2"
+abc1xabc2
+    ^'''
+        "abc3"          | ["abc"]                                   | '''line 1: expected "1" or "2"
+abc3
+   ^'''
+        "abc12abc"      | ["abc", "1", "2", "abc"]                  | '''line 1: expected "1" or "2"
+abc12abc
+        ^'''
+        "abc12abc3"     | ["abc", "1", "2", "abc"]                  | '''line 1: expected "1" or "2"
+abc12abc3
+        ^'''
+        "abc12xabc2"    | ["abc", "1", "2"]                         | '''line 1: expected "abc"
+abc12xabc2
+     ^'''
+        "abc12abc1"     | ["abc", "1", "2", "abc", "1"]             | '''line 1: expected "2"
+abc12abc1
+         ^'''
+        "abc12abc1x"    | ["abc", "1", "2", "abc", "1"]             | '''line 1: expected "2"
+abc12abc1x
+         ^'''
+        "abc12abc12"    | ["abc", "1", "2", "abc", "1", "2"]        | '''line 1: expected "abc"
+abc12abc12
+          ^'''
+        "abc12abc12abc" | ["abc", "1", "2", "abc", "1", "2", "abc"] | '''line 1: expected "1" or "2"
+abc12abc12abc
+             ^'''
     }
 
     @Unroll
@@ -475,19 +663,45 @@ class ParserBuilderTest extends Specification {
 
         where:
         input           | tokens                | message
-        ""              | []                    | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "abc"           | ["abc"]               | 'stopped at offset 3: end of input\nexpected: "1", "2"'
-        "abc1"          | ["abc1"]              | 'stopped at offset 4: end of input\nexpected: "2"'
-        "abc1x"         | ["abc1"]              | 'stopped at offset 4: [x]\nexpected: "2"'
-        "abc1xabc2"     | ["abc1"]              | 'stopped at offset 4: [xabc2]\nexpected: "2"'
-        "abc3"          | ["abc"]               | 'stopped at offset 3: [3]\nexpected: "1", "2"'
-        "abc12abc"      | ["abc12", "abc"]      | 'stopped at offset 8: end of input\nexpected: "1", "2"'
-        "abc12abc3"     | ["abc12", "abc"]      | 'stopped at offset 8: [3]\nexpected: "1", "2"'
-        "abc12xabc2"    | ["abc12"]             | 'stopped at offset 5: [xabc2]\nexpected: "abc"'
-        "abc12abc1"     | ["abc12", "abc1"]     | 'stopped at offset 9: end of input\nexpected: "2"'
-        "abc12abc1x"    | ["abc12", "abc1"]     | 'stopped at offset 9: [x]\nexpected: "2"'
-        "abc12abc12"    | ["abc12abc12"]        | 'stopped at offset 10: end of input\nexpected: "abc"'
-        "abc12abc12abc" | ["abc12abc12", "abc"] | 'stopped at offset 13: end of input\nexpected: "1", "2"'
+        ""              | []                    | '''line 1: expected "abc"
+
+^'''
+        "abc"           | ["abc"]               | '''line 1: expected "1" or "2"
+abc
+   ^'''
+        "abc1"          | ["abc1"]              | '''line 1: expected "2"
+abc1
+    ^'''
+        "abc1x"         | ["abc1"]              | '''line 1: expected "2"
+abc1x
+    ^'''
+        "abc1xabc2"     | ["abc1"]              | '''line 1: expected "2"
+abc1xabc2
+    ^'''
+        "abc3"          | ["abc"]               | '''line 1: expected "1" or "2"
+abc3
+   ^'''
+        "abc12abc"      | ["abc12", "abc"]      | '''line 1: expected "1" or "2"
+abc12abc
+        ^'''
+        "abc12abc3"     | ["abc12", "abc"]      | '''line 1: expected "1" or "2"
+abc12abc3
+        ^'''
+        "abc12xabc2"    | ["abc12"]             | '''line 1: expected "abc"
+abc12xabc2
+     ^'''
+        "abc12abc1"     | ["abc12", "abc1"]     | '''line 1: expected "2"
+abc12abc1
+         ^'''
+        "abc12abc1x"    | ["abc12", "abc1"]     | '''line 1: expected "2"
+abc12abc1x
+         ^'''
+        "abc12abc12"    | ["abc12abc12"]        | '''line 1: expected "abc"
+abc12abc12
+          ^'''
+        "abc12abc12abc" | ["abc12abc12", "abc"] | '''line 1: expected "1" or "2"
+abc12abc12abc
+             ^'''
     }
 
     def "can parse one or more tokens"() {
@@ -521,16 +735,38 @@ class ParserBuilderTest extends Specification {
 
         where:
         input         | tokens                             | message
-        ""            | []                                 | 'stopped at offset 0: end of input\nexpected: "{"'
-        "{"           | ["{"]                              | 'stopped at offset 1: end of input\nexpected: "abc"'
-        "{x"          | ["{"]                              | 'stopped at offset 1: [x]\nexpected: "abc"'
-        "{abc"        | ["{", "abc"]                       | 'stopped at offset 4: end of input\nexpected: "}"'
-        "{abc;"       | ["{", "abc"]                       | 'stopped at offset 4: [;]\nexpected: "}"'
-        "{abc}x"      | ["{", "abc", "}"]                  | 'extra input at offset 5: [x]'
-        "{abc}{"      | ["{", "abc", "}", "{"]             | 'stopped at offset 6: end of input\nexpected: "abc"'
-        "{abc}{abc;"  | ["{", "abc", "}", "{", "abc"]      | 'stopped at offset 9: [;]\nexpected: "}"'
-        "{abc}{abc}x" | ["{", "abc", "}", "{", "abc", "}"] | 'extra input at offset 10: [x]'
-        "x"           | []                                 | 'stopped at offset 0: [x]\nexpected: "{"'
+        ""            | []                                 | '''line 1: expected "{"
+
+^'''
+        "{"           | ["{"]                              | '''line 1: expected "abc"
+{
+ ^'''
+        "{x"          | ["{"]                              | '''line 1: expected "abc"
+{x
+ ^'''
+        "{abc"        | ["{", "abc"]                       | '''line 1: expected "}"
+{abc
+    ^'''
+        "{abc;"       | ["{", "abc"]                       | '''line 1: expected "}"
+{abc;
+    ^'''
+        // TODO - missing alternative '{'
+        "{abc}x"      | ["{", "abc", "}"]                  | '''line 1: unexpected characters
+{abc}x
+     ^'''
+        "{abc}{"      | ["{", "abc", "}", "{"]             | '''line 1: expected "abc"
+{abc}{
+      ^'''
+        "{abc}{abc;"  | ["{", "abc", "}", "{", "abc"]      | '''line 1: expected "}"
+{abc}{abc;
+         ^'''
+        // TODO - missing alternative '{'
+        "{abc}{abc}x" | ["{", "abc", "}", "{", "abc", "}"] | '''line 1: unexpected characters
+{abc}{abc}x
+          ^'''
+        "x"           | []                                 | '''line 1: expected "{"
+x
+^'''
     }
 
     def "can parse one or more sequence expressions as a group"() {
@@ -615,17 +851,39 @@ class ParserBuilderTest extends Specification {
 
         where:
         input   | tokens       | message
-        ""      | []           | 'stopped at offset 0: end of input\nexpected: "ab", "abc"'
-        "a"     | []           | 'stopped at offset 0: [a]\nexpected: "ab", "abc"'
-        "ab"    | ["ab"]       | 'stopped at offset 2: end of input\nexpected: "12"'
-        "ab1"   | ["ab"]       | 'stopped at offset 2: [1]\nexpected: "12"'
-        "ab13"  | ["ab"]       | 'stopped at offset 2: [13]\nexpected: "12"'
-        "ab12x" | ["ab", "12"] | 'extra input at offset 4: [x]'
-        "abd"   | ["ab"]       | 'stopped at offset 2: [d]\nexpected: "12"'
-        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1"'
-        "abc2"  | ["abc"]      | 'stopped at offset 3: [2]\nexpected: "1"'
-        "abc1x" | ["abc", "1"] | 'extra input at offset 4: [x]'
-        "adc"   | []           | 'stopped at offset 0: [adc]\nexpected: "ab", "abc"'
+        ""      | []           | '''line 1: expected "ab" or "abc"
+
+^'''
+        "a"     | []           | '''line 1: expected "ab" or "abc"
+a
+^'''
+        "ab"    | ["ab"]       | '''line 1: expected "12"
+ab
+  ^'''
+        "ab1"   | ["ab"]       | '''line 1: expected "12"
+ab1
+  ^'''
+        "ab13"  | ["ab"]       | '''line 1: expected "12"
+ab13
+  ^'''
+        "ab12x" | ["ab", "12"] | '''line 1: unexpected characters
+ab12x
+    ^'''
+        "abd"   | ["ab"]       | '''line 1: expected "12"
+abd
+  ^'''
+        "abc"   | ["abc"]      | '''line 1: expected "1"
+abc
+   ^'''
+        "abc2"  | ["abc"]      | '''line 1: expected "1"
+abc2
+   ^'''
+        "abc1x" | ["abc", "1"] | '''line 1: unexpected characters
+abc1x
+    ^'''
+        "adc"   | []           | '''line 1: expected "ab" or "abc"
+adc
+^'''
     }
 
     @Unroll
@@ -641,14 +899,30 @@ class ParserBuilderTest extends Specification {
 
         where:
         input   | tokens       | message
-        ""      | []           | 'stopped at offset 0: end of input\nexpected: "abc"'
-        "ab"    | []           | 'stopped at offset 0: [ab]\nexpected: "abc"'
-        "abc"   | ["abc"]      | 'stopped at offset 3: end of input\nexpected: "1", "2"'
-        "abc3"  | ["abc"]      | 'stopped at offset 3: [3]\nexpected: "1", "2"'
-        "abc1"  | ["abc", "1"] | 'stopped at offset 4: end of input\nexpected: "2"'
-        "abc1x" | ["abc", "1"] | 'stopped at offset 4: [x]\nexpected: "2"'
-        "abc2"  | ["abc", "2"] | 'stopped at offset 4: end of input\nexpected: "2"'
-        "abc2x" | ["abc", "2"] | 'stopped at offset 4: [x]\nexpected: "2"'
+        ""      | []           | '''line 1: expected "abc"
+
+^'''
+        "ab"    | []           | '''line 1: expected "abc"
+ab
+^'''
+        "abc"   | ["abc"]      | '''line 1: expected "1" or "2"
+abc
+   ^'''
+        "abc3"  | ["abc"]      | '''line 1: expected "1" or "2"
+abc3
+   ^'''
+        "abc1"  | ["abc", "1"] | '''line 1: expected "2"
+abc1
+    ^'''
+        "abc1x" | ["abc", "1"] | '''line 1: expected "2"
+abc1x
+    ^'''
+        "abc2"  | ["abc", "2"] | '''line 1: expected "2"
+abc2
+    ^'''
+        "abc2x" | ["abc", "2"] | '''line 1: expected "2"
+abc2x
+    ^'''
     }
 
     def "can parse one of several alternative expressions with common prefix with following expression"() {
@@ -723,13 +997,21 @@ class ParserBuilderTest extends Specification {
         where:
         input    | tokens | message
         // TODO - missing alternatives
-        "abc"    | []     | 'stopped at offset 0: [abc]'
+        "abc"    | []     | '''line 1:
+abc
+^'''
         // TODO - missing alternatives
-        "abca"   | []     | 'stopped at offset 0: [abca]'
+        "abca"   | []     | '''line 1:
+abca
+^'''
         // TODO - missing alternatives
-        "abc123" | []     | 'stopped at offset 0: [abc123]'
+        "abc123" | []     | '''line 1:
+abc123
+^'''
         // TODO - missing alternatives
-        "123"    | []     | 'extra input at offset 0: [123]'
+        "123"    | []     | '''line 1: unexpected characters
+123
+^'''
     }
 
     def List<String> tokens(Parser parser, String str) {

@@ -29,29 +29,43 @@ public class DefaultParser implements Parser {
         StreamPos pos = resultVisitor.stoppedAt;
         if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
             StringBuilder builder = new StringBuilder();
-            stream.moveTo(pos);
-            builder.append("stopped at ").append(stream.diagnostic());
+            builder.append("line ").append(pos.getLine()).append(":");
             Set<String> candidates = new TreeSet<String>();
             for (Terminal terminal : resultVisitor.matchPoint.getPrefixes()) {
                 candidates.add(terminal.getDisplayName());
             }
             if (!candidates.isEmpty()) {
-                builder.append("\nexpected: ");
-                boolean first = true;
+                builder.append(" expected ");
+                int count = 0;
                 for (String candidate : candidates) {
-                    if (first) {
-                        first = false;
-                    } else {
+                    if (count > 0 && count == candidates.size() - 1) {
+                        builder.append(" or ");
+                    } else if (count > 0) {
                         builder.append(", ");
                     }
+                    count++;
                     builder.append(candidate);
                 }
             }
+            appendHighlight(pos, builder);
             visitor.failed(builder.toString(), new DefaultRegion(pos, stream.end()));
         } else if (!pos.isAtEnd()) {
-            visitor.failed("extra input at " + stream.diagnostic(), new DefaultRegion(pos, stream.end()));
+            StringBuilder builder = new StringBuilder();
+            builder.append("line ").append(pos.getLine()).append(": unexpected characters");
+            appendHighlight(pos, builder);
+            visitor.failed(builder.toString(), new DefaultRegion(pos, stream.end()));
         }
         return visitor;
+    }
+
+    private void appendHighlight(StreamPos pos, StringBuilder builder) {
+        builder.append('\n');
+        builder.append(pos.getCurrentLine());
+        builder.append('\n');
+        for (int i = 1; i < pos.getColumn(); i++) {
+            builder.append(' ');
+        }
+        builder.append('^');
     }
 
     private static class RootExpressionVisitor implements MatchVisitor {

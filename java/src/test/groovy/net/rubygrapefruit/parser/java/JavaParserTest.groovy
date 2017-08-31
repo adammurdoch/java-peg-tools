@@ -176,193 +176,280 @@ public  /* */static  String  x ( ) {
         expect:
         def r0 = fail("")
         r0.tokens == []
-        r0.failure == 'stopped at offset 0: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
+        r0.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+
+^'''
 
         def r1 = fail(" Thing { }")
         r1.tokens == [" "]
-        r1.failure == 'stopped at offset 1: [Thing { }]\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
+        r1.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+ Thing { }
+ ^'''
 
         def r2 = fail("class x")
         r2.tokens == ["class", " ", "x"]
-        r2.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "<", "{", {letter}'
+        r2.failure == '''line 1: expected " ", "/*", "//", "<", "\\n", "{" or letter
+class x
+       ^'''
 
         def r2_1 = fail("class x ")
         r2_1.tokens == ["class", " ", "x", " "]
-        r2_1.failure == 'stopped at offset 8: end of input\nexpected: "\n", " ", "/*", "//", "<", "extends", "implements", "{"'
+        r2_1.failure == '''line 1: expected " ", "/*", "//", "<", "\\n", "extends", "implements" or "{"
+class x 
+        ^'''
 
         def r2_2 = fail("class x{12")
         r2_2.tokens == ["class", " ", "x", "{"]
-        r2_2.failure == 'stopped at offset 8: [12]\nexpected: "\n", " ", "/*", "//", "@", "final", "private", "public", "static", "void", "}", {letter}'
+        r2_2.failure == '''line 1: expected " ", "/*", "//", "@", "\\n", "final", "private", "public", "static", "void", "}" or letter
+class x{12
+        ^'''
 
         def r3 = fail("class Thing extends { }")
         r3.tokens == ["class", " ", "Thing", " ", "extends", " "]
-        r3.failure == 'stopped at offset 20: [{ }]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r3.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+class Thing extends { }
+                    ^'''
 
         def r3_1 = fail("class Thing implements { }")
         r3_1.tokens == ["class", " ", "Thing", " ", "implements", " "]
-        r3_1.failure == 'stopped at offset 23: [{ }]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r3_1.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+class Thing implements { }
+                       ^'''
 
         def r4 = fail("class Thing implements A extends B { }")
         r4.tokens == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
-        r4.failure == 'stopped at offset 25: [extends B { }]\nexpected: "\n", " ", ",", "/*", "//", "{"'
+        r4.failure == '''line 1: expected " ", ",", "/*", "//", "\\n" or "{"
+class Thing implements A extends B { }
+                         ^'''
 
         def r5 = fail("class Thing implements A implements B { }")
         r5.tokens == ["class", " ", "Thing", " ", "implements", " ", "A", " "]
-        r5.failure == 'stopped at offset 25: [implements B { }]\nexpected: "\n", " ", ",", "/*", "//", "{"'
+        r5.failure == '''line 1: expected " ", ",", "/*", "//", "\\n" or "{"
+class Thing implements A implements B { }
+                         ^'''
 
         def r6 = fail("class Thing extends A, B { }")
         r6.tokens == ["class", " ", "Thing", " ", "extends", " ", "A"]
-        r6.failure == 'stopped at offset 21: [, B { }]\nexpected: "\n", " ", "/*", "//", "{", {letter}'
+        r6.failure == '''line 1: expected " ", "/*", "//", "\\n", "{" or letter
+class Thing extends A, B { }
+                     ^'''
 
         // TODO - should really complain that interface can't be abstract
         // TODO - shouldn't offer abstract as an alternative
         def r7 = fail("abstract interface Thing extends { }")
         r7.tokens == ["abstract", " "]
-        r7.failure == 'stopped at offset 9: [interface Thing exte]\nexpected: "abstract", "class", "public"'
+        r7.failure == '''line 1: expected "abstract", "class" or "public"
+abstract interface Thing extends { }
+         ^'''
 
         def r8 = fail("interface Thing implements A { }")
         r8.tokens == ["interface", " ", "Thing", " "]
-        r8.failure == 'stopped at offset 16: [implements A { }]\nexpected: "\n", " ", "/*", "//", "<", "extends", "{"'
+        r8.failure == '''line 1: expected " ", "/*", "//", "<", "\\n", "extends" or "{"
+interface Thing implements A { }
+                ^'''
 
         def r9 = fail("x")
         r9.tokens == []
-        r9.failure == 'stopped at offset 0: [x]\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
+        r9.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+x
+^'''
 
         // TODO - 'a.b' and '.' should be in same token
         def r10 = fail("package a.b.{")
         r10.tokens == ["package", " ", "a.b", "."]
-        r10.failure == 'stopped at offset 12: [{]\nexpected: {letter}'
+        r10.failure == '''line 1: expected letter
+package a.b.{
+            ^'''
 
         def r11 = fail("package a.b import c.d")
         r11.tokens == ["package", " ", "a.b", " "]
-        r11.failure == 'stopped at offset 12: [import c.d]\nexpected: "\n", " ", "/*", "//", ";"'
+        r11.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+package a.b import c.d
+            ^'''
 
         def r12 = fail("package a.b; import a.b{}")
         r12.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b"]
-        r12.failure == 'stopped at offset 23: [{}]\nexpected: "\n", " ", ".", "/*", "//", ";"'
+        r12.failure == '''line 1: expected " ", ".", "/*", "//", ";" or "\\n"
+package a.b; import a.b{}
+                       ^'''
 
         // TODO - 'a.b' and '.' should be same token
         // TODO missing '*' alternative
-        def r13 = fail("package a.b; import a.b.%; class Thing { }")
+        def r13 = fail("package a.b; import a.b.%;\nclass Thing { }")
         r13.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
-        r13.failure == 'stopped at offset 24: [%; class Thing { }]\nexpected: {letter}'
+        r13.failure == '''line 1: expected letter
+package a.b; import a.b.%;
+                        ^'''
 
-        // TODO - not quite right, should complain about an unexpected identifier
-        def r14 = fail("packageimportclass")
-        r14.tokens == ["package"]
-        r14.failure == 'stopped at offset 7: [importclass]\nexpected: "\n", " ", "/*", "//"'
+        // TODO - should complain about an unexpected identifier
+        def r14 = fail("\n\npackageimportclass")
+        r14.tokens == ["\n\n", "package"]
+        r14.failure == '''line 3: expected " ", "/*", "//" or "\\n"
+packageimportclass
+       ^'''
 
-        // TODO - should complain about 'import' keyword instead of accepting it
+        // TODO - should complain about 'import' keyword (or missing identifier before 'import') instead of accepting it
         def r15 = fail("package import a;")
         r15.tokens == ["package", " ", "import", " "]
-        r15.failure == 'stopped at offset 15: [a;]\nexpected: "\n", " ", "/*", "//", ";"'
+        r15.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+package import a;
+               ^'''
 
         // TODO - missing '.' as an alternative
         def r16 = fail("package a")
         r16.tokens == ["package", " ", "a"]
-        r16.failure == 'stopped at offset 9: end of input\nexpected: "\n", " ", "/*", "//", ";", {letter}'
+        r16.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
+package a
+         ^'''
 
         // TODO - missing {letter} as an alternative
         def r17 = fail("package a.b")
         r17.tokens == ["package", " ", "a.b"]
-        r17.failure == 'stopped at offset 11: end of input\nexpected: "\n", " ", ".", "/*", "//", ";"'
+        r17.failure == '''line 1: expected " ", ".", "/*", "//", ";" or "\\n"
+package a.b
+           ^'''
 
         // TODO - missing '*' as an alternative
         def r18 = fail("import a.")
         r18.tokens == ["import", " ", "a", "."]
-        r18.failure == 'stopped at offset 9: end of input\nexpected: {letter}'
+        r18.failure == '''line 1: expected letter
+import a.
+         ^'''
 
+        // TODO - missing whitespace/comment as an alternative
         def r19 = fail("import a; ")
         r19.tokens == ["import", " ", "a", ";", " "]
-        r19.failure == 'stopped at offset 10: end of input\nexpected: "abstract", "class", "import", "interface", "public"'
+        r19.failure == '''line 1: expected "abstract", "class", "import", "interface" or "public"
+import a; 
+          ^'''
 
         // TODO - shouldn't offer 'public' as an alternative
         def r20 = fail("public ")
         r20.tokens == ["public", " "]
-        r20.failure == 'stopped at offset 7: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "interface", "public"'
+        r20.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "interface" or "public"
+public 
+       ^'''
 
         // TODO - too many alternatives, should be '\n' only
         def r21 = fail("// abc")
         r21.tokens == ["// abc"]
-        r21.failure == 'stopped at offset 6: end of input\nexpected: "\n", " ", "/*", "//", "abstract", "class", "import", "interface", "package", "public"'
+        r21.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+// abc
+      ^'''
 
         // TODO - expectation should be something like 'anything up to */'
         def r22 = fail("/* abc")
         r22.tokens == ["/* abc"]
-        r22.failure == 'stopped at offset 6: end of input\nexpected: "*/", anything'
+        r22.failure == '''line 1: expected "*/" or anything
+/* abc
+      ^'''
 
         def r23 = fail("class X { String; }")
         r23.tokens == ["class", " ", "X", " ", "{", " ", "String"]
-        r23.failure == 'stopped at offset 16: [; }]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r23.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+class X { String; }
+                ^'''
 
         // TODO - missing tokens, should have stopped at end of input
         // TODO - too many alternatives, should be '*/' only
         def r24 = fail("class X { String x; /* }")
         r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
-        r24.failure == 'stopped at offset 20: [/* }]\nexpected: "@", "final", "private", "public", "static", "void", "}", {letter}'
+        r24.failure == '''line 1: expected "@", "final", "private", "public", "static", "void", "}" or letter
+class X { String x; /* }
+                    ^'''
 
         def r25 = fail("class X { String x(); }")
         r25.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")"]
-        r25.failure == 'stopped at offset 20: [; }]\nexpected: "\n", " ", "/*", "//", "{"'
+        r25.failure == '''line 1: expected " ", "/*", "//", "\\n" or "{"
+class X { String x(); }
+                    ^'''
 
         def r27 = fail("interface X { String x() { } }")
         r27.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")", " "]
-        r27.failure == 'stopped at offset 25: [{ } }]\nexpected: "\n", " ", "/*", "//", ";"'
+        r27.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+interface X { String x() { } }
+                         ^'''
 
         // TODO - missing ',' and separator as alternatives
         def r28 = fail("interface X { String x(int a}")
         r28.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a"]
-        r28.failure == 'stopped at offset 28: [}]\nexpected: ")", {letter}'
+        r28.failure == '''line 1: expected ")" or letter
+interface X { String x(int a}
+                            ^'''
 
         // TODO - missing letter and separator as alternatives
         def r29 = fail("interface X { String x(int a,int b}")
         r29.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a", ",", "int", " ", "b"]
-        r29.failure == 'stopped at offset 34: [}]\nexpected: ")", ","'
+        r29.failure == '''line 1: expected ")" or ","
+interface X { String x(int a,int b}
+                                  ^'''
 
         def r30 = fail("interface X { @@ String x(int a,int b}")
         r30.tokens == ["interface", " ", "X", " ", "{", " ", "@"]
-        r30.failure == 'stopped at offset 15: [@ String x(int a,int]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r30.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+interface X { @@ String x(int a,int b}
+               ^'''
 
         // TODO - missing whitespace as an alternative, shouldn't suggest void
         def r31 = fail("interface X { @a")
         r31.tokens == ["interface", " ", "X", " ", "{", " ", "@", "a"]
-        r31.failure == 'stopped at offset 16: end of input\nexpected: "@", "void", {letter}'
+        r31.failure == '''line 1: expected "@", "void" or letter
+interface X { @a
+                ^'''
 
         def r32 = fail("class X {String m(){return}")
         r32.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return"]
-        r32.failure == 'stopped at offset 26: [}]\nexpected: "\n", " ", "/*", "//"'
+        r32.failure == '''line 1: expected " ", "/*", "//" or "\\n"
+class X {String m(){return}
+                          ^'''
 
         def r33 = fail("class X {String m(){return }")
         r33.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " "]
-        r33.failure == 'stopped at offset 27: [}]\nexpected: "\n", " ", "/*", "//", "false", "new", "this", "true"'
+        r33.failure == '''line 1: expected " ", "/*", "//", "\\n", "false", "new", "this" or "true"
+class X {String m(){return }
+                           ^'''
 
         def r34 = fail("class X {String m(){return this}")
         r34.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "this"]
-        r34.failure == 'stopped at offset 31: [}]\nexpected: "\n", " ", "/*", "//", ";"'
+        r34.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+class X {String m(){return this}
+                               ^'''
 
         def r35 = fail("class X {String m(){return new}")
         r35.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new"]
-        r35.failure == 'stopped at offset 30: [}]\nexpected: "\n", " ", "/*", "//"'
+        r35.failure == '''line 1: expected " ", "/*", "//" or "\\n"
+class X {String m(){return new}
+                              ^'''
 
         def r36 = fail("class X {String m(){return new 78}")
         r36.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " "]
-        r36.failure == 'stopped at offset 31: [78}]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r36.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+class X {String m(){return new 78}
+                               ^'''
 
         def r37 = fail("class X {String m(){return new A(}")
         r37.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "("]
-        r37.failure == 'stopped at offset 33: [}]\nexpected: "\n", " ", ")", "/*", "//", {letter}'
+        r37.failure == '''line 1: expected " ", ")", "/*", "//", "\\n" or letter
+class X {String m(){return new A(}
+                                 ^'''
 
         def r38 = fail("class X {String m(){return new A(a b c}")
         r38.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", " "]
-        r38.failure == 'stopped at offset 35: [b c}]\nexpected: "\n", " ", ")", ",", "/*", "//"'
+        r38.failure == '''line 1: expected " ", ")", ",", "/*", "//" or "\\n"
+class X {String m(){return new A(a b c}
+                                   ^'''
 
         def r39 = fail("class X {String m(){return new A(a, }")
         r39.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", ",", " "]
-        r39.failure == 'stopped at offset 36: [}]\nexpected: "\n", " ", "/*", "//", {letter}'
+        r39.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+class X {String m(){return new A(a, }
+                                    ^'''
 
         def r40 = fail("class X {String m(){return new A(a, b}")
         r40.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", ",", " ", "b"]
-        r40.failure == 'stopped at offset 37: [}]\nexpected: "\n", " ", ")", ",", "/*", "//"'
+        r40.failure == '''line 1: expected " ", ")", ",", "/*", "//" or "\\n"
+class X {String m(){return new A(a, b}
+                                     ^'''
     }
 
     def List<String> parse(String str) {

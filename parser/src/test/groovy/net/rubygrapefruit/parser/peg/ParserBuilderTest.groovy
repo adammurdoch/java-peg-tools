@@ -1,12 +1,8 @@
 package net.rubygrapefruit.parser.peg
 
-import net.rubygrapefruit.parser.peg.visitor.CollectingVisitor
-import spock.lang.Specification
 import spock.lang.Unroll
 
-class ParserBuilderTest extends Specification {
-    def builder = new ParserBuilder()
-
+class ParserBuilderTest extends AbstractParserTest {
     def "can parse a string token"() {
         def expression = builder.chars("abc")
 
@@ -1014,21 +1010,4 @@ abc123
 ^'''
     }
 
-    def List<String> tokens(Parser parser, String str) {
-        def visitor = parser.parse(str, new CollectingVisitor())
-        assert visitor.failure == null
-        return visitor.tokens
-    }
-
-    def CollectingVisitor parse(Parser parser, String str) {
-        def visitor = parser.parse(str, new CollectingVisitor())
-        assert visitor.failure == null
-        return visitor
-    }
-
-    def CollectingVisitor fail(Parser parser, String str) {
-        def visitor = parser.parse(str, new CollectingVisitor())
-        assert visitor.failure != null
-        return visitor
-    }
 }

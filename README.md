@@ -30,6 +30,7 @@ The implementation is in the very early stages and can scan the input into token
 
 #### Fixes
 
+- Thread-safety for `ReferenceExpression`
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
     - test: A? B where A partially matched, B no match
     - test: A? B where A partially matched and B partially matched
@@ -39,7 +40,6 @@ The implementation is in the very early stages and can scan the input into token
     - test: A+ B where A partially matched zero or more times, B partially matched
     - test: A | B where A partially matched, B no match
     - test: A | B where A partially matched and B partially matched
-- Use immutable positions to represent locations in the stream
 - Change contract of `BatchingMatchVisitor` so that it creates the result collector, only if required.
 - Fix `zeroOrMore(optional(x))`, etc
 - Report alternatives from within sequence

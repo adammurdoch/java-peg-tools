@@ -92,6 +92,13 @@ public class ParserBuilder {
     }
 
     /**
+     * Creates an expression that references another expression. This can be used to create recursive expressions.
+     */
+    public ReferenceExpression reference() {
+        return new DefaultReferenceExpression();
+    }
+
+    /**
      * Creates a parser for the given expression.
      */
     public Parser newParser(Expression expression) {

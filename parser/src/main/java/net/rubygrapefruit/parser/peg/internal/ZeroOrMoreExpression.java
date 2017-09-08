@@ -26,7 +26,7 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
 
     @Override
     public Set<? extends Terminal> getPrefixes() {
-        return expression.getPrefixes();
+        return expression.getMatcher().getPrefixes();
     }
 
     @Override

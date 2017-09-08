@@ -28,16 +28,6 @@ public class SequenceExpression extends AbstractExpression {
         return matcher;
     }
 
-    @Override
-    public boolean isAcceptEmpty() {
-        return matcher.isAcceptEmpty();
-    }
-
-    @Override
-    public Set<? extends Terminal> getPrefixes() {
-        return matcher.getPrefixes();
-    }
-
     private static class SequenceMatcher implements Matcher, MatchExpression, MatchPoint {
         private final MatchExpression expression;
         private final SequenceMatcher next;
@@ -59,17 +49,17 @@ public class SequenceExpression extends AbstractExpression {
 
         @Override
         public boolean isAcceptEmpty() {
-            return expression.isAcceptEmpty() && next != null && next.isAcceptEmpty();
+            return expression.getMatcher().isAcceptEmpty() && next != null && next.isAcceptEmpty();
         }
 
         @Override
         public Set<? extends Terminal> getPrefixes() {
-            if (!expression.isAcceptEmpty()) {
-                return expression.getPrefixes();
+            if (!expression.getMatcher().isAcceptEmpty()) {
+                return expression.getMatcher().getPrefixes();
             }
 
             Set<Terminal> prefixes = new HashSet<Terminal>();
-            prefixes.addAll(expression.getPrefixes());
+            prefixes.addAll(expression.getMatcher().getPrefixes());
             if (next != null) {
                 prefixes.addAll(next.getPrefixes());
             }

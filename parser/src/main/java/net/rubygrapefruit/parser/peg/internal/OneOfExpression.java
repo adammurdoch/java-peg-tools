@@ -25,7 +25,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher, Matc
     @Override
     public boolean isAcceptEmpty() {
         for (MatchExpression expression : expressions) {
-            if (expression.isAcceptEmpty()) {
+            if (expression.getMatcher().isAcceptEmpty()) {
                 return true;
             }
         }
@@ -36,7 +36,7 @@ public class OneOfExpression extends AbstractExpression implements Matcher, Matc
     public Set<Terminal> getPrefixes() {
         Set<Terminal> prefixes = new HashSet<Terminal>();
         for (MatchExpression expression : expressions) {
-            prefixes.addAll(expression.getPrefixes());
+            prefixes.addAll(expression.getMatcher().getPrefixes());
         }
         return prefixes;
     }

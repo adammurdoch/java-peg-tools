@@ -6,11 +6,17 @@ The library requires Java 7 or later.
 
 Includes a grammar for parsing Java source.
 
-### Parser
+## Parser
 
 The implementation is in the very early stages and can scan the input into tokens, but does not yet provide a parse tree as output.
 
-#### Missing features
+### Features
+
+- Java API to construct a parser. No need to define the parser in some other language to generate the parser.
+- Thread-safe parsers can be constructed once and used by multiple threads concurrently.
+- Good quality error messages.
+
+### Missing features
 
 - Construct a parse tree
 - Construct an AST or arbitrary result
@@ -28,9 +34,8 @@ The implementation is in the very early stages and can scan the input into token
 - Expression that transforms the result of another expression
 - Expression that transforms the result of an expression into another expression to use for the next match
 
-#### Fixes
+### Fixes
 
-- Thread-safety for `ReferenceExpression`
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
     - test: A? B where A partially matched, B no match
     - test: A? B where A partially matched and B partially matched
@@ -53,11 +58,11 @@ The implementation is in the very early stages and can scan the input into token
 - On failure to match last element of sequence, report where the sequence started if not on same line
 - Flatten expressions that act on chars and that are grouped for faster matching
 
-### Java grammar
+## Java grammar
 
 Nominally supports Java 8. Is not even slightly complete.
 
-#### Issues
+### Issues
 
 - Duplicate modifiers on class, interface, field declarations
 - Abstract methods
@@ -65,7 +70,7 @@ Nominally supports Java 8. Is not even slightly complete.
 - Tighten up rules for field and method declarations inside class and interface declarations
 - Shouldn't require a space between type param and `extends` or `implements` keyword
 
-### References
+## References
 
 - [Java 8 syntax](https://docs.oracle.com/javase/specs/jls/se8/html/jls-19.html)
 - [CommonMark spec](http://spec.commonmark.org)

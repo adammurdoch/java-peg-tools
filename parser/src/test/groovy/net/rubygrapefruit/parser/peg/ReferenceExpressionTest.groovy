@@ -3,8 +3,37 @@ package net.rubygrapefruit.parser.peg
 import spock.lang.Unroll
 
 class ReferenceExpressionTest extends AbstractParserTest {
-    def "parser construction fails when reference has no value"() {
-        expect: false
+    def "parsing fails when reference has no value"() {
+        given:
+        def ref = builder.reference()
+        def parser = builder.newParser(builder.oneOrMore(ref))
+
+        when:
+        parser.parse("123", Stub(TokenVisitor))
+
+        then:
+        def e = thrown(IllegalStateException)
+        e.message == 'No target has been set for reference expression.'
+    }
+
+    def "cannot change target of reference after it has been used"() {
+        def visitor = Mock(TokenVisitor)
+
+        given:
+        def ref = builder.reference()
+        ref.set(builder.letter())
+        def parser = builder.newParser(builder.oneOrMore(ref))
+
+        when:
+        parser.parse("abc", visitor)
+
+        then:
+        def e = thrown(IllegalStateException)
+        e.message == 'Cannot set the target for a reference expression after the reference has been used.'
+
+        1 * visitor.token(_, _) >> {
+            ref.set(builder.chars("abc"))
+        }
     }
 
     def "can create a reference to another expression"() {

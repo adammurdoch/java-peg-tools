@@ -4,6 +4,7 @@ import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.ReferenceExpression;
 
 public class DefaultReferenceExpression implements ReferenceExpression, MatchExpression {
+    private boolean locked;
     private MatchExpression expression;
 
     @Override
@@ -13,17 +14,34 @@ public class DefaultReferenceExpression implements ReferenceExpression, MatchExp
 
     @Override
     public void set(Expression expression) {
-        this.expression = (MatchExpression) expression;
+        synchronized (this) {
+            if (locked) {
+                throw new IllegalStateException("Cannot set the target for a reference expression after the reference has been used.");
+            }
+            this.expression = (MatchExpression) expression;
+        }
+    }
+
+    private MatchExpression getAndLock() {
+        synchronized (this) {
+            if (!locked) {
+                if (expression == null) {
+                    throw new IllegalStateException("No target has been set for reference expression.");
+                }
+                locked = true;
+            }
+            return expression;
+        }
     }
 
     @Override
     public ResultCollector collector(TokenCollector collector) {
-        return expression.collector(collector);
+        return getAndLock().collector(collector);
     }
 
     @Override
     public Matcher getMatcher() {
-        return expression.getMatcher();
+        return getAndLock().getMatcher();
     }
 
     @Override

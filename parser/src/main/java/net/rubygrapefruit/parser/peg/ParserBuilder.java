@@ -99,6 +99,13 @@ public class ParserBuilder {
     }
 
     /**
+     * Creates a new back reference to the result of the given expression.
+     */
+    public BackReference backReference(Expression expression) {
+        return new DefaultBackReference(matcher(expression));
+    }
+
+    /**
      * Creates a parser for the given expression.
      */
     public Parser newParser(Expression expression) {

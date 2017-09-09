@@ -16,6 +16,32 @@ The implementation is in the very early stages and can scan the input into token
 - Thread-safe parsers can be constructed once and used by multiple threads concurrently.
 - Good quality error messages.
 
+#### Expressions
+
+Terminals:
+
+- `chars(String)` matches the given string.
+- `singleChar(ch)` matches the given character.
+- `letter(h)` matches a single letter character.
+- `anything()` matches a single character.
+
+Non-terminals:
+
+- `sequence(expressions)` matches the given expressions in order.
+- `oneOf(expressions)` matches any one of the given expressions. Matches the expressions in order, stopping at the first match.
+- `optional(expression)` matches zero or one occurrences of the given expression. 
+- `zeroOrMore(expression)` matches zero or more occurrences of the given expression. Matching is greedy.
+- `oneOrMore(expression)` matches one or more occurrences of the given expression. Matching is greedy.
+
+Look ahead:
+
+- `not(expression)` matches anything that does not match the given expression, but does not consume any input
+
+Other:
+
+- `reference()` creates an expression that is a placeholder for some other expression. Can be used to create recursive expressions.
+- `backReference()` creates an expression that matches the text matched by another expression. Can be used to create contextual grammars.
+
 ### Missing features
 
 - Construct a parse tree
@@ -36,6 +62,8 @@ The implementation is in the very early stages and can scan the input into token
 
 ### Fixes
 
+- Thread-safe back reference implementation
+- More efficient back reference implementation, reuse error handling
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
     - test: A? B where A partially matched, B no match
     - test: A? B where A partially matched and B partially matched
@@ -64,7 +92,9 @@ Nominally supports Java 8. Is not even slightly complete.
 
 ### Issues
 
-- Duplicate modifiers on class, interface, field declarations
+- A keyword should not be treated as an identifier
+- Highlighting broken for class constructor
+- Duplicate modifiers on class, interface, field, constructor, method declarations.
 - Abstract methods
 - Static methods on interfaces, interface method modifiers
 - Tighten up rules for field and method declarations inside class and interface declarations

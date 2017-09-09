@@ -129,6 +129,18 @@ public  /* */static  String  x ( ) {
         parse("class X{void x( String/* */abc  , long  y  , int xyz ){}}") == ["class", " ", "X", "{", "void", " ", "x", "(", " ", "String", "/* */", "abc", "  ", ",", " ", "long", "  ", "y", "  ", ",", " ", "int", " ", "xyz", " ", ")", "{", "}", "}"]
     }
 
+    def "can parse class constructor declarations"() {
+        expect:
+        parse("class X{X(){}}") == ["class", " ", "X", "{", "X", "(", ")", "{", "}", "}"]
+        parse("class X{X(int x){}}") == ["class", " ", "X", "{", "X", "(", "int", " ", "x", ")", "{", "}", "}"]
+        parse("class X{X(int x,String y){}}") == ["class", " ", "X", "{", "X", "(", "int", " ", "x", ",", "String", " ", "y", ")", "{", "}", "}"]
+        parse("class X{  X  ( int   x  )  { }  }") == ["class", " ", "X", "{", "  ", "X", "  ", "(", " ", "int", "   ",  "x", "  ", ")", "  ", "{", " ", "}", "  ", "}"]
+        parse("class X{public X(){}}") == ["class", " ", "X", "{", "public", " ", "X", "(", ")", "{", "}", "}"]
+        parse("class X{private X(){}}") == ["class", " ", "X", "{", "private", " ", "X", "(", ")", "{", "}", "}"]
+        parse("class X{protected X(){}}") == ["class", " ", "X", "{", "protected", " ", "X", "(", ")", "{", "}", "}"]
+        parse("class X{/* */protected   X(){}}") == ["class", " ", "X", "{", "/* */", "protected", "   ", "X", "(", ")", "{", "}", "}"]
+    }
+
     def "can parse interface method declarations"() {
         expect:
         parse("interface X{void x();}") == ["interface", " ", "X", "{", "void", " ", "x", "(", ")", ";", "}"]
@@ -200,7 +212,7 @@ class x
 
         def r2_2 = fail("class x{12")
         r2_2.tokens == ["class", " ", "x", "{"]
-        r2_2.failure == '''line 1: expected " ", "/*", "//", "@", "\\n", "final", "private", "public", "static", "void", "}" or letter
+        r2_2.failure == '''line 1: expected " ", "/*", "//", "@", "\\n", "final", "private", "protected", "public", "static", "void", "x", "}" or letter
 class x{12
         ^'''
 
@@ -354,7 +366,7 @@ class X { String; }
         // TODO - too many alternatives, should be '*/' only
         def r24 = fail("class X { String x; /* }")
         r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
-        r24.failure == '''line 1: expected "@", "final", "private", "public", "static", "void", "}" or letter
+        r24.failure == '''line 1: expected "@", "X", "final", "private", "protected", "public", "static", "void", "}" or letter
 class X { String x; /* }
                     ^'''
 
@@ -383,6 +395,12 @@ interface X { String x(int a}
         r29.failure == '''line 1: expected ")" or ","
 interface X { String x(int a,int b}
                                   ^'''
+
+        def r29_1 = fail("class X { X }")
+        r29_1.tokens == ["class", " ", "X", " ", "{", " ", "X", " "]
+        r29_1.failure == '''line 1: expected " ", "(", "/*", "//", "\\n" or letter
+class X { X }
+            ^'''
 
         def r30 = fail("interface X { @@ String x(int a,int b}")
         r30.tokens == ["interface", " ", "X", " ", "{", " ", "@"]

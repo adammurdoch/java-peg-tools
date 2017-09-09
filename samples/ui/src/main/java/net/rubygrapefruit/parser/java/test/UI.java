@@ -82,7 +82,7 @@ public class UI {
             String str = builder.toString();
             source.setText(str);
         } else {
-            source.setText("package a.b.c;\n\nimport a.b.C;\n\n/**\n * A class\n */\nclass X implements Y {\n\n    // Some thing\n    private final String s;\n\n    /**\n     * Does something\n     */\n    public void m(String a) {\n    }\n}");
+            source.setText("package a.b.c;\n\nimport a.b.C;\n\n/**\n * A class\n */\nclass Thing implements Y {\n\n    // Some state\n    private final String s;\n\n    // Creates a thing\n    public Thing(String s) {\n    }\n\n    /**\n     * Does something\n     */\n    public void m(String a) {\n    }\n}");
         }
     }
 

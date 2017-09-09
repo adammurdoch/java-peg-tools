@@ -36,6 +36,7 @@ public class JavaParser {
         Expression classKeyword = builder.chars("class");
         Expression interfaceKeyword = builder.chars("interface");
         Expression privateKeyword = builder.chars("private");
+        Expression protectedKeyword = builder.chars("protected");
         Expression finalKeyword = builder.chars("final");
         Expression publicKeyword = builder.chars("public");
         Expression abstractKeyword = builder.chars("abstract");
@@ -48,7 +49,7 @@ public class JavaParser {
         Expression returnKeyword = builder.chars("return");
         Expression thisKeyword = builder.chars("this");
         Expression newKeyword = builder.chars("new");
-        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword, voidKeyword, staticKeyword, returnKeyword, thisKeyword, newKeyword));
+        keywords = new HashSet<>(Arrays.asList(classKeyword, interfaceKeyword, privateKeyword, protectedKeyword, finalKeyword, publicKeyword, abstractKeyword, packageKeyword, importKeyword, extendsKeyword, implementsKeyword, voidKeyword, staticKeyword, returnKeyword, thisKeyword, newKeyword));
 
         Expression letters = builder.oneOrMore(builder.letter());
         Expression dot = builder.singleChar('.');
@@ -85,10 +86,10 @@ public class JavaParser {
         Expression fieldModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(privateKeyword, finalKeyword), whitespaceSeparator));
         Expression fieldDeclaration = builder.sequence(fieldModifiers, identifier, whitespaceSeparator, identifier, optionalWhitespace, semiColon);
 
-        Expression methodParams = builder.optional(builder.sequence(identifier, optionalWhitespace,
+        Expression methodArgs = builder.optional(builder.sequence(identifier, optionalWhitespace,
                 builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier)), optionalWhitespace));
 
-        Expression newExpression = builder.sequence(newKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodParams, optionalWhitespace, rightParen);
+        Expression newExpression = builder.sequence(newKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodArgs, optionalWhitespace, rightParen);
 
         Expression expression = builder.oneOf(thisKeyword, literalTrue, literalFalse, newExpression);
 
@@ -97,12 +98,19 @@ public class JavaParser {
 
         Expression annotation = builder.sequence(at, optionalWhitespace, identifier);
         Expression annotations = builder.zeroOrMore(builder.sequence(annotation, optionalWhitespace));
+
+        Expression methodParams = builder.optional(builder.sequence(identifier, whitespaceSeparator, identifier, optionalWhitespace, builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier, whitespaceSeparator, identifier, optionalWhitespace))));
+
         Expression classMethodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
-        Expression methodSignature = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, builder.optional(builder.sequence(identifier, whitespaceSeparator, identifier, optionalWhitespace, builder.zeroOrMore(builder.sequence(comma, optionalWhitespace, identifier, whitespaceSeparator, identifier, optionalWhitespace)))), rightParen);
+        Expression methodSignature = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodParams, rightParen);
         Expression classMethodDeclaration = builder.sequence(annotations, classMethodModifiers, methodSignature, optionalWhitespace, leftCurly, optionalWhitespace, statements, rightCurly);
         Expression interfaceMethodDeclaration = builder.sequence(annotations, methodSignature, optionalWhitespace, semiColon);
 
-        Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, classMethodDeclaration), optionalWhitespace));
+        BackReference className = builder.backReference(identifier);
+        Expression constructorModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, privateKeyword, protectedKeyword), whitespaceSeparator));
+        Expression classConstructor = builder.sequence(constructorModifiers, className.getValue(), optionalWhitespace, leftParen, optionalWhitespace, methodParams, rightParen, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+
+        Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, classConstructor, classMethodDeclaration), optionalWhitespace));
         Expression interfaceMembers = builder.zeroOrMore(builder.sequence(interfaceMethodDeclaration, optionalWhitespace));
 
         Expression classBody = builder.sequence(leftCurly, optionalWhitespace, classMembers, rightCurly);
@@ -111,7 +119,7 @@ public class JavaParser {
         Expression typeParam = builder.sequence(optionalWhitespace, leftAngle, optionalWhitespace, identifier, optionalWhitespace, rightAngle);
 
         Expression classModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, abstractKeyword), whitespaceSeparator));
-        Expression classDeclaration = builder.sequence(classModifiers, classKeyword, whitespaceSeparator, identifier, builder.optional(typeParam), builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, classBody);
+        Expression classDeclaration = builder.sequence(classModifiers, classKeyword, whitespaceSeparator, className.followedBy(builder.sequence(builder.optional(typeParam), builder.optional(superClassDeclaration), builder.optional(implementsDeclaration), optionalWhitespace, classBody)));
 
         Expression interfaceModifiers = builder.optional(builder.sequence(publicKeyword, whitespaceSeparator));
         Expression interfaceDeclaration = builder.sequence(interfaceModifiers, interfaceKeyword, whitespaceSeparator, identifier, builder.optional(typeParam), builder.optional(superTypesDeclaration), optionalWhitespace, interfaceBody);

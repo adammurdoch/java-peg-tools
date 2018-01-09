@@ -38,6 +38,11 @@ public class SequenceExpression extends AbstractExpression {
         }
 
         @Override
+        public String toString() {
+            return expression + " " + next;
+        }
+
+        @Override
         public ResultCollector collector(TokenCollector collector) {
             throw new UnsupportedOperationException();
         }

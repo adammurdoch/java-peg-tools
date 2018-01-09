@@ -13,6 +13,11 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
     }
 
     @Override
+    public String toString() {
+        return "{not " + expression + "}";
+    }
+
+    @Override
     public Expression group() {
         return this;
     }

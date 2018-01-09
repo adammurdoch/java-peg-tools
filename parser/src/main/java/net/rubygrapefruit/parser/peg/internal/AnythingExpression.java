@@ -7,6 +7,11 @@ import java.util.Set;
 
 public class AnythingExpression extends AbstractExpression implements Matcher, Terminal, MatchPoint {
     @Override
+    public String toString() {
+        return "{anything}";
+    }
+
+    @Override
     public Expression group() {
         return this;
     }

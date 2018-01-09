@@ -788,10 +788,10 @@ a.
         "a.b" | ["a", ".", "b"] | '''line 1: expected ".", ";" or letter
 a.b
    ^'''
-        "a;x"  | ["a", ";"] | '''line 1: unexpected characters
+        "a;x" | ["a", ";"]      | '''line 1: unexpected characters
 a;x
   ^'''
-        "a.;" | ["a", "."] | '''line 1: expected letter
+        "a.;" | ["a", "."]      | '''line 1: expected letter
 a.;
   ^'''
     }
@@ -961,6 +961,47 @@ abc2x
         def parser = builder.newParser(builder.sequence(builder.oneOf(e1, e2), e3))
         tokens(parser, "abc1abc3") == ["abc", "1", "abc", "3"]
         tokens(parser, "abc2abc3") == ["abc", "2", "abc", "3"]
+    }
+
+    @Unroll
+    def "reports failure to match one of several alternative expressions with common prefixes - #input"() {
+        def e1 = builder.
+                sequence(builder.chars("a"), builder.zeroOrMore(builder.sequence(builder.chars("."), builder.chars("a"))), builder.chars("."),
+                        builder.chars("*"))
+        def e2 = builder.sequence(builder.chars("a"), builder.zeroOrMore(builder.sequence(builder.chars("."), builder.chars("a"))))
+
+        expect:
+        def parser = builder.newParser(builder.oneOf(e1, e2))
+        def result = fail(parser, input)
+        result.tokens == tokens
+        result.failure == message
+
+        where:
+        input  | tokens               | message
+        ""     | []                   | '''line 1: expected "a"
+
+^'''
+        // TODO - missing '*' as alternative
+        "a."   | ["a", "."]           | '''line 1: expected "a"
+a.
+  ^'''
+        // TODO - missing '*' as alternative
+        "a.a." | ["a", ".", "a", "."] | '''line 1: expected "a"
+a.a.
+    ^'''
+        "ab"   | ["a"]                | '''line 1: expected "."
+ab
+ ^'''
+        // TODO - missing '*' as alternative
+        "a.b"  | ["a", "."]           | '''line 1: expected "a"
+a.b
+  ^'''
+        "a.ab" | ["a", ".", "a"]      | '''line 1: expected "."
+a.ab
+   ^'''
+        "a.*b" | ["a", ".", "*"]      | '''line 1: unexpected characters
+a.*b
+   ^'''
     }
 
     def "can parse a sequence of optional tokens"() {

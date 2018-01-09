@@ -349,6 +349,13 @@ package a.b
 import a.
          ^'''
 
+        // TODO - missing '.' as an alternative
+        def r18a = fail("import a")
+        r18a.tokens == ["import", " ", "a"]
+        r18a.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
+import a
+        ^'''
+
         // TODO - missing whitespace/comment as an alternative
         def r19 = fail("import a; ")
         r19.tokens == ["import", " ", "a", ";", " "]

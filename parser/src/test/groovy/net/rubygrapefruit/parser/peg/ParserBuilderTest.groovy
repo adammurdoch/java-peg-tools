@@ -761,6 +761,41 @@ x
 ^'''
     }
 
+    @Unroll
+    def "reports failure to match sequence of one or more expressions followed by zero or more expressions - #input"() {
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.oneOrMore(builder.letter()),
+                builder.zeroOrMore(builder.sequence(builder.chars("."), builder.oneOrMore(builder.letter()))), builder.chars(";")))
+        def result = fail(parser, input)
+        result.tokens == tokens
+        result.failure == message
+
+        where:
+        input | tokens          | message
+        ""    | []              | '''line 1: expected letter
+
+^'''
+        "a"   | ["a"]           | '''line 1: expected ".", ";" or letter
+a
+ ^'''
+        "ab"  | ["a", "b"]      | '''line 1: expected ".", ";" or letter
+ab
+  ^'''
+        "a."  | ["a", "."]      | '''line 1: expected letter
+a.
+  ^'''
+// TODO - should suggest letter as alternative
+        "a.b" | ["a", ".", "b"] | '''line 1: expected ".", ";" or letter
+a.b
+   ^'''
+        "a;x"  | ["a", ";"] | '''line 1: unexpected characters
+a;x
+  ^'''
+        "a.;" | ["a", "."] | '''line 1: expected letter
+a.;
+  ^'''
+    }
+
     def "can parse one or more sequence expressions as a group"() {
         expect:
         def parser = builder.newParser(builder.oneOrMore(builder.sequence(builder.chars("{"), builder.chars("abc"), builder.chars("}"))).group())
@@ -1005,5 +1040,4 @@ abc123
 123
 ^'''
     }
-
 }

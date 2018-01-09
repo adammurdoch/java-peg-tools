@@ -271,7 +271,7 @@ class Thing extends A, B { }
         // TODO - shouldn't offer abstract as an alternative
         def r7 = fail("abstract interface Thing extends { }")
         r7.tokens == ["abstract", " "]
-        r7.failure == '''line 1: expected "abstract", "class" or "public"
+        r7.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class" or "public"
 abstract interface Thing extends { }
          ^'''
 
@@ -302,7 +302,7 @@ package a.b import c.d
 
         def r12 = fail("package a.b; import a.b{}")
         r12.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b"]
-        r12.failure == '''line 1: expected " ", ".", "/*", "//", ";" or "\\n"
+        r12.failure == '''line 1: expected " ", ".", "/*", "//", ";", "\\n" or letter
 package a.b; import a.b{}
                        ^'''
 
@@ -328,17 +328,22 @@ packageimportclass
 package import a;
                ^'''
 
-        // TODO - missing '.' as an alternative
         def r16 = fail("package a")
         r16.tokens == ["package", " ", "a"]
-        r16.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
+        r16.failure == '''line 1: expected " ", ".", "/*", "//", ";", "\\n" or letter
 package a
          ^'''
 
-        // TODO - missing {letter} as an alternative
+        // TODO - should allow whitespace after '.'
+        def r16a = fail("package a.")
+        r16a.tokens == ["package", " ", "a", "."]
+        r16a.failure == '''line 1: expected letter
+package a.
+          ^'''
+
         def r17 = fail("package a.b")
         r17.tokens == ["package", " ", "a.b"]
-        r17.failure == '''line 1: expected " ", ".", "/*", "//", ";" or "\\n"
+        r17.failure == '''line 1: expected " ", ".", "/*", "//", ";", "\\n" or letter
 package a.b
            ^'''
 
@@ -349,17 +354,15 @@ package a.b
 import a.
          ^'''
 
-        // TODO - missing '.' as an alternative
         def r18a = fail("import a")
         r18a.tokens == ["import", " ", "a"]
-        r18a.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
+        r18a.failure == '''line 1: expected " ", ".", "/*", "//", ";", "\\n" or letter
 import a
         ^'''
 
-        // TODO - missing whitespace/comment as an alternative
         def r19 = fail("import a; ")
         r19.tokens == ["import", " ", "a", ";", " "]
-        r19.failure == '''line 1: expected "abstract", "class", "import", "interface" or "public"
+        r19.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface" or "public"
 import a; 
           ^'''
 
@@ -373,7 +376,7 @@ public
         // TODO - too many alternatives, should be '\n' only
         def r21 = fail("// abc")
         r21.tokens == ["// abc"]
-        r21.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+        r21.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package", "public" or anything
 // abc
       ^'''
 
@@ -390,13 +393,12 @@ public
 class X { String; }
                 ^'''
 
-        // TODO - missing tokens, should have stopped at end of input
-        // TODO - too many alternatives, should be '*/' only
+        // TODO - improve expectation
         def r24 = fail("class X { String x; /* }")
-        r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " "]
-        r24.failure == '''line 1: expected "@", "X", "final", "private", "protected", "public", "static", "void", "}" or letter
+        r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " ", "/* }"]
+        r24.failure == '''line 1: expected "*/" or anything
 class X { String x; /* }
-                    ^'''
+                        ^'''
 
         def r25 = fail("class X { String x(); }")
         r25.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")"]
@@ -410,17 +412,15 @@ class X { String x(); }
 interface X { String x() { } }
                          ^'''
 
-        // TODO - missing ',' and separator as alternatives
         def r28 = fail("interface X { String x(int a}")
         r28.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a"]
-        r28.failure == '''line 1: expected ")" or letter
+        r28.failure == '''line 1: expected " ", ")", ",", "/*", "//", "\\n" or letter
 interface X { String x(int a}
                             ^'''
 
-        // TODO - missing letter and separator as alternatives
         def r29 = fail("interface X { String x(int a,int b}")
         r29.tokens == ["interface", " ", "X", " ", "{", " ", "String", " ", "x", "(", "int", " ", "a", ",", "int", " ", "b"]
-        r29.failure == '''line 1: expected ")" or ","
+        r29.failure == '''line 1: expected " ", ")", ",", "/*", "//", "\\n" or letter
 interface X { String x(int a,int b}
                                   ^'''
 
@@ -436,10 +436,10 @@ class X { X }
 interface X { @@ String x(int a,int b}
                ^'''
 
-        // TODO - missing whitespace as an alternative, shouldn't suggest void
+        // TODO - shouldn't suggest void
         def r31 = fail("interface X { @a")
         r31.tokens == ["interface", " ", "X", " ", "{", " ", "@", "a"]
-        r31.failure == '''line 1: expected "@", "void" or letter
+        r31.failure == '''line 1: expected " ", "/*", "//", "@", "\\n", "void" or letter
 interface X { @a
                 ^'''
 

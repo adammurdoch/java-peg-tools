@@ -1,6 +1,5 @@
 package net.rubygrapefruit.parser.peg.internal;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +38,9 @@ public class SequenceExpression extends AbstractExpression {
 
         @Override
         public String toString() {
+            if (next == null) {
+                return expression.toString();
+            }
             return expression + " " + next;
         }
 
@@ -75,7 +77,6 @@ public class SequenceExpression extends AbstractExpression {
         public boolean consume(CharStream stream, MatchVisitor visitor) {
             BatchingMatchVisitor thisMatch = new BatchingMatchVisitor();
             CharStream tail = stream.tail();
-            StreamPos startThis = stream.current();
             boolean matched = expression.getMatcher().consume(tail, thisMatch);
             stream.moveTo(tail);
             if (!matched) {
@@ -87,48 +88,37 @@ public class SequenceExpression extends AbstractExpression {
                 return true;
             }
             thisMatch.forwardMatches(expression.collector(visitor), visitor);
-            boolean thisRecognizedSomething = thisMatch.getStoppedAt().diff(startThis) > 0;
 
             BatchingMatchVisitor nextMatch = new BatchingMatchVisitor();
-            StreamPos startNext = stream.current();
             matched = next.consume(stream, nextMatch);
-            boolean nextRecognizedSomething = nextMatch.getStoppedAt().diff(startNext) > 0;
-            boolean nextRecognizedMore = nextMatch.getStoppedAt().diff(thisMatch.getStoppedAt()) >= 0;
+            int diff = nextMatch.getStoppedAt().diff(thisMatch.getStoppedAt());
             if (!matched) {
-                if (thisRecognizedSomething && !nextRecognizedMore) {
+                if (diff < 0) {
                     // This recognized more than next, assume it is the best choice
                     thisMatch.forwardRemainder(expression.collector(visitor), visitor);
-                } else if (!thisRecognizedSomething && !nextRecognizedSomething) {
-                    // Neither recognized anything
-                    visitor.stoppedAt(startNext, this);
-                } else if (thisMatch.getMatchPoint() != null && thisMatch.getStoppedAt().diff(nextMatch.getStoppedAt()) == 0) {
-                    // Recognized something, up to the same point
+                } else if (diff == 0) {
+                    // Recognized up to the same point
                     nextMatch.forwardRemainder(visitor);
-                    visitor.stoppedAt(thisMatch.getStoppedAt(), new CompositeMatchPoint(Arrays.asList(thisMatch.getMatchPoint(), nextMatch.getMatchPoint())));
+                    visitor.stoppedAt(thisMatch.getStoppedAt(), CompositeMatchPoint.of(thisMatch.getMatchPoint(), nextMatch.getMatchPoint()));
                 } else {
                     // Assume the next is best choice
                     nextMatch.forwardRemainder(visitor);
                 }
                 return false;
             }
-            int nextMatchedSomething = nextMatch.getMatchEnd().diff(startNext);
-            if (nextMatchedSomething > 0) {
-                // Next matched something, assume it is the best choice
-                nextMatch.forwardAll(visitor);
-                return true;
+            nextMatch.forwardMatches(visitor);
+
+            if (diff < 0) {
+                // This recognized more than next
+                visitor.stoppedAt(thisMatch.getStoppedAt(), thisMatch.getMatchPoint());
+            } else if (diff == 0) {
+                // Recognized up to the same point
+                nextMatch.forwardRemainder(visitor);
+                visitor.stoppedAt(thisMatch.getStoppedAt(), CompositeMatchPoint.of(thisMatch.getMatchPoint(), nextMatch.getMatchPoint()));
+            } else {
+                // Assume the next is best choice
+                nextMatch.forwardRemainder(visitor);
             }
-            // next matched nothing
-            if (nextRecognizedSomething && nextRecognizedMore) {
-                // Next match nothing, recognized something plus recognised more than this, assume it is the best choice
-                nextMatch.forwardAll(visitor);
-                return true;
-            }
-            if (thisRecognizedSomething && !nextRecognizedMore) {
-                // Next matched nothing, this recognised more than next, assume it is the best choice
-                thisMatch.forwardAll(expression.collector(visitor), visitor);
-                return true;
-            }
-            visitor.stoppedAt(startNext, this);
             return true;
         }
     }

@@ -32,9 +32,22 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
+        StreamPos stoppedAt = stream.current();
+        MatchPoint matchPoint = null;
         while (true) {
             CharStream tail = stream.tail();
-            if (!expression.getMatcher().consume(tail, nested)) {
+            boolean matched = expression.getMatcher().consume(tail, nested);
+            int diff = nested.getStoppedAt().diff(stoppedAt);
+            if (diff > 0) {
+                // recognized more, assume it is the best choice
+                stoppedAt = nested.getStoppedAt();
+                matchPoint = nested.getMatchPoint();
+            } else if (diff == 0) {
+                // recognized same
+                stoppedAt = nested.getStoppedAt();
+                matchPoint = CompositeMatchPoint.of(matchPoint, nested.getMatchPoint());
+            } // else, previous attempt recognized more
+            if (!matched) {
                 break;
             }
             nested.forwardMatches(expression.collector(visitor), visitor);
@@ -42,6 +55,7 @@ public class ZeroOrMoreExpression extends AbstractExpression implements Matcher 
         }
         visitor.matched(stream.current());
         nested.forwardRemainder(expression.collector(visitor), visitor);
+        visitor.stoppedAt(stoppedAt, matchPoint);
         return true;
     }
 }

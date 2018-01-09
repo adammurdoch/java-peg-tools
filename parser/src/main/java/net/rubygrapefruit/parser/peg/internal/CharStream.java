@@ -126,15 +126,20 @@ public class CharStream {
 
     private static class DefaultStreamPos implements StreamPos {
         private final String input;
-        private int pos = 0;
+        private int pos;
         private final int startLine;
         private final int line;
 
-        public DefaultStreamPos(String input, int pos, int startLine, int line) {
+        DefaultStreamPos(String input, int pos, int startLine, int line) {
             this.input = input;
             this.pos = pos;
             this.startLine = startLine;
             this.line = line;
+        }
+
+        @Override
+        public String toString() {
+            return "{chars " + pos + " \"" + input.substring(pos) + "\"}";
         }
 
         /**

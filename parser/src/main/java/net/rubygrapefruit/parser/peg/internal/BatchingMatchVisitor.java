@@ -66,6 +66,22 @@ public class BatchingMatchVisitor implements MatchVisitor {
         visitor.matched(matchEnd);
     }
 
+    /**
+     * Forwards successful match state (matches, match pos) to the given visitor.
+     */
+    public void forwardMatches(MatchVisitor visitor) {
+        if (matchEnd == null) {
+            throw new IllegalStateException("No matches");
+        }
+        if (tokens != null) {
+            for (MatchResult token : tokens) {
+                visitor.token(token);
+            }
+            tokens.clear();
+        }
+        visitor.matched(matchEnd);
+    }
+
     private void forwardPartialMatch(ResultCollector collector, MatchVisitor visitor) {
         if (stoppedAt == null) {
             throw new IllegalStateException("No stop position");

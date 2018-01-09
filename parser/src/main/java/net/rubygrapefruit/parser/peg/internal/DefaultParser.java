@@ -4,10 +4,12 @@ import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
 public class DefaultParser implements Parser {
+    private static final NoAlternatives NO_ALTERNATIVES = new NoAlternatives();
     private final MatchExpression rootExpression;
 
     public DefaultParser(MatchExpression rootExpression) {
@@ -27,7 +29,8 @@ public class DefaultParser implements Parser {
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
         resultCollector.done();
         StreamPos pos = resultVisitor.stoppedAt;
-        if (!match || pos.diff(resultVisitor.matchEnd) > 0) {
+        // Did not recognize or did not match up to the end of input
+        if (!match || !resultVisitor.matchEnd.isAtEnd()) {
             StringBuilder builder = new StringBuilder();
             builder.append("line ").append(pos.getLine()).append(":");
             Set<String> candidates = new TreeSet<String>();
@@ -46,12 +49,9 @@ public class DefaultParser implements Parser {
                     count++;
                     builder.append(candidate);
                 }
+            } else {
+                builder.append(" unexpected characters");
             }
-            appendHighlight(pos, builder);
-            visitor.failed(builder.toString(), new DefaultRegion(pos, stream.end()));
-        } else if (!pos.isAtEnd()) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("line ").append(pos.getLine()).append(": unexpected characters");
             appendHighlight(pos, builder);
             visitor.failed(builder.toString(), new DefaultRegion(pos, stream.end()));
         }
@@ -87,12 +87,24 @@ public class DefaultParser implements Parser {
         public void matched(StreamPos endPos) {
             matchEnd = endPos;
             stoppedAt = endPos;
+            matchPoint = NO_ALTERNATIVES;
         }
 
         @Override
         public void stoppedAt(StreamPos stoppedAt, MatchPoint matchPoint) {
             this.stoppedAt = stoppedAt;
-            this.matchPoint = matchPoint;
+            if (matchPoint == null) {
+                this.matchPoint = NO_ALTERNATIVES;
+            } else {
+                this.matchPoint = matchPoint;
+            }
+        }
+    }
+
+    private static class NoAlternatives implements MatchPoint {
+        @Override
+        public Set<? extends Terminal> getPrefixes() {
+            return Collections.emptySet();
         }
     }
 }

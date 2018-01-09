@@ -10,7 +10,7 @@ public interface BackReference {
     Expression getValue();
 
     /**
-     * Returns an expression that matches the source expression followed by the given expression. The back reference can be used by the following expression.
+     * Returns an expression that matches the source expression followed by the given expression. The back reference can be used within the following expression.
      */
     Expression followedBy(Expression expression);
 }

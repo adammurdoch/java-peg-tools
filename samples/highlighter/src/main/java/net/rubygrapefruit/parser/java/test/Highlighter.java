@@ -64,7 +64,7 @@ public class Highlighter {
         System.out.println(String.format("Parsed %d files with %d errors in %dms", count.get(), failed.get(), (end-start)/1000000));
     }
 
-    private void parse(JavaParser parser, File file, String content, final PrintWriter out) throws IOException {
+    private void parse(JavaParser parser, File file, String content, final PrintWriter out) {
         count.incrementAndGet();
         out.println("<h1>" + file.getName() + "</h1>");
         out.println("<pre class='code'>");

@@ -343,16 +343,16 @@ abc2
 abc1z
     ^'''
         // TODO - should partially match
-        "ab"    | []           | '''line 1: unexpected characters
+        "ab"    | []           | '''line 1: expected "abc"
 ab
 ^'''
-        "1"     | []           | '''line 1: unexpected characters
+        "1"     | []           | '''line 1: expected "abc"
 1
 ^'''
-        "x"     | []           | '''line 1: unexpected characters
+        "x"     | []           | '''line 1: expected "abc"
 x
 ^'''
-        "xabc"  | []           | '''line 1: unexpected characters
+        "xabc"  | []           | '''line 1: expected "abc"
 xabc
 ^'''
     }
@@ -559,8 +559,7 @@ abc12xabc2
         "{abcx"       | ["{abc"]       | '''line 1: expected "}"
 {abcx
     ^'''
-        // TODO - missing an alternative
-        "{abc}x"      | ["{abc}"]      | '''line 1: unexpected characters
+        "{abc}x"      | ["{abc}"]      | '''line 1: expected "{"
 {abc}x
      ^'''
         "{abc}{"      | ["{abc}{"]     | '''line 1: expected "abc"
@@ -575,8 +574,7 @@ abc12xabc2
         "{abc}{abcx"  | ["{abc}{abc"]  | '''line 1: expected "}"
 {abc}{abcx
          ^'''
-        // TODO - missing an alternative
-        "{abc}{abc}x" | ["{abc}{abc}"] | '''line 1: unexpected characters
+        "{abc}{abc}x" | ["{abc}{abc}"] | '''line 1: expected "{"
 {abc}{abc}x
           ^'''
     }
@@ -746,8 +744,7 @@ abc12abc12abc
         "{abc;"       | ["{", "abc"]                       | '''line 1: expected "}"
 {abc;
     ^'''
-        // TODO - missing alternative '{'
-        "{abc}x"      | ["{", "abc", "}"]                  | '''line 1: unexpected characters
+        "{abc}x"      | ["{", "abc", "}"]                  | '''line 1: expected "{"
 {abc}x
      ^'''
         "{abc}{"      | ["{", "abc", "}", "{"]             | '''line 1: expected "abc"
@@ -756,8 +753,7 @@ abc12abc12abc
         "{abc}{abc;"  | ["{", "abc", "}", "{", "abc"]      | '''line 1: expected "}"
 {abc}{abc;
          ^'''
-        // TODO - missing alternative '{'
-        "{abc}{abc}x" | ["{", "abc", "}", "{", "abc", "}"] | '''line 1: unexpected characters
+        "{abc}{abc}x" | ["{", "abc", "}", "{", "abc", "}"] | '''line 1: expected "{"
 {abc}{abc}x
           ^'''
         "x"           | []                                 | '''line 1: expected "{"
@@ -993,19 +989,19 @@ abc2x
         where:
         input    | tokens | message
         // TODO - missing alternatives
-        "abc"    | []     | '''line 1:
+        "abc"    | []     | '''line 1: unexpected characters
 abc
 ^'''
         // TODO - missing alternatives
-        "abca"   | []     | '''line 1:
+        "abca"   | []     | '''line 1: unexpected characters
 abca
 ^'''
         // TODO - missing alternatives
-        "abc123" | []     | '''line 1:
+        "abc123" | []     | '''line 1: unexpected characters
 abc123
 ^'''
         // TODO - missing alternatives
-        "123"    | []     | '''line 1: unexpected characters
+        "123"    | []     | '''line 1: expected letter
 123
 ^'''
     }

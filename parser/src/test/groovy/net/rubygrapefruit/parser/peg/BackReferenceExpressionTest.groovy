@@ -41,7 +41,29 @@ class BackReferenceExpressionTest extends AbstractParserTest {
     }
 
     def "parses back reference in recursive expression"() {
-        expect: false
+        expect:
+        def d1 = builder.chars("-")
+        def d2 = builder.chars(".")
+        def e1 = builder.letter()
+        def e2 = builder.oneOrMore(e1).group()
+        def delims = builder.oneOf(d1, d2)
+        def ref = builder.backReference(delims)
+        def root = builder.reference()
+        def expr = ref.followedBy(builder.sequence(builder.oneOf(e2, root), ref.value))
+        root.set(expr)
+        def parser = builder.newParser(root)
+
+        def r = parse(parser, "-abc-")
+        r.tokens == ["-", "abc", "-"]
+        r.values == [d1, e2, ref.value]
+
+        def r2 = parse(parser, "--abc--")
+        r2.tokens == ["-", "-", "abc", "-", "-"]
+        r2.values == [d1, d1, e2, ref.value, ref.value]
+
+        def r3 = parse(parser, "-.-a-.-")
+        r3.tokens == ["-", ".", "-", "a", "-", ".", "-"]
+        r3.values == [d1, d2, d1, e2, ref.value, ref.value, ref.value]
     }
 
     def "parses back reference as a group"() {

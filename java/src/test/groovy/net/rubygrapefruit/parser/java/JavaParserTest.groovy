@@ -135,10 +135,13 @@ public  /* */static  String  x ( ) {
         parse("class X{X(int x){}}") == ["class", " ", "X", "{", "X", "(", "int", " ", "x", ")", "{", "}", "}"]
         parse("class X{X(int x,String y){}}") == ["class", " ", "X", "{", "X", "(", "int", " ", "x", ",", "String", " ", "y", ")", "{", "}", "}"]
         parse("class X{  X  ( int   x  )  { }  }") == ["class", " ", "X", "{", "  ", "X", "  ", "(", " ", "int", "   ",  "x", "  ", ")", "  ", "{", " ", "}", "  ", "}"]
+
         parse("class X{public X(){}}") == ["class", " ", "X", "{", "public", " ", "X", "(", ")", "{", "}", "}"]
         parse("class X{private X(){}}") == ["class", " ", "X", "{", "private", " ", "X", "(", ")", "{", "}", "}"]
         parse("class X{protected X(){}}") == ["class", " ", "X", "{", "protected", " ", "X", "(", ")", "{", "}", "}"]
         parse("class X{/* */protected   X(){}}") == ["class", " ", "X", "{", "/* */", "protected", "   ", "X", "(", ")", "{", "}", "}"]
+
+        parse("class X{X(){a=b;}}") == ["class", " ", "X", "{", "X", "(", ")", "{", "a", "=", "b", ";", "}", "}"]
     }
 
     def "can parse interface method declarations"() {
@@ -168,6 +171,24 @@ public  /* */static  String  x ( ) {
         expect:
         parse("class X{X x(){return this;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "return", " ", "this", ";", "}", "}"]
         parse("class X{X x(){  return/* */this  ;  }}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "  ", "return", "/* */", "this", "  ", ";", "  ", "}", "}"]
+    }
+
+    def "can parse assignment statement"() {
+        expect:
+        parse("class X{X x(){a=b;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "b", ";", "}", "}"]
+        parse("class X{X x(){this.a=b;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "this", ".", "a", "=", "b", ";", "}", "}"]
+        parse("class X{X x(){a=true;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "true", ";", "}", "}"]
+        parse("class X{X x(){a=null;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "null", ";", "}", "}"]
+        parse("class X{X x(){a=this;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "this", ";", "}", "}"]
+        parse("class X{X x(){a=this.b;}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "this", ".", "b", ";", "}", "}"]
+        parse("class X{X x(){a=new X(abc);}}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", "a", "=", "new", " ", "X", "(", "abc", ")", ";", "}", "}"]
+
+        parse("class X{X x(){ a  =/* */b  ; }}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", " ", "a", "  ", "=", "/* */", "b", "  ", ";", " ", "}", "}"]
+    }
+
+    def "can parse field reference expression"() {
+        expect:
+        parse("class X{X x(){ this  ./* */a  =/* */this . b  ; }}") == ["class", " ", "X", "{", "X", " ", "x", "(", ")", "{", " ", "this", "  ", ".", "/* */", "a", "  ", "=", "/* */", "this", " ", ".", " ", "b", "  ", ";", " ", "}", "}"]
     }
 
     def "can parse boolean literal expression"() {
@@ -415,33 +436,37 @@ interface X { @@ String x(int a,int b}
 interface X { @a
                 ^'''
 
+        // TODO - shouldn't suggest '='
         def r32 = fail("class X {String m(){return}")
         r32.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return"]
-        r32.failure == '''line 1: expected " ", "/*", "//" or "\\n"
+        r32.failure == '''line 1: expected " ", "/*", "//", "=", "\\n" or letter
 class X {String m(){return}
                           ^'''
 
+        // TODO shouldn't suggest '='
         def r33 = fail("class X {String m(){return }")
         r33.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " "]
-        r33.failure == '''line 1: expected " ", "/*", "//", "\\n", "false", "new", "this" or "true"
+        r33.failure == '''line 1: expected " ", "/*", "//", "=", "\\n", "false", "new", "this", "true" or letter
 class X {String m(){return }
                            ^'''
 
         def r34 = fail("class X {String m(){return this}")
         r34.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "this"]
-        r34.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+        r34.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
 class X {String m(){return this}
                                ^'''
 
+        // TODO - shouldn't suggest ';'
         def r35 = fail("class X {String m(){return new}")
         r35.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new"]
-        r35.failure == '''line 1: expected " ", "/*", "//" or "\\n"
+        r35.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
 class X {String m(){return new}
                               ^'''
 
+        // TODO should suggest letter, should not suggest ';'
         def r36 = fail("class X {String m(){return new 78}")
         r36.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " "]
-        r36.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
+        r36.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
 class X {String m(){return new 78}
                                ^'''
 
@@ -468,6 +493,9 @@ class X {String m(){return new A(a, }
         r40.failure == '''line 1: expected " ", ")", ",", "/*", "//" or "\\n"
 class X {String m(){return new A(a, b}
                                      ^'''
+
+        // TODO - tests for field references and assignment statement
+        false
     }
 
     def List<String> parse(String str) {

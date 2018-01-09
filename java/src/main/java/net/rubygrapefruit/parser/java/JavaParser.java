@@ -17,8 +17,7 @@ public class JavaParser {
     private final Expression lineComment;
     private final Expression whitespace;
     private final Set<Expression> keywords;
-    private final Expression identifier;
-    private final Expression qualified;
+    private final Set<Expression> identifiers;
 
     public JavaParser() {
         ParserBuilder builder = new ParserBuilder();
@@ -63,12 +62,16 @@ public class JavaParser {
         Expression leftAngle = builder.singleChar('<');
         Expression rightAngle = builder.singleChar('>');
         Expression at = builder.singleChar('@');
+        Expression equal = builder.singleChar('=');
 
         Expression literalTrue = builder.chars("true");
         Expression literalFalse = builder.chars("false");
 
-        identifier = letters.group();
-        qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
+        Expression identifier = letters.group();
+        Expression qualified = builder.sequence(letters, builder.zeroOrMore(builder.sequence(dot, letters))).group();
+        BackReference className = builder.backReference(identifier);
+        identifiers = new HashSet<>(Arrays.asList(identifier, qualified, className.getValue()));
+
         Expression starImport = builder.sequence(qualified, dot, star);
 
         Expression packageDeclaration = builder.sequence(packageKeyword, whitespaceSeparator, qualified, optionalWhitespace, semiColon, optionalWhitespace);
@@ -91,9 +94,13 @@ public class JavaParser {
 
         Expression newExpression = builder.sequence(newKeyword, whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodArgs, optionalWhitespace, rightParen);
 
-        Expression expression = builder.oneOf(thisKeyword, literalTrue, literalFalse, newExpression);
+        Expression fieldReference = builder.oneOf(builder.sequence(thisKeyword, optionalWhitespace, dot, optionalWhitespace, identifier), identifier);
 
-        Expression statement = builder.sequence(returnKeyword, whitespaceSeparator, expression, optionalWhitespace, semiColon);
+        Expression expression = builder.oneOf(literalTrue, literalFalse, newExpression, fieldReference, thisKeyword);
+
+        Expression returnStatement = builder.sequence(returnKeyword, whitespaceSeparator, expression, optionalWhitespace, semiColon);
+        Expression assignmentStatement = builder.sequence(fieldReference, optionalWhitespace, equal, optionalWhitespace, expression, optionalWhitespace, semiColon);
+        Expression statement = builder.oneOf(returnStatement, assignmentStatement);
         Expression statements = builder.zeroOrMore(builder.sequence(statement, optionalWhitespace));
 
         Expression annotation = builder.sequence(at, optionalWhitespace, identifier);
@@ -103,12 +110,12 @@ public class JavaParser {
 
         Expression classMethodModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, staticKeyword), whitespaceSeparator));
         Expression methodSignature = builder.sequence(builder.oneOf(voidKeyword, identifier), whitespaceSeparator, identifier, optionalWhitespace, leftParen, optionalWhitespace, methodParams, rightParen);
-        Expression classMethodDeclaration = builder.sequence(annotations, classMethodModifiers, methodSignature, optionalWhitespace, leftCurly, optionalWhitespace, statements, rightCurly);
+        Expression methodBody = builder.sequence(leftCurly, optionalWhitespace, statements, rightCurly);
+        Expression classMethodDeclaration = builder.sequence(annotations, classMethodModifiers, methodSignature, optionalWhitespace, methodBody);
         Expression interfaceMethodDeclaration = builder.sequence(annotations, methodSignature, optionalWhitespace, semiColon);
 
-        BackReference className = builder.backReference(identifier);
         Expression constructorModifiers = builder.zeroOrMore(builder.sequence(builder.oneOf(publicKeyword, privateKeyword, protectedKeyword), whitespaceSeparator));
-        Expression classConstructor = builder.sequence(constructorModifiers, className.getValue(), optionalWhitespace, leftParen, optionalWhitespace, methodParams, rightParen, optionalWhitespace, leftCurly, optionalWhitespace, rightCurly);
+        Expression classConstructor = builder.sequence(constructorModifiers, className.getValue(), optionalWhitespace, leftParen, optionalWhitespace, methodParams, rightParen, optionalWhitespace, methodBody);
 
         Expression classMembers = builder.zeroOrMore(builder.sequence(builder.oneOf(fieldDeclaration, classConstructor, classMethodDeclaration), optionalWhitespace));
         Expression interfaceMembers = builder.zeroOrMore(builder.sequence(interfaceMethodDeclaration, optionalWhitespace));
@@ -147,7 +154,7 @@ public class JavaParser {
                     token = JavaToken.Whitespace;
                 } else if (keywords.contains(expression)){
                     token = JavaToken.Keyword;
-                } else if (expression == identifier || expression == qualified){
+                } else if (identifiers.contains(expression)){
                     token = JavaToken.Identifier;
                 } else {
                     token = JavaToken.Punctuation;

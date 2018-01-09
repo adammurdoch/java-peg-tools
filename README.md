@@ -51,7 +51,6 @@ Other:
 - Basic error recovery
 - Push parsing as well as pull
 - Expose information about match location
-- Recursive expressions
 - Back references
 - Expression that accepts char in range
 - Expression that takes a char predicate
@@ -63,6 +62,7 @@ Other:
 ### Fixes
 
 - Thread-safe back reference implementation
+- Back reference implementation that works in recursive expression
 - More efficient back reference implementation, reuse error handling
 - Match as much of the result as possible on failure when speculating (optional, one-or-more, zero-or-more) 
     - test: A? B where A partially matched, B no match
@@ -78,7 +78,7 @@ Other:
 - Report alternatives from within sequence
 - Fix construction of token from non-terminal on failure
 - Improve matching when there is a common prefix between sequence expressions
-- Improve alternatives for mismatched negative predicate
+- Improve suggested alternatives for mismatched negative predicate
 - Test coverage for non-ascii characters
 - Improve error message when parsing stops at end of input, or on an empty line (or both)
 - Improve error message on mismatched negative lookahead
@@ -93,7 +93,7 @@ Nominally supports Java 8. Is not even slightly complete.
 ### Issues
 
 - A keyword should not be treated as an identifier
-- Highlighting broken for class constructor
+- Highlight literals
 - Duplicate modifiers on class, interface, field, constructor, method declarations.
 - Abstract methods
 - Static methods on interfaces, interface method modifiers

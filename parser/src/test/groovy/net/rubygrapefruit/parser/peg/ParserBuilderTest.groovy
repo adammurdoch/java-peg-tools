@@ -981,19 +981,16 @@ abc2x
         ""     | []                   | '''line 1: expected "a"
 
 ^'''
-        // TODO - missing '*' as alternative
-        "a."   | ["a", "."]           | '''line 1: expected "a"
+        "a."   | ["a", "."]           | '''line 1: expected "*" or "a"
 a.
   ^'''
-        // TODO - missing '*' as alternative
-        "a.a." | ["a", ".", "a", "."] | '''line 1: expected "a"
+        "a.a." | ["a", ".", "a", "."] | '''line 1: expected "*" or "a"
 a.a.
     ^'''
         "ab"   | ["a"]                | '''line 1: expected "."
 ab
  ^'''
-        // TODO - missing '*' as alternative
-        "a.b"  | ["a", "."]           | '''line 1: expected "a"
+        "a.b"  | ["a", "."]           | '''line 1: expected "*" or "a"
 a.b
   ^'''
         "a.ab" | ["a", ".", "a"]      | '''line 1: expected "."

@@ -307,10 +307,10 @@ package a.b; import a.b{}
                        ^'''
 
         // TODO - 'a.b' and '.' should be same token
-        // TODO missing '*' alternative
+        // TODO missing whitespace alternatives
         def r13 = fail("package a.b; import a.b.%;\nclass Thing { }")
         r13.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
-        r13.failure == '''line 1: expected letter
+        r13.failure == '''line 1: expected "*" or letter
 package a.b; import a.b.%;
                         ^'''
 
@@ -347,10 +347,10 @@ package a.
 package a.b
            ^'''
 
-        // TODO - missing '*' as an alternative
+        // TODO - missing whitespace alternatives
         def r18 = fail("import a.")
         r18.tokens == ["import", " ", "a", "."]
-        r18.failure == '''line 1: expected letter
+        r18.failure == '''line 1: expected "*" or letter
 import a.
          ^'''
 
@@ -459,7 +459,7 @@ class X {String m(){return }
 
         def r34 = fail("class X {String m(){return this}")
         r34.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "this"]
-        r34.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
+        r34.failure == '''line 1: expected " ", ".", "/*", "//", ";", "\\n" or letter
 class X {String m(){return this}
                                ^'''
 

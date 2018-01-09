@@ -51,6 +51,10 @@ public class OneOfExpression extends AbstractExpression implements Matcher, Matc
             BatchingMatchVisitor nested = new BatchingMatchVisitor();
             if (expression.getMatcher().consume(tail, nested)) {
                 nested.forwardAll(expression.collector(visitor), visitor);
+                if (bestPos != null && bestPos.diff(nested.getStoppedAt()) == 0) {
+                    candidates.add(new Candidate(expression, nested));
+                    visitor.stoppedAt(bestPos, mergedOptions(candidates));
+                }
                 stream.moveTo(tail);
                 return true;
             }

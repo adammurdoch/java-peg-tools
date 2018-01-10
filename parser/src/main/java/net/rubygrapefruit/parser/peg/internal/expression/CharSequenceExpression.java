@@ -51,11 +51,10 @@ public class CharSequenceExpression extends AbstractExpression implements Matche
         StreamPos start = stream.current();
         if (stream.consume(str)) {
             StreamPos end = stream.current();
-            visitor.token(new MatchResult(this, start, end));
-            visitor.matched(end);
+            visitor.matched(new MatchResult(this, start, end));
             return true;
         }
-        visitor.stoppedAt(start, this);
+        visitor.attempted(start, this);
         return false;
     }
 }

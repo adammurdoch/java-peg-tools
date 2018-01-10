@@ -83,45 +83,21 @@ public class SequenceExpression extends AbstractExpression {
             boolean matched = expression.getMatcher().consume(tail, thisMatch);
             stream.moveTo(tail);
             if (!matched) {
-                thisMatch.forwardRemainder(expression.collector(visitor), visitor);
+                visitor.attempted(thisMatch);
                 return false;
             }
+            visitor.matched(thisMatch);
             if (next == null) {
-                thisMatch.forwardAll(expression.collector(visitor), visitor);
                 return true;
             }
-            thisMatch.forwardMatches(expression.collector(visitor), visitor);
 
             BatchingMatchVisitor nextMatch = new BatchingMatchVisitor();
             matched = next.consume(stream, nextMatch);
-            int diff = nextMatch.getStoppedAt().diff(thisMatch.getStoppedAt());
             if (!matched) {
-                if (diff < 0) {
-                    // This recognized more than next, assume it is the best choice
-                    thisMatch.forwardRemainder(expression.collector(visitor), visitor);
-                } else if (diff == 0) {
-                    // Recognized up to the same point
-                    nextMatch.forwardRemainder(visitor);
-                    visitor.stoppedAt(thisMatch.getStoppedAt(), CompositeMatchPoint.of(thisMatch.getMatchPoint(), nextMatch.getMatchPoint()));
-                } else {
-                    // Assume the next is best choice
-                    nextMatch.forwardRemainder(visitor);
-                }
+                visitor.attempted(nextMatch);
                 return false;
             }
-            nextMatch.forwardMatches(visitor);
-
-            if (diff < 0) {
-                // This recognized more than next
-                visitor.stoppedAt(thisMatch.getStoppedAt(), thisMatch.getMatchPoint());
-            } else if (diff == 0) {
-                // Recognized up to the same point
-                nextMatch.forwardRemainder(visitor);
-                visitor.stoppedAt(thisMatch.getStoppedAt(), CompositeMatchPoint.of(thisMatch.getMatchPoint(), nextMatch.getMatchPoint()));
-            } else {
-                // Assume the next is best choice
-                nextMatch.forwardRemainder(visitor);
-            }
+            visitor.matched(nextMatch);
             return true;
         }
     }

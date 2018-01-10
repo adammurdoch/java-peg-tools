@@ -55,8 +55,9 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         // TODO - use a visitor that does nothing
-        if (expression.getMatcher().consume(stream.tail(), new BatchingMatchVisitor())) {
-            visitor.stoppedAt(stream.current(), this);
+        BatchingMatchVisitor nested = new BatchingMatchVisitor();
+        if (expression.getMatcher().consume(stream.tail(), nested)) {
+            visitor.attempted(nested);
             return false;
         } else {
             visitor.matched(stream.current());

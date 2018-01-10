@@ -44,11 +44,10 @@ public class LetterExpression extends AbstractExpression implements Matcher, Ter
         StreamPos start = stream.current();
         if (stream.consumeLetter()) {
             StreamPos end = stream.current();
-            visitor.token(new MatchResult(this, start, end));
-            visitor.matched(end);
+            visitor.matched(new MatchResult(this, start, end));
             return true;
         }
-        visitor.stoppedAt(start, this);
+        visitor.attempted(start, this);
         return false;
     }
 }

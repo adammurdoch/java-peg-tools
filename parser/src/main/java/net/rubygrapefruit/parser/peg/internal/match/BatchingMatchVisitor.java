@@ -5,166 +5,152 @@ import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BatchingMatchVisitor implements MatchVisitor {
-    private List<MatchResult> tokens;
-    private List<MatchResult> partialTokens;
+public class BatchingMatchVisitor implements MatchVisitor, ExpressionMatchResult {
+    private List<ExpressionMatchResult> results;
     private StreamPos matchEnd;
-    private StreamPos stoppedAt;
     private MatchPoint matchPoint;
+    private ExpressionMatchResult best;
 
     @Override
-    public void token(MatchResult token) {
-        if (partialTokens == null) {
-            partialTokens = new ArrayList<MatchResult>();
+    public void pushTokens(ResultCollector resultCollector) {
+        if (results != null) {
+            for (ExpressionMatchResult result : results) {
+                result.pushTokens(resultCollector);
+            }
+            results.clear();
         }
-        partialTokens.add(token);
     }
 
+    @Override
     public StreamPos getMatchEnd() {
         return matchEnd;
     }
 
+    @Override
+    public StreamPos getStoppedAt() {
+        return best.getStoppedAt();
+    }
+
+    @Override
     public MatchPoint getMatchPoint() {
         return matchPoint;
     }
 
-    public StreamPos getStoppedAt() {
-        return stoppedAt;
+    @Override
+    public void attempted(StreamPos pos, MatchPoint expression) {
+        attempted(new MatchNothingResult(pos, expression));
+    }
+
+    @Override
+    public void attempted(ExpressionMatchResult result) {
+        if (best == null || result.getStoppedAt().diff(best.getStoppedAt()) > 0) {
+            matchPoint = result.getMatchPoint();
+            best = result;
+        }
     }
 
     @Override
     public void matched(StreamPos endPos) {
-        matchEnd = endPos;
-        stoppedAt = endPos;
-        if (partialTokens != null && !partialTokens.isEmpty()) {
-            if (tokens == null) {
-                tokens = new ArrayList<MatchResult>(partialTokens.size());
-            }
-            tokens.addAll(partialTokens);
-            partialTokens.clear();
-        }
+        matched(new EmptyMatchResult(endPos));
     }
 
     @Override
-    public void stoppedAt(StreamPos stoppedAt, MatchPoint matchPoint) {
-        this.stoppedAt = stoppedAt;
-        this.matchPoint = matchPoint;
+    public void matched(MatchResult result) {
+        matched(new SingleTokenResult(result));
     }
 
-    /**
-     * Forwards successful match state (matches, match pos) to the given collector.
-     */
-    public void forwardMatches(ResultCollector collector, MatchVisitor visitor) {
-        if (matchEnd == null) {
-            throw new IllegalStateException("No matches");
+    @Override
+    public void matched(ExpressionMatchResult result) {
+        if (results == null) {
+            results = new ArrayList<>();
         }
-        if (tokens != null) {
-            for (MatchResult token : tokens) {
-                collector.token(token);
-            }
-            tokens.clear();
-        }
-        collector.done();
-        visitor.matched(matchEnd);
+        results.add(result);
+        matchEnd = result.getMatchEnd();
+        matchPoint = result.getMatchPoint();
+        best = result;
     }
 
-    /**
-     * Forwards successful match state (matches, match pos) to the given visitor.
-     */
-    public void forwardMatches(MatchVisitor visitor) {
-        if (matchEnd == null) {
-            throw new IllegalStateException("No matches");
+    private static class SingleTokenResult implements ExpressionMatchResult {
+        private final MatchResult result;
+
+        SingleTokenResult(MatchResult result) {
+            this.result = result;
         }
-        if (tokens != null) {
-            for (MatchResult token : tokens) {
-                visitor.token(token);
-            }
-            tokens.clear();
+
+        @Override
+        public void pushTokens(ResultCollector resultCollector) {
+            resultCollector.token(result);
         }
-        visitor.matched(matchEnd);
+
+        @Override
+        public StreamPos getMatchEnd() {
+            return result.getEnd();
+        }
+
+        @Override
+        public StreamPos getStoppedAt() {
+            return result.getEnd();
+        }
+
+        @Override
+        public MatchPoint getMatchPoint() {
+            return null;
+        }
     }
 
-    private void forwardPartialMatch(ResultCollector collector, MatchVisitor visitor) {
-        if (stoppedAt == null) {
-            throw new IllegalStateException("No stop position");
+    private static class MatchNothingResult implements ExpressionMatchResult {
+        private final StreamPos pos;
+        private final MatchPoint expected;
+
+        MatchNothingResult(StreamPos pos, MatchPoint expected) {
+            this.pos = pos;
+            this.expected = expected;
         }
-        if (partialTokens != null) {
-            for (MatchResult token : partialTokens) {
-                collector.token(token);
-            }
-            partialTokens.clear();
+
+        @Override
+        public void pushTokens(ResultCollector resultCollector) {
         }
-        collector.done();
-        visitor.stoppedAt(stoppedAt, matchPoint);
+
+        @Override
+        public StreamPos getMatchEnd() {
+            return pos;
+        }
+
+        @Override
+        public StreamPos getStoppedAt() {
+            return pos;
+        }
+
+        @Override
+        public MatchPoint getMatchPoint() {
+            return expected;
+        }
     }
 
-    /**
-     * Forwards all match state (matches, match pos, partial matches, stop pos) to the given collector.
-     */
-    public void forwardAll(ResultCollector collector, MatchVisitor visitor) {
-        forwardMatches(collector, visitor);
-        forwardPartialMatch(collector, visitor);
-    }
+    private static class EmptyMatchResult implements ExpressionMatchResult {
+        private final StreamPos endPos;
 
-    public void forwardAll(MatchVisitor visitor) {
-        if (matchEnd == null) {
-            throw new IllegalStateException("No matches");
+        EmptyMatchResult(StreamPos endPos) {
+            this.endPos = endPos;
         }
-        if (tokens != null) {
-            for (MatchResult token : tokens) {
-                visitor.token(token);
-            }
-            tokens.clear();
-        }
-        visitor.matched(matchEnd);
-        if (partialTokens != null) {
-            for (MatchResult token : partialTokens) {
-                visitor.token(token);
-            }
-            partialTokens.clear();
-        }
-        visitor.stoppedAt(stoppedAt, matchPoint);
-    }
 
-    /**
-     * Forwards remaining match state (matched, partial matches, stop pos) to the given collector.
-     */
-    public void forwardRemainder(ResultCollector collector, MatchVisitor visitor) {
-        if (stoppedAt == null) {
-            throw new IllegalStateException("No stop position");
+        @Override
+        public void pushTokens(ResultCollector resultCollector) {
         }
-        if (tokens != null) {
-            for (MatchResult token : tokens) {
-                collector.token(token);
-            }
-            tokens.clear();
-        }
-        if (partialTokens != null) {
-            for (MatchResult token : partialTokens) {
-                collector.token(token);
-            }
-            partialTokens.clear();
-        }
-        collector.done();
-        visitor.stoppedAt(stoppedAt, matchPoint);
-    }
 
-    public void forwardRemainder(MatchVisitor visitor) {
-        if (stoppedAt == null) {
-            throw new IllegalStateException("No stop position");
+        @Override
+        public StreamPos getMatchEnd() {
+            return endPos;
         }
-        if (tokens != null) {
-            for (MatchResult token : tokens) {
-                visitor.token(token);
-            }
-            tokens.clear();
+
+        @Override
+        public StreamPos getStoppedAt() {
+            return endPos;
         }
-        if (partialTokens != null) {
-            for (MatchResult token : partialTokens) {
-                visitor.token(token);
-            }
-            partialTokens.clear();
+
+        @Override
+        public MatchPoint getMatchPoint() {
+            return null;
         }
-        visitor.stoppedAt(stoppedAt, matchPoint);
     }
 }

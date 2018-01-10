@@ -44,11 +44,10 @@ public class AnythingExpression extends AbstractExpression implements Matcher, T
         StreamPos start = stream.current();
         if (stream.consumeOne()) {
             StreamPos end = stream.current();
-            visitor.token(new MatchResult(this, start, end));
-            visitor.matched(end);
+            visitor.matched(new MatchResult(this, start, end));
             return true;
         }
-        visitor.stoppedAt(start, this);
+        visitor.attempted(start, this);
         return false;
     }
 }

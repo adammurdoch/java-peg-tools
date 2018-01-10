@@ -2,22 +2,29 @@ package net.rubygrapefruit.parser.peg.internal.match;
 
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
-public interface MatchVisitor extends TokenCollector {
+public interface MatchVisitor {
     /**
-     * Records a match. All calls made up to the last {@link #matched(StreamPos)} call are considered part of the result. All calls made up to {@link #stoppedAt(StreamPos, MatchPoint)} are considered potential candidates.
+     * Called to indicate that the given expression was attempted but was not accepted.
      */
-    @Override
-    void token(MatchResult token);
+    void attempted(ExpressionMatchResult result);
 
     /**
-     * Accepts all input up to the given position. May be called zero or more times.
+     * Called to indicate that the given atomic expression was attempted but did not match anything.
      */
-    void matched(StreamPos endPos);
+    void attempted(StreamPos pos, MatchPoint nextExpression);
 
     /**
-     * Indicates where matching stopped.
-     *
-     * @param nextExpression Can be null.
+     * Called to indicate an expression matched but consumed no input.
      */
-    void stoppedAt(StreamPos stoppedAt, MatchPoint nextExpression);
+    void matched(StreamPos pos);
+
+    /**
+     * Called to indicate that the given atomic expression was attempted and the result accepted.
+     */
+    void matched(MatchResult result);
+
+    /**
+     * Called to indicate that the given composite expression was attempted and the result accepted.
+     */
+    void matched(ExpressionMatchResult result);
 }

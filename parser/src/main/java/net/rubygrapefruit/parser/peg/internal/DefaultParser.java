@@ -37,7 +37,7 @@ public class DefaultParser implements Parser {
             StringBuilder builder = new StringBuilder();
             builder.append("line ").append(pos.getLine()).append(":");
             Set<String> candidates = new TreeSet<String>();
-            for (Terminal terminal : resultVisitor.matchPoint.getPrefixes()) {
+            for (Terminal terminal : resultVisitor.getMatchPoint().getPrefixes()) {
                 candidates.add(terminal.getDisplayName());
             }
             if (!candidates.isEmpty()) {
@@ -81,26 +81,44 @@ public class DefaultParser implements Parser {
             this.resultCollector = resultCollector;
         }
 
-        @Override
-        public void token(MatchResult token) {
-            resultCollector.token(token);
+        public MatchPoint getMatchPoint() {
+            return matchPoint == null ?  NO_ALTERNATIVES : matchPoint;
         }
 
         @Override
         public void matched(StreamPos endPos) {
             matchEnd = endPos;
             stoppedAt = endPos;
-            matchPoint = NO_ALTERNATIVES;
+            matchPoint = null;
         }
 
         @Override
-        public void stoppedAt(StreamPos stoppedAt, MatchPoint matchPoint) {
-            this.stoppedAt = stoppedAt;
-            if (matchPoint == null) {
-                this.matchPoint = NO_ALTERNATIVES;
-            } else {
-                this.matchPoint = matchPoint;
+        public void matched(MatchResult result) {
+            resultCollector.token(result);
+            matchEnd = result.getEnd();
+            stoppedAt = matchEnd;
+            matchPoint = null;
+        }
+
+        @Override
+        public void matched(ExpressionMatchResult result) {
+            result.pushTokens(resultCollector);
+            matchEnd = result.getMatchEnd();
+            stoppedAt = result.getStoppedAt();
+            matchPoint = result.getMatchPoint();
+        }
+
+        @Override
+        public void attempted(StreamPos pos, MatchPoint nextExpression) {
+            if (stoppedAt == null || pos.diff(stoppedAt) > 0) {
+                stoppedAt = pos;
+                matchPoint = nextExpression;
             }
+        }
+
+        @Override
+        public void attempted(ExpressionMatchResult result) {
+            attempted(result.getStoppedAt(), result.getMatchPoint());
         }
     }
 

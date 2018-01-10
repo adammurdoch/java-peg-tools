@@ -37,11 +37,11 @@ public class OptionalExpression extends AbstractExpression implements Matcher {
         CharStream tail = stream.tail();
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         if (expression.getMatcher().consume(tail, nested)) {
-            nested.forwardAll(expression.collector(visitor), visitor);
+            visitor.matched(nested);
             stream.moveTo(tail);
         } else {
+            visitor.attempted(nested);
             visitor.matched(stream.current());
-            nested.forwardRemainder(expression.collector(visitor), visitor);
         }
         return true;
     }

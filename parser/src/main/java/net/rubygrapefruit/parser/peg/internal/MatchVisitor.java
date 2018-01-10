@@ -1,5 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
+
 public interface MatchVisitor extends TokenCollector {
     /**
      * Records a match. All calls made up to the last {@link #matched(StreamPos)} call are considered part of the result. All calls made up to {@link #stoppedAt(StreamPos, MatchPoint)} are considered potential candidates.

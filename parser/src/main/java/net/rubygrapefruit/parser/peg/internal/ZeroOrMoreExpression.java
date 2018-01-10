@@ -1,5 +1,8 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
+
 import java.util.Set;
 
 public class ZeroOrMoreExpression extends AbstractExpression implements Matcher {

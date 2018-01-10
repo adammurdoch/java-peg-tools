@@ -1,4 +1,4 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.stream;
 
 /**
  * An immutable position in a stream of characters.

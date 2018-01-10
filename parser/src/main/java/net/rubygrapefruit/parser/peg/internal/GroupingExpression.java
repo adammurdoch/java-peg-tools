@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 public class GroupingExpression implements Expression, MatchExpression {
     private final MatchExpression expression;

@@ -3,6 +3,8 @@ package net.rubygrapefruit.parser.peg.internal;
 import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
+import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 import java.util.Collections;
 import java.util.Set;

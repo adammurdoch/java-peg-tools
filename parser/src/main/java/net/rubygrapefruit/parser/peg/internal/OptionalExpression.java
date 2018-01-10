@@ -1,5 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
+
 import java.util.Set;
 
 public class OptionalExpression extends AbstractExpression implements Matcher {

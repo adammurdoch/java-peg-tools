@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Expression;
+import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
 
 import java.util.Collections;
 import java.util.Set;

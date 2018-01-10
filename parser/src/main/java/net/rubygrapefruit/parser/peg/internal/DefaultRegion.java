@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
 import net.rubygrapefruit.parser.peg.Region;
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 class DefaultRegion implements Region {
     final StreamPos start;

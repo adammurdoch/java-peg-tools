@@ -1,5 +1,7 @@
 package net.rubygrapefruit.parser.peg.internal;
 
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
+
 import java.util.ArrayList;
 import java.util.List;
 

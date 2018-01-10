@@ -51,7 +51,6 @@ Other:
 - Basic error recovery
 - Push parsing as well as pull
 - Expose information about match location
-- Back references
 - Expression that accepts char in range
 - Expression that takes a char predicate
 - Expressions that match characters case insensitive
@@ -84,7 +83,7 @@ Other:
 - Improve error message on mismatched negative lookahead
 - On failure due to unexpected end-of-input rewind back past ignored expressions to report issue
 - On failure to match last element of sequence, report where the sequence started if not on same line
-- Flatten expressions that act on chars and that are grouped for faster matching
+- Flatten expressions that act on chars and that are grouped, for faster matching
 
 ## Java grammar
 
@@ -93,7 +92,7 @@ Nominally supports Java 8. Is not even slightly complete.
 ### Issues
 
 - A keyword should not be treated as an identifier
-- Highlight literals
+- Highlight literals, `this` keyword
 - Duplicate modifiers on class, interface, field, constructor, method declarations.
 - Abstract methods
 - Static methods on interfaces, interface method modifiers

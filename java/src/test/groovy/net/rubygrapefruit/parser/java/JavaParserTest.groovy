@@ -205,7 +205,7 @@ public  /* */static  String  x ( ) {
         parse("class X{A x(){return   new A/* */(  false ,   this/* */)  ;}}") == ["class", " ", "X", "{", "A", " ", "x", "(", ")", "{", "return", "   ", "new", " ", "A", "/* */", "(", "  ", "false", " ", ",", "   ", "this", "/* */", ")", "  ", ";", "}", "}"]
     }
 
-    def "stops parsing on first error"() {
+    def "stops parsing on first error - class definition"() {
         expect:
         def r0 = fail("")
         r0.tokens == []
@@ -386,7 +386,10 @@ public
         r22.failure == '''line 1: expected "*/" or anything
 /* abc
       ^'''
+    }
 
+    def "stops parsing on first error - class body"() {
+        expect:
         def r23 = fail("class X { String; }")
         r23.tokens == ["class", " ", "X", " ", "{", " ", "String"]
         r23.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter

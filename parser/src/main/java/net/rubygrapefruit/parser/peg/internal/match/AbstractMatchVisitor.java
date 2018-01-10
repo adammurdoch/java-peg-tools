@@ -61,9 +61,20 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
     public void matched(ExpressionMatchResult result) {
         addResult(result);
         matchEnd = result.getMatchEnd();
-        stoppedAt = result.getStoppedAt();
-        matchPoint = result.getMatchPoint();
-        bestAlternative = null;
+        if (stoppedAt == null) {
+            stoppedAt = result.getStoppedAt();
+            matchPoint = result.getMatchPoint();
+            return;
+        }
+        int diff = result.getStoppedAt().diff(stoppedAt);
+        if (diff > 0) {
+            stoppedAt = result.getStoppedAt();
+            matchPoint = result.getMatchPoint();
+            bestAlternative = null;
+        } else if (diff == 0) {
+            matchPoint = CompositeMatchPoint.of(matchPoint, result.getMatchPoint());
+            bestAlternative = null;
+        }
     }
 
     public void pushAll(ResultCollector resultCollector) {

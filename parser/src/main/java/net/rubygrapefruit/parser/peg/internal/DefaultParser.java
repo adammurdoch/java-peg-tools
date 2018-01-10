@@ -3,6 +3,7 @@ package net.rubygrapefruit.parser.peg.internal;
 import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.Parser;
 import net.rubygrapefruit.parser.peg.TokenVisitor;
+import net.rubygrapefruit.parser.peg.internal.match.*;
 import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
@@ -23,7 +24,7 @@ public class DefaultParser implements Parser {
         final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
             @Override
             public void token(MatchResult token) {
-                visitor.token(token.expression, token);
+                visitor.token(token.getExpression(), token);
             }
         });
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);

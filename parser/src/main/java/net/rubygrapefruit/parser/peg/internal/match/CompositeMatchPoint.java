@@ -1,4 +1,4 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.match;
 
 import java.util.Arrays;
 import java.util.HashSet;

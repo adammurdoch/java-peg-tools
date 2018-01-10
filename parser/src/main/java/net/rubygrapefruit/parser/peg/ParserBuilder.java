@@ -2,6 +2,7 @@ package net.rubygrapefruit.parser.peg;
 
 import net.rubygrapefruit.parser.peg.internal.*;
 import net.rubygrapefruit.parser.peg.internal.expression.*;
+import net.rubygrapefruit.parser.peg.internal.match.MatchExpression;
 
 import java.util.ArrayList;
 import java.util.List;

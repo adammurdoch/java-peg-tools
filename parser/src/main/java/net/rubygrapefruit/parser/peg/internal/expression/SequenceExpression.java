@@ -1,6 +1,6 @@
 package net.rubygrapefruit.parser.peg.internal.expression;
 
-import net.rubygrapefruit.parser.peg.internal.*;
+import net.rubygrapefruit.parser.peg.internal.match.*;
 import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
 
 import java.util.HashSet;

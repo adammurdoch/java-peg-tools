@@ -1,4 +1,4 @@
-package net.rubygrapefruit.parser.peg.internal.expressions;
+package net.rubygrapefruit.parser.peg.internal.expression;
 
 import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.internal.MatchExpression;

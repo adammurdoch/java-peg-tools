@@ -1,4 +1,4 @@
-package net.rubygrapefruit.parser.peg.internal.expressions;
+package net.rubygrapefruit.parser.peg.internal.expression;
 
 import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.internal.*;
@@ -8,15 +8,22 @@ import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 import java.util.Collections;
 import java.util.Set;
 
-public class AnythingExpression extends AbstractExpression implements Matcher, Terminal, MatchPoint {
-    @Override
-    public String toString() {
-        return "{anything}";
+public class CharSequenceExpression extends AbstractExpression implements Matcher, Terminal, MatchPoint {
+
+    private final String str;
+
+    public CharSequenceExpression(String str) {
+        this.str = str;
     }
 
     @Override
     public Expression group() {
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
     }
 
     @Override
@@ -36,13 +43,13 @@ public class AnythingExpression extends AbstractExpression implements Matcher, T
 
     @Override
     public String getDisplayName() {
-        return "anything";
+        return "\"" + str.replace("\n", "\\n") + "\"";
     }
 
     @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         StreamPos start = stream.current();
-        if (stream.consumeOne()) {
+        if (stream.consume(str)) {
             StreamPos end = stream.current();
             visitor.token(new MatchResult(this, start, end));
             visitor.matched(end);

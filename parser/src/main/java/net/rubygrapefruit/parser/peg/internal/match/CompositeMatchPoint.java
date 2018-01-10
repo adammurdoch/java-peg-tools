@@ -12,11 +12,27 @@ public class CompositeMatchPoint implements MatchPoint {
         this.points = points;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append("[");
+        for (MatchPoint matchPoint : points) {
+            for (Terminal terminal : matchPoint.getPrefixes()) {
+                if (result.length() > 1) {
+                    result.append(", ");
+                }
+                result.append(terminal.getDisplayName());
+            }
+        }
+        result.append("]");
+        return result.toString();
+    }
+
     public static MatchPoint of(MatchPoint left, MatchPoint right) {
-        if (left == null) {
+        if (left == null || left == NO_ALTERNATIVES) {
             return right;
         }
-        if (right == null) {
+        if (right == null || right == NO_ALTERNATIVES) {
             return left;
         }
         return new CompositeMatchPoint(Arrays.asList(left, right));

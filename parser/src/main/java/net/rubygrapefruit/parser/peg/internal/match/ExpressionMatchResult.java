@@ -8,10 +8,7 @@ public interface ExpressionMatchResult {
      */
     void pushMatches(ResultCollector resultCollector);
 
-    /**
-     * Push the matches and partial results from this result to the given collector.
-     */
-    void pushAll(ResultCollector resultCollector);
+    void acceptBestAlternative();
 
     StreamPos getMatchEnd();
 

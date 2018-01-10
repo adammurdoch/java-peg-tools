@@ -28,7 +28,7 @@ public class DefaultParser implements Parser {
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);
         CharStream stream = new CharStream(input);
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
-        resultVisitor.pushAll(resultCollector);
+        resultVisitor.acceptBestAlternative();
         resultCollector.done();
         StreamPos pos = resultVisitor.getStoppedAt();
         // Did not recognize or did not match up to the end of input

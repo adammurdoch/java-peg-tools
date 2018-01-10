@@ -23,10 +23,4 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
         }
         results.add(result);
     }
-
-    @Override
-    public void pushAll(ResultCollector resultCollector) {
-        super.pushAll(resultCollector);
-        pushMatches(resultCollector);
-    }
 }

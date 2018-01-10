@@ -3,12 +3,11 @@ package net.rubygrapefruit.parser.peg.internal.match;
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+
+import static net.rubygrapefruit.parser.peg.internal.match.MatchPoint.*;
 
 public abstract class AbstractMatchVisitor implements MatchVisitor {
-    private static final NoAlternatives NO_ALTERNATIVES = new NoAlternatives();
     private StreamPos matchEnd;
     private StreamPos stoppedAt;
     private MatchPoint matchPoint;
@@ -25,6 +24,16 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
 
     public MatchPoint getMatchPoint() {
         return matchPoint == null ? NO_ALTERNATIVES : matchPoint;
+    }
+
+    public void acceptBestAlternative() {
+        if (bestAlternative != null) {
+            bestAlternative.acceptBestAlternative();
+            commit(bestAlternative);
+            if (pending != null) {
+                pending.clear();
+            }
+        }
     }
 
     @Override
@@ -103,13 +112,6 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
     }
 
-    public void pushAll(ResultCollector resultCollector) {
-        if (bestAlternative != null) {
-            commit(bestAlternative);
-            bestAlternative = null;
-        }
-    }
-
     /**
      * Adds the given result to the matches.
      */
@@ -128,8 +130,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushAll(ResultCollector resultCollector) {
-            resultCollector.token(result);
+        public void acceptBestAlternative() {
         }
 
         @Override
@@ -162,7 +163,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushAll(ResultCollector resultCollector) {
+        public void acceptBestAlternative() {
         }
 
         @Override
@@ -193,7 +194,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushAll(ResultCollector resultCollector) {
+        public void acceptBestAlternative() {
         }
 
         @Override
@@ -209,13 +210,6 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         @Override
         public MatchPoint getMatchPoint() {
             return null;
-        }
-    }
-
-    private static class NoAlternatives implements MatchPoint {
-        @Override
-        public Set<? extends Terminal> getPrefixes() {
-            return Collections.emptySet();
         }
     }
 }

@@ -656,44 +656,44 @@ abc12abc12abc
         result.failure == message
 
         where:
-        input           | tokens                | message
-        ""              | []                    | '''line 1: expected "abc"
+        input           | tokens            | message
+        ""              | []                | '''line 1: expected "abc"
 
 ^'''
-        "abc"           | ["abc"]               | '''line 1: expected "1" or "2"
+        "abc"           | ["abc"]           | '''line 1: expected "1" or "2"
 abc
    ^'''
-        "abc1"          | ["abc1"]              | '''line 1: expected "2"
+        "abc1"          | ["abc1"]          | '''line 1: expected "2"
 abc1
     ^'''
-        "abc1x"         | ["abc1"]              | '''line 1: expected "2"
+        "abc1x"         | ["abc1"]          | '''line 1: expected "2"
 abc1x
     ^'''
-        "abc1xabc2"     | ["abc1"]              | '''line 1: expected "2"
+        "abc1xabc2"     | ["abc1"]          | '''line 1: expected "2"
 abc1xabc2
     ^'''
-        "abc3"          | ["abc"]               | '''line 1: expected "1" or "2"
+        "abc3"          | ["abc"]           | '''line 1: expected "1" or "2"
 abc3
    ^'''
-        "abc12abc"      | ["abc12", "abc"]      | '''line 1: expected "1" or "2"
+        "abc12abc"      | ["abc12abc"]      | '''line 1: expected "1" or "2"
 abc12abc
         ^'''
-        "abc12abc3"     | ["abc12", "abc"]      | '''line 1: expected "1" or "2"
+        "abc12abc3"     | ["abc12abc"]      | '''line 1: expected "1" or "2"
 abc12abc3
         ^'''
-        "abc12xabc2"    | ["abc12"]             | '''line 1: expected "abc"
+        "abc12xabc2"    | ["abc12"]         | '''line 1: expected "abc"
 abc12xabc2
      ^'''
-        "abc12abc1"     | ["abc12", "abc1"]     | '''line 1: expected "2"
+        "abc12abc1"     | ["abc12abc1"]     | '''line 1: expected "2"
 abc12abc1
          ^'''
-        "abc12abc1x"    | ["abc12", "abc1"]     | '''line 1: expected "2"
+        "abc12abc1x"    | ["abc12abc1"]     | '''line 1: expected "2"
 abc12abc1x
          ^'''
-        "abc12abc12"    | ["abc12abc12"]        | '''line 1: expected "abc"
+        "abc12abc12"    | ["abc12abc12"]    | '''line 1: expected "abc"
 abc12abc12
           ^'''
-        "abc12abc12abc" | ["abc12abc12", "abc"] | '''line 1: expected "1" or "2"
+        "abc12abc12abc" | ["abc12abc12abc"] | '''line 1: expected "1" or "2"
 abc12abc12abc
              ^'''
     }

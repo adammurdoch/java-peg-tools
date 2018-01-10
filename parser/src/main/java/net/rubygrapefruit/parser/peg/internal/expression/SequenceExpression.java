@@ -48,11 +48,6 @@ public class SequenceExpression extends AbstractExpression {
         }
 
         @Override
-        public ResultCollector collector(TokenCollector collector) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public Matcher getMatcher() {
             return this;
         }

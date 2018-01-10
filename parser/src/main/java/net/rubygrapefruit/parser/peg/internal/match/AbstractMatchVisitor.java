@@ -10,7 +10,7 @@ import static net.rubygrapefruit.parser.peg.internal.match.MatchPoint.*;
 public abstract class AbstractMatchVisitor implements MatchVisitor {
     private static final TokenSource EMPTY = new TokenSource() {
         @Override
-        public void pushMatches(ResultCollector resultCollector) {
+        public void pushMatches(TokenCollector resultCollector) {
         }
     };
     private StreamPos matchEnd;
@@ -138,7 +138,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushMatches(ResultCollector resultCollector) {
+        public void pushMatches(TokenCollector resultCollector) {
             resultCollector.token(result);
         }
 
@@ -178,7 +178,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushMatches(ResultCollector resultCollector) {
+        public void pushMatches(TokenCollector resultCollector) {
         }
 
         @Override
@@ -215,7 +215,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void pushMatches(ResultCollector resultCollector) {
+        public void pushMatches(TokenCollector resultCollector) {
         }
 
         @Override

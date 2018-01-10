@@ -4,5 +4,5 @@ public interface TokenSource {
     /**
      * Push the matches from this result to the given collector.
      */
-    void pushMatches(ResultCollector resultCollector);
+    void pushMatches(TokenCollector resultCollector);
 }

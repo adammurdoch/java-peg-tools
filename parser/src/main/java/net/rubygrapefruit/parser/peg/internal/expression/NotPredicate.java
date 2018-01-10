@@ -40,19 +40,6 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
     }
 
     @Override
-    public ResultCollector collector(TokenCollector collector) {
-        return new ResultCollector() {
-            @Override
-            public void token(MatchResult token) {
-            }
-
-            @Override
-            public void done() {
-            }
-        };
-    }
-
-    @Override
     public boolean consume(CharStream stream, MatchVisitor visitor) {
         // TODO - use a visitor that does nothing
         BatchingMatchVisitor nested = new BatchingMatchVisitor();

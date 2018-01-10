@@ -7,7 +7,7 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
     private List<TokenSource> results;
 
     @Override
-    public void pushMatches(ResultCollector resultCollector) {
+    public void pushMatches(TokenCollector resultCollector) {
         if (results != null) {
             for (TokenSource result : results) {
                 result.pushMatches(resultCollector);
@@ -28,7 +28,7 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
     public TokenSource withBestAlternative() {
         return new TokenSource() {
             @Override
-            public void pushMatches(ResultCollector resultCollector) {
+            public void pushMatches(TokenCollector resultCollector) {
                 BatchingMatchVisitor.this.pushMatches(resultCollector);
                 getBestAlternative().pushMatches(resultCollector);
             }

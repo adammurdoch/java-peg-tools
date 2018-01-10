@@ -19,17 +19,16 @@ public class DefaultParser implements Parser {
 
     @Override
     public <T extends TokenVisitor<Expression>> T parse(String input, final T visitor) {
-        final ResultCollector resultCollector = rootExpression.collector(new TokenCollector() {
+        final TokenCollector resultCollector = new TokenCollector() {
             @Override
             public void token(MatchResult token) {
                 visitor.token(token.getExpression(), token);
             }
-        });
+        };
         RootExpressionVisitor resultVisitor = new RootExpressionVisitor(resultCollector);
         CharStream stream = new CharStream(input);
         boolean match = rootExpression.getMatcher().consume(stream, resultVisitor);
         resultVisitor.acceptBestAlternative();
-        resultCollector.done();
         StreamPos pos = resultVisitor.getStoppedAt();
         // Did not recognize or did not match up to the end of input
         if (!match || !resultVisitor.getMatchEnd().isAtEnd()) {
@@ -71,9 +70,9 @@ public class DefaultParser implements Parser {
     }
 
     private static class RootExpressionVisitor extends AbstractMatchVisitor {
-        private final ResultCollector resultCollector;
+        private final TokenCollector resultCollector;
 
-        RootExpressionVisitor(ResultCollector resultCollector) {
+        RootExpressionVisitor(TokenCollector resultCollector) {
             this.resultCollector = resultCollector;
         }
 

@@ -4,8 +4,6 @@ import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.ReferenceExpression;
 import net.rubygrapefruit.parser.peg.internal.match.MatchExpression;
 import net.rubygrapefruit.parser.peg.internal.match.Matcher;
-import net.rubygrapefruit.parser.peg.internal.match.ResultCollector;
-import net.rubygrapefruit.parser.peg.internal.match.TokenCollector;
 
 public class DefaultReferenceExpression implements ReferenceExpression, MatchExpression {
     private boolean locked;
@@ -36,11 +34,6 @@ public class DefaultReferenceExpression implements ReferenceExpression, MatchExp
             }
             return expression;
         }
-    }
-
-    @Override
-    public ResultCollector collector(TokenCollector collector) {
-        return getAndLock().collector(collector);
     }
 
     @Override

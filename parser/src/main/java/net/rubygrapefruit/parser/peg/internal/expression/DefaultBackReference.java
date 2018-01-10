@@ -2,8 +2,8 @@ package net.rubygrapefruit.parser.peg.internal.expression;
 
 import net.rubygrapefruit.parser.peg.BackReference;
 import net.rubygrapefruit.parser.peg.Expression;
-import net.rubygrapefruit.parser.peg.internal.match.*;
-import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
+import net.rubygrapefruit.parser.peg.internal.match.MatchExpression;
+import net.rubygrapefruit.parser.peg.internal.match.Matcher;
 
 import java.util.Arrays;
 
@@ -38,6 +38,7 @@ public class DefaultBackReference implements BackReference {
             return expression.getMatcher();
         }
 
+        /*
         @Override
         public ResultCollector collector(TokenCollector collector) {
             final ResultCollector delegate = expression.collector(collector);
@@ -62,6 +63,7 @@ public class DefaultBackReference implements BackReference {
                 }
             };
         }
+        */
     }
 
     private class ValueExpression implements Expression, MatchExpression {
@@ -80,6 +82,7 @@ public class DefaultBackReference implements BackReference {
             return valueMatcher.getMatcher();
         }
 
+        /*
         @Override
         public ResultCollector collector(final TokenCollector collector) {
             return new ResultCollector() {
@@ -103,5 +106,6 @@ public class DefaultBackReference implements BackReference {
                 }
             };
         }
+        */
     }
 }

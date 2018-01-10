@@ -964,6 +964,35 @@ abc2x
     }
 
     @Unroll
+    def "reports failure to match one of several alternative expressions with following expression - #input"() {
+        def e1 = builder.sequence(builder.chars("a"), builder.chars(" "), builder.chars("b"))
+        def e2 = builder.oneOrMore(builder.letter())
+        def e3 = builder.chars(";")
+
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.oneOf(e1, e2), e3))
+        def result = fail(parser, input)
+        result.tokens == tokens
+        result.failure == message
+
+        where:
+        input | tokens | message
+        ""    | []     | '''line 1: expected "a" or letter
+
+^'''
+        "a"   | ["a"]  | '''line 1: expected " ", ";" or letter
+a
+ ^'''
+        // TODO - missing " " token, should end at ";", alternatives should be "b" only
+        "a ;"   | ["a"]  | '''line 1: expected ";" or letter
+a ;
+ ^'''
+        "a b"   | ["a", " ", "b"]  | '''line 1: expected ";"
+a b
+   ^'''
+    }
+
+    @Unroll
     def "reports failure to match one of several alternative expressions with common prefixes - #input"() {
         def e1 = builder.
                 sequence(builder.chars("a"), builder.zeroOrMore(builder.sequence(builder.chars("."), builder.chars("a"))), builder.chars("."),

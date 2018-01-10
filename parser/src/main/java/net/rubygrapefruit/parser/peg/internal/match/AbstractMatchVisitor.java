@@ -53,6 +53,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
                 commit(result);
             }
             commit(pending.get(pending.size()-1).withBestAlternative());
+            pending.clear();
         }
     }
 

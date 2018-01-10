@@ -132,16 +132,8 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
                     }
 
                     @Override
-                    public TokenSource getBestAlternative() {
-                        if (stoppedAt.diff(end) == 0) {
-                            return EMPTY;
-                        }
-                        return new TokenSource() {
-                            @Override
-                            public void pushMatches(TokenCollector resultCollector) {
-                                resultCollector.token(new MatchResult(expression, end, stoppedAt));
-                            }
-                        };
+                    public boolean hasPartialMatches() {
+                        return stoppedAt.diff(end) > 0;
                     }
 
                     @Override
@@ -170,11 +162,6 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
                 visitor.attempted(new ExpressionMatchResult() {
                     @Override
                     public TokenSource withBestAlternative() {
-                        return getBestAlternative();
-                    }
-
-                    @Override
-                    public TokenSource getBestAlternative() {
                         if (stoppedAt.diff(start) == 0) {
                             return EMPTY;
                         }
@@ -184,6 +171,11 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
                                 resultCollector.token(new MatchResult(expression, start, stoppedAt));
                             }
                         };
+                    }
+
+                    @Override
+                    public boolean hasPartialMatches() {
+                        return stoppedAt.diff(start) > 0;
                     }
 
                     @Override

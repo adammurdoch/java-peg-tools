@@ -4,14 +4,11 @@ import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 public interface ExpressionMatchResult extends TokenSource {
     /**
-     * Returns all results including matches and best alternative.
+     * Returns all results including matches and partial matches.
      */
     TokenSource withBestAlternative();
 
-    /**
-     * Returns only the best alternative and no matches.
-     */
-    TokenSource getBestAlternative();
+    boolean hasPartialMatches();
 
     StreamPos getMatchEnd();
 

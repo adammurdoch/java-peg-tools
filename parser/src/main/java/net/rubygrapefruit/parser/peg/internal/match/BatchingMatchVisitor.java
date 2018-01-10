@@ -8,6 +8,7 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
 
     @Override
     public void pushMatches(TokenCollector resultCollector) {
+        commitMatching();
         if (results != null) {
             for (TokenSource result : results) {
                 result.pushMatches(resultCollector);
@@ -29,8 +30,8 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
         return new TokenSource() {
             @Override
             public void pushMatches(TokenCollector resultCollector) {
+                commitPartialMatches();
                 BatchingMatchVisitor.this.pushMatches(resultCollector);
-                getBestAlternative().pushMatches(resultCollector);
             }
         };
     }

@@ -1,7 +1,11 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.expressions;
 
 import net.rubygrapefruit.parser.peg.Expression;
 import net.rubygrapefruit.parser.peg.ReferenceExpression;
+import net.rubygrapefruit.parser.peg.internal.MatchExpression;
+import net.rubygrapefruit.parser.peg.internal.Matcher;
+import net.rubygrapefruit.parser.peg.internal.ResultCollector;
+import net.rubygrapefruit.parser.peg.internal.TokenCollector;
 
 public class DefaultReferenceExpression implements ReferenceExpression, MatchExpression {
     private boolean locked;

@@ -1,6 +1,7 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.expressions;
 
 import net.rubygrapefruit.parser.peg.Expression;
+import net.rubygrapefruit.parser.peg.internal.*;
 import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 

@@ -1,6 +1,7 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.expressions;
 
 import net.rubygrapefruit.parser.peg.Expression;
+import net.rubygrapefruit.parser.peg.internal.*;
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 public class GroupingExpression implements Expression, MatchExpression {
@@ -44,9 +45,9 @@ public class GroupingExpression implements Expression, MatchExpression {
         @Override
         public void token(MatchResult token) {
             if (this.start == null) {
-                this.start = token.start;
+                this.start = token.getStart();
             }
-            this.end = token.end;
+            this.end = token.getEnd();
         }
 
         @Override

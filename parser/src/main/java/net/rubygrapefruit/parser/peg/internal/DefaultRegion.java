@@ -12,6 +12,14 @@ class DefaultRegion implements Region {
         this.end = end;
     }
 
+    public StreamPos getStart() {
+        return start;
+    }
+
+    public StreamPos getEnd() {
+        return end;
+    }
+
     @Override
     public String getText() {
         return start.upTo(end);

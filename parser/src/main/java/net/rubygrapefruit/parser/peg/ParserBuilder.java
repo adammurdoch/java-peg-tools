@@ -1,6 +1,7 @@
 package net.rubygrapefruit.parser.peg;
 
 import net.rubygrapefruit.parser.peg.internal.*;
+import net.rubygrapefruit.parser.peg.internal.expressions.*;
 
 import java.util.ArrayList;
 import java.util.List;

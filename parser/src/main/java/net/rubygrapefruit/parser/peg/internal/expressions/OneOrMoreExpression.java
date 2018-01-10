@@ -1,4 +1,7 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.expressions;
+
+import net.rubygrapefruit.parser.peg.internal.MatchExpression;
+import net.rubygrapefruit.parser.peg.internal.Matcher;
 
 import java.util.Arrays;
 

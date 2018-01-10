@@ -1,7 +1,8 @@
-package net.rubygrapefruit.parser.peg.internal;
+package net.rubygrapefruit.parser.peg.internal.expressions;
 
 import net.rubygrapefruit.parser.peg.BackReference;
 import net.rubygrapefruit.parser.peg.Expression;
+import net.rubygrapefruit.parser.peg.internal.*;
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 import java.util.Arrays;
@@ -46,9 +47,9 @@ public class DefaultBackReference implements BackReference {
                 @Override
                 public void token(MatchResult token) {
                     if (startValue == null) {
-                        startValue = token.start;
+                        startValue = token.getStart();
                     }
-                    endValue = token.end;
+                    endValue = token.getEnd();
                     delegate.token(token);
                 }
 
@@ -87,9 +88,9 @@ public class DefaultBackReference implements BackReference {
                 @Override
                 public void token(MatchResult token) {
                     if (startValue == null) {
-                        startValue = token.start;
+                        startValue = token.getStart();
                     }
-                    endValue = token.end;
+                    endValue = token.getEnd();
                 }
 
                 @Override

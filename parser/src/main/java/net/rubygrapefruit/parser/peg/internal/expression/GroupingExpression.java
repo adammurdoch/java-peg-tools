@@ -80,7 +80,7 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
                 stoppedAt = pos;
                 matchPoint = nextExpression;
             } else if (diff == 0) {
-                matchPoint = CompositeMatchPoint.of(this.matchPoint, matchPoint);
+                matchPoint = CompositeMatchPoint.of(matchPoint, nextExpression);
             }
         }
 
@@ -106,7 +106,7 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
                 this.matchPoint = matchPoint;
                 return;
             }
-            int diff = matchedTo.diff(end);
+            int diff = matchedTo.diff(stoppedAt);
             if (diff > 0) {
                 stoppedAt = matchedTo;
                 this.matchPoint = matchPoint;
@@ -117,15 +117,56 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
 
         void done(boolean matched) {
             if (matched) {
-                if (end.diff(start) > 0) {
-                    visitor.matched(new MatchResult(expression, start, end));
-                } else {
-                    visitor.matched(start);
-                }
-            }
-            StreamPos pos = matched ? end : start;
-            if (stoppedAt != null && stoppedAt.diff((pos)) > 0) {
-                final MatchResult result = new MatchResult(expression, pos, stoppedAt);
+                visitor.matched(new ExpressionMatchResult() {
+                    @Override
+                    public TokenSource withBestAlternative() {
+                        if (stoppedAt.diff(start) == 0) {
+                            return EMPTY;
+                        }
+                        return new TokenSource() {
+                            @Override
+                            public void pushMatches(TokenCollector resultCollector) {
+                                resultCollector.token(new MatchResult(expression, start, stoppedAt));
+                            }
+                        };
+                    }
+
+                    @Override
+                    public TokenSource getBestAlternative() {
+                        if (stoppedAt.diff(end) == 0) {
+                            return EMPTY;
+                        }
+                        return new TokenSource() {
+                            @Override
+                            public void pushMatches(TokenCollector resultCollector) {
+                                resultCollector.token(new MatchResult(expression, end, stoppedAt));
+                            }
+                        };
+                    }
+
+                    @Override
+                    public StreamPos getMatchEnd() {
+                        return end;
+                    }
+
+                    @Override
+                    public StreamPos getStoppedAt() {
+                        return stoppedAt;
+                    }
+
+                    @Override
+                    public MatchPoint getMatchPoint() {
+                        return matchPoint;
+                    }
+
+                    @Override
+                    public void pushMatches(TokenCollector resultCollector) {
+                        if (end.diff(start) > 0) {
+                            resultCollector.token(new MatchResult(expression, start, end));
+                        }
+                    }
+                });
+            } else {
                 visitor.attempted(new ExpressionMatchResult() {
                     @Override
                     public TokenSource withBestAlternative() {
@@ -134,17 +175,20 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
 
                     @Override
                     public TokenSource getBestAlternative() {
+                        if (stoppedAt.diff(start) == 0) {
+                            return EMPTY;
+                        }
                         return new TokenSource() {
                             @Override
                             public void pushMatches(TokenCollector resultCollector) {
-                                resultCollector.token(result);
+                                resultCollector.token(new MatchResult(expression, start, stoppedAt));
                             }
                         };
                     }
 
                     @Override
                     public StreamPos getMatchEnd() {
-                        return start;
+                        return end;
                     }
 
                     @Override

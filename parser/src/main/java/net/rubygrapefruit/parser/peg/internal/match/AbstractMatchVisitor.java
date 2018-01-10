@@ -6,13 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static net.rubygrapefruit.parser.peg.internal.match.MatchPoint.*;
+import static net.rubygrapefruit.parser.peg.internal.match.TokenSource.EMPTY;
 
 public abstract class AbstractMatchVisitor implements MatchVisitor {
-    private static final TokenSource EMPTY = new TokenSource() {
-        @Override
-        public void pushMatches(TokenCollector resultCollector) {
-        }
-    };
     private StreamPos matchEnd;
     private StreamPos stoppedAt;
     private MatchPoint matchPoint;

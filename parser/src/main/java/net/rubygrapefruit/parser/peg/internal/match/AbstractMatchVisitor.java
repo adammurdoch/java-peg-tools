@@ -8,10 +8,15 @@ import java.util.List;
 import static net.rubygrapefruit.parser.peg.internal.match.MatchPoint.*;
 
 public abstract class AbstractMatchVisitor implements MatchVisitor {
+    private static final TokenSource EMPTY = new TokenSource() {
+        @Override
+        public void pushMatches(ResultCollector resultCollector) {
+        }
+    };
     private StreamPos matchEnd;
     private StreamPos stoppedAt;
     private MatchPoint matchPoint;
-    private ExpressionMatchResult bestAlternative;
+    private TokenSource bestAlternative;
     private List<ExpressionMatchResult> pending;
 
     public StreamPos getMatchEnd() {
@@ -28,12 +33,19 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
 
     public void acceptBestAlternative() {
         if (bestAlternative != null) {
-            bestAlternative.acceptBestAlternative();
             commit(bestAlternative);
             if (pending != null) {
                 pending.clear();
             }
+            bestAlternative = null;
         }
+    }
+
+    public TokenSource getBestAlternative() {
+        if (bestAlternative != null) {
+            return bestAlternative;
+        }
+        return EMPTY;
     }
 
     @Override
@@ -46,7 +58,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         if (stoppedAt == null) {
             matchPoint = result.getMatchPoint();
             stoppedAt = result.getStoppedAt();
-            bestAlternative = result;
+            bestAlternative = result.withBestAlternative();
             return;
         }
         int diff = result.getStoppedAt().diff(stoppedAt);
@@ -54,7 +66,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
             // This alternative has made more progress than matches
             matchPoint = result.getMatchPoint();
             stoppedAt = result.getStoppedAt();
-            bestAlternative = result;
+            bestAlternative = result.withBestAlternative();
         } else if (diff == 0) {
             // This alternative has made the same progress as other alternatives
             matchPoint = CompositeMatchPoint.of(matchPoint, result.getMatchPoint());
@@ -77,6 +89,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         if (stoppedAt == null) {
             stoppedAt = result.getStoppedAt();
             matchPoint = result.getMatchPoint();
+            bestAlternative = result.getBestAlternative();
             commit(result);
             return;
         }
@@ -85,13 +98,13 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
             // This match has made the most progress
             stoppedAt = result.getStoppedAt();
             matchPoint = result.getMatchPoint();
-            bestAlternative = null;
+            bestAlternative = result.getBestAlternative();
             flushPending();
             commit(result);
         } else if (diff == 0) {
             // This match has made the same amount of progress
             matchPoint = CompositeMatchPoint.of(matchPoint, result.getMatchPoint());
-            bestAlternative = null;
+            bestAlternative = result.getBestAlternative();
             flushPending();
             commit(result);
         } else {
@@ -115,7 +128,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
     /**
      * Adds the given result to the matches.
      */
-    protected abstract void commit(ExpressionMatchResult result);
+    protected abstract void commit(TokenSource result);
 
     private static class SingleTokenResult implements ExpressionMatchResult {
         private final MatchResult result;
@@ -130,7 +143,13 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void acceptBestAlternative() {
+        public TokenSource withBestAlternative() {
+            return this;
+        }
+
+        @Override
+        public TokenSource getBestAlternative() {
+            return EMPTY;
         }
 
         @Override
@@ -163,7 +182,13 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void acceptBestAlternative() {
+        public TokenSource withBestAlternative() {
+            return EMPTY;
+        }
+
+        @Override
+        public TokenSource getBestAlternative() {
+            return EMPTY;
         }
 
         @Override
@@ -194,7 +219,13 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
 
         @Override
-        public void acceptBestAlternative() {
+        public TokenSource withBestAlternative() {
+            return EMPTY;
+        }
+
+        @Override
+        public TokenSource getBestAlternative() {
+            return EMPTY;
         }
 
         @Override

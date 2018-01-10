@@ -976,18 +976,17 @@ abc2x
         result.failure == message
 
         where:
-        input | tokens | message
-        ""    | []     | '''line 1: expected "a" or letter
+        input | tokens          | message
+        ""    | []              | '''line 1: expected "a" or letter
 
 ^'''
-        "a"   | ["a"]  | '''line 1: expected " ", ";" or letter
+        "a"   | ["a"]           | '''line 1: expected " ", ";" or letter
 a
  ^'''
-        // TODO - missing " " token, should end at ";", alternatives should be "b" only
-        "a ;"   | ["a"]  | '''line 1: expected ";" or letter
+        "a ;" | ["a", " "]      | '''line 1: expected "b"
 a ;
- ^'''
-        "a b"   | ["a", " ", "b"]  | '''line 1: expected ";"
+  ^'''
+        "a b" | ["a", " ", "b"] | '''line 1: expected ";"
 a b
    ^'''
     }

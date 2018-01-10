@@ -78,7 +78,7 @@ public class DefaultParser implements Parser {
         }
 
         @Override
-        protected void commit(ExpressionMatchResult result) {
+        protected void commit(TokenSource result) {
             result.pushMatches(resultCollector);
         }
     }

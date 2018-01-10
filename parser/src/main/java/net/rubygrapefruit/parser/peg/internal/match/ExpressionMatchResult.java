@@ -2,13 +2,16 @@ package net.rubygrapefruit.parser.peg.internal.match;
 
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
-public interface ExpressionMatchResult {
+public interface ExpressionMatchResult extends TokenSource {
     /**
-     * Push the matches from this result to the given collector.
+     * Returns all results including matches and best alternative.
      */
-    void pushMatches(ResultCollector resultCollector);
+    TokenSource withBestAlternative();
 
-    void acceptBestAlternative();
+    /**
+     * Returns only the best alternative and no matches.
+     */
+    TokenSource getBestAlternative();
 
     StreamPos getMatchEnd();
 

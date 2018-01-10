@@ -17,7 +17,7 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
     }
 
     @Override
-    protected void addResult(ExpressionMatchResult result) {
+    protected void commit(ExpressionMatchResult result) {
         if (results == null) {
             results = new ArrayList<>();
         }
@@ -26,7 +26,7 @@ public class BatchingMatchVisitor extends AbstractMatchVisitor implements Expres
 
     @Override
     public void pushAll(ResultCollector resultCollector) {
-        pushMatches(resultCollector);
         super.pushAll(resultCollector);
+        pushMatches(resultCollector);
     }
 }

@@ -2,7 +2,9 @@ package net.rubygrapefruit.parser.peg.internal.match;
 
 import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractMatchVisitor implements MatchVisitor {
@@ -11,6 +13,7 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
     private StreamPos stoppedAt;
     private MatchPoint matchPoint;
     private ExpressionMatchResult bestAlternative;
+    private List<ExpressionMatchResult> pending;
 
     public StreamPos getMatchEnd() {
         return matchEnd;
@@ -39,10 +42,12 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
         }
         int diff = result.getStoppedAt().diff(stoppedAt);
         if (diff > 0) {
+            // This alternative has made more progress than matches
             matchPoint = result.getMatchPoint();
             stoppedAt = result.getStoppedAt();
             bestAlternative = result;
         } else if (diff == 0) {
+            // This alternative has made the same progress as other alternatives
             matchPoint = CompositeMatchPoint.of(matchPoint, result.getMatchPoint());
         }
     }
@@ -59,32 +64,56 @@ public abstract class AbstractMatchVisitor implements MatchVisitor {
 
     @Override
     public void matched(ExpressionMatchResult result) {
-        addResult(result);
         matchEnd = result.getMatchEnd();
         if (stoppedAt == null) {
             stoppedAt = result.getStoppedAt();
             matchPoint = result.getMatchPoint();
+            commit(result);
             return;
         }
         int diff = result.getStoppedAt().diff(stoppedAt);
         if (diff > 0) {
+            // This match has made the most progress
             stoppedAt = result.getStoppedAt();
             matchPoint = result.getMatchPoint();
             bestAlternative = null;
+            flushPending();
+            commit(result);
         } else if (diff == 0) {
+            // This match has made the same amount of progress
             matchPoint = CompositeMatchPoint.of(matchPoint, result.getMatchPoint());
             bestAlternative = null;
+            flushPending();
+            commit(result);
+        } else {
+            // An alternative has made more progress, keep this
+            if (pending == null) {
+                pending = new ArrayList<>();
+            }
+            pending.add(result);
+        }
+    }
+
+    private void flushPending() {
+        if (pending != null) {
+            for (ExpressionMatchResult batched : pending) {
+                commit(batched);
+            }
+            pending.clear();
         }
     }
 
     public void pushAll(ResultCollector resultCollector) {
         if (bestAlternative != null) {
-            bestAlternative.pushAll(resultCollector);
+            commit(bestAlternative);
             bestAlternative = null;
         }
     }
 
-    protected abstract void addResult(ExpressionMatchResult result);
+    /**
+     * Adds the given result to the matches.
+     */
+    protected abstract void commit(ExpressionMatchResult result);
 
     private static class SingleTokenResult implements ExpressionMatchResult {
         private final MatchResult result;

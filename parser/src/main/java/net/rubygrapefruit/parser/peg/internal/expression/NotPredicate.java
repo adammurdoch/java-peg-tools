@@ -44,7 +44,7 @@ public class NotPredicate implements Expression, MatchExpression, Matcher, Match
         // TODO - use a visitor that does nothing
         BatchingMatchVisitor nested = new BatchingMatchVisitor();
         if (expression.getMatcher().consume(stream.tail(), nested)) {
-            visitor.attempted(nested);
+            visitor.attempted(stream.current(), this);
             return false;
         } else {
             visitor.matched(stream.current());

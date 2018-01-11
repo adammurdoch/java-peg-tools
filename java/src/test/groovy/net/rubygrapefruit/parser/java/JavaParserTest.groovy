@@ -370,6 +370,10 @@ import a;
         r20.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "interface" or "public"
 public 
        ^'''
+    }
+
+    def "stops parsing on first error - comments"() {
+        expect:
 
         // TODO - too many alternatives, should be '\n' only
         def r21 = fail("// abc")
@@ -384,6 +388,13 @@ public
         r22.failure == '''line 1: expected "*/" or anything
 /* abc
       ^'''
+
+        // TODO - improve expectation
+        def r24 = fail("class X { String x; /* }")
+        r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " ", "/* }"]
+        r24.failure == '''line 1: expected "*/" or anything
+class X { String x; /* }
+                        ^'''
     }
 
     def "stops parsing on first error - class body"() {
@@ -393,13 +404,6 @@ public
         r23.failure == '''line 1: expected " ", "/*", "//", "\\n" or letter
 class X { String; }
                 ^'''
-
-        // TODO - improve expectation
-        def r24 = fail("class X { String x; /* }")
-        r24.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", ";", " ", "/* }"]
-        r24.failure == '''line 1: expected "*/" or anything
-class X { String x; /* }
-                        ^'''
 
         def r25 = fail("class X { String x(); }")
         r25.tokens == ["class", " ", "X", " ", "{", " ", "String", " ", "x", "(", ")"]

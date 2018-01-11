@@ -2,10 +2,12 @@ package net.rubygrapefruit.parser.peg.internal.expression;
 
 import net.rubygrapefruit.parser.peg.BackReference;
 import net.rubygrapefruit.parser.peg.Expression;
-import net.rubygrapefruit.parser.peg.internal.match.MatchExpression;
-import net.rubygrapefruit.parser.peg.internal.match.Matcher;
+import net.rubygrapefruit.parser.peg.internal.match.*;
+import net.rubygrapefruit.parser.peg.internal.stream.CharStream;
+import net.rubygrapefruit.parser.peg.internal.stream.StreamPos;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class DefaultBackReference implements BackReference {
     private final MatchExpression expression;
@@ -32,38 +34,74 @@ public class DefaultBackReference implements BackReference {
         return new SequenceExpression(Arrays.asList(new Collector(), (MatchExpression) expression));
     }
 
-    private class Collector implements MatchExpression {
+    private class Collector implements MatchExpression, Matcher {
+        @Override
+        public Set<? extends Terminal> getPrefixes() {
+            return expression.getMatcher().getPrefixes();
+        }
+
+        @Override
+        public boolean isAcceptEmpty() {
+            return expression.getMatcher().isAcceptEmpty();
+        }
+
         @Override
         public Matcher getMatcher() {
-            return expression.getMatcher();
+            return this;
         }
 
-        /*
         @Override
-        public ResultCollector collector(TokenCollector collector) {
-            final ResultCollector delegate = expression.collector(collector);
-            return new ResultCollector() {
-                private StreamPos startValue;
-                private StreamPos endValue;
-                @Override
-                public void token(MatchResult token) {
-                    if (startValue == null) {
-                        startValue = token.getStart();
-                    }
-                    endValue = token.getEnd();
-                    delegate.token(token);
-                }
-
-                @Override
-                public void done() {
-                    if (startValue != null) {
-                        valueMatcher = new CharSequenceExpression(startValue.upTo(endValue));
-                    }
-                    delegate.done();
-                }
-            };
+        public boolean consume(CharStream stream, final MatchVisitor visitor) {
+            CollectingVisitor collectingVisitor = new CollectingVisitor(stream.current(), visitor);
+            boolean matched = expression.getMatcher().consume(stream, collectingVisitor);
+            if (matched) {
+                valueMatcher = new CharSequenceExpression(collectingVisitor.getText());
+            }
+            return matched;
         }
-        */
+    }
+
+    private static class CollectingVisitor implements MatchVisitor {
+        private final MatchVisitor visitor;
+        private final StreamPos start;
+        private StreamPos end;
+
+        CollectingVisitor(StreamPos start, MatchVisitor visitor) {
+            this.start = start;
+            this.visitor = visitor;
+        }
+
+        @Override
+        public void attempted(ExpressionMatchResult result) {
+            visitor.attempted(result);
+        }
+
+        @Override
+        public void attempted(StreamPos pos, MatchPoint nextExpression) {
+            visitor.attempted(pos, nextExpression);
+        }
+
+        @Override
+        public void matched(StreamPos pos) {
+            end = pos;
+            visitor.matched(pos);
+        }
+
+        @Override
+        public void matched(MatchResult result) {
+            end = result.getEnd();
+            visitor.matched(result);
+        }
+
+        @Override
+        public void matched(ExpressionMatchResult result) {
+            end = result.getMatchEnd();
+            visitor.matched(result);
+        }
+
+        public String getText() {
+            return start.upTo(end);
+        }
     }
 
     private class ValueExpression implements Expression, MatchExpression {
@@ -81,31 +119,5 @@ public class DefaultBackReference implements BackReference {
         public Matcher getMatcher() {
             return valueMatcher.getMatcher();
         }
-
-        /*
-        @Override
-        public ResultCollector collector(final TokenCollector collector) {
-            return new ResultCollector() {
-                private StreamPos startValue;
-                private StreamPos endValue;
-                @Override
-                public void token(MatchResult token) {
-                    if (startValue == null) {
-                        startValue = token.getStart();
-                    }
-                    endValue = token.getEnd();
-                }
-
-                @Override
-                public void done() {
-                    if (startValue != null) {
-                        collector.token(new MatchResult(valueExpression, startValue, endValue));
-                        startValue = null;
-                        endValue = null;
-                    }
-                }
-            };
-        }
-        */
     }
 }

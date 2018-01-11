@@ -92,7 +92,9 @@ Nominally supports Java 8. Is not even slightly complete.
 ### Issues
 
 - A keyword should not be treated as an identifier
-- Highlight literals, `this` keyword
+- Highlight literals differently
+- Highlight `this` keyword
+- Highlight constructor name as an identifier, is currently 'other'
 - Duplicate modifiers on class, interface, field, constructor, method declarations.
 - Abstract methods
 - Static methods on interfaces, interface method modifiers

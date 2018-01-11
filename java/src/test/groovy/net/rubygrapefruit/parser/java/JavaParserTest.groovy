@@ -213,6 +213,12 @@ public  /* */static  String  x ( ) {
 
 ^'''
 
+        def r0a = fail("/* abc */")
+        r0a.tokens == ["/* abc */"]
+        r0a.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
+/* abc */
+         ^'''
+
         def r1 = fail(" Thing { }")
         r1.tokens == [" "]
         r1.failure == '''line 1: expected " ", "/*", "//", "\\n", "abstract", "class", "import", "interface", "package" or "public"
@@ -502,7 +508,7 @@ class X {String m(){return new A(a, }
 
         def r40 = fail("class X {String m(){return new A(a, b}")
         r40.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " ", "A", "(", "a", ",", " ", "b"]
-        r40.failure == '''line 1: expected " ", ")", ",", "/*", "//" or "\\n"
+        r40.failure == '''line 1: expected " ", ")", ",", "/*", "//", "\\n" or letter
 class X {String m(){return new A(a, b}
                                      ^'''
 

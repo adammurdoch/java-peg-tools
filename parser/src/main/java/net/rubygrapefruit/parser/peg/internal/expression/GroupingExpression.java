@@ -86,29 +86,29 @@ public class GroupingExpression implements Expression, MatchExpression, Matcher 
 
         @Override
         public void matched(StreamPos pos) {
-            matched(pos, MatchPoint.NO_ALTERNATIVES);
+            matched(pos, pos, MatchPoint.NO_ALTERNATIVES);
         }
 
         @Override
         public void matched(MatchResult result) {
-            matched(result.getEnd(), MatchPoint.NO_ALTERNATIVES);
+            matched(result.getEnd(), result.getEnd(), MatchPoint.NO_ALTERNATIVES);
         }
 
         @Override
         public void matched(ExpressionMatchResult result) {
-            matched(result.getMatchEnd(), result.getMatchPoint());
+            matched(result.getMatchEnd(), result.getStoppedAt(), result.getMatchPoint());
         }
 
-        private void matched(StreamPos matchedTo, MatchPoint matchPoint) {
+        private void matched(StreamPos matchedTo, StreamPos stoppedAt, MatchPoint matchPoint) {
             end = matchedTo;
-            if (stoppedAt == null) {
-                stoppedAt = matchedTo;
+            if (this.stoppedAt == null) {
+                this.stoppedAt = stoppedAt;
                 this.matchPoint = matchPoint;
                 return;
             }
-            int diff = matchedTo.diff(stoppedAt);
+            int diff = stoppedAt.diff(this.stoppedAt);
             if (diff > 0) {
-                stoppedAt = matchedTo;
+                this.stoppedAt = stoppedAt;
                 this.matchPoint = matchPoint;
             } else if (diff == 0) {
                 this.matchPoint = CompositeMatchPoint.of(this.matchPoint, matchPoint);

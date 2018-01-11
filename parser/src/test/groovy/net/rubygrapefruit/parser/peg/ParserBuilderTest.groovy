@@ -763,9 +763,12 @@ x
 
     @Unroll
     def "reports failure to match sequence of one or more expressions followed by zero or more expressions - #input"() {
+        def e1 = builder.oneOrMore(builder.letter())
+        def e2 = builder.zeroOrMore(builder.sequence(builder.chars("."), builder.oneOrMore(builder.letter())))
+        def e3 = builder.chars(";")
+
         expect:
-        def parser = builder.newParser(builder.sequence(builder.oneOrMore(builder.letter()),
-                builder.zeroOrMore(builder.sequence(builder.chars("."), builder.oneOrMore(builder.letter()))), builder.chars(";")))
+        def parser = builder.newParser(builder.sequence(e1, e2, e3))
         def result = fail(parser, input)
         result.tokens == tokens
         result.failure == message
@@ -784,7 +787,6 @@ ab
         "a."  | ["a", "."]      | '''line 1: expected letter
 a.
   ^'''
-// TODO - should suggest letter as alternative
         "a.b" | ["a", ".", "b"] | '''line 1: expected ".", ";" or letter
 a.b
    ^'''
@@ -792,6 +794,45 @@ a.b
 a;x
   ^'''
         "a.;" | ["a", "."]      | '''line 1: expected letter
+a.;
+  ^'''
+    }
+
+    @Unroll
+    def "reports failure to match sequence of one or more expressions followed by zero or more expressions as a group - #input"() {
+        def e1 = builder.oneOrMore(builder.letter())
+        def e2 = builder.zeroOrMore(builder.sequence(builder.chars("."), e1))
+        def e3 = builder.chars(";")
+        expect:
+        def parser = builder.newParser(builder.sequence(builder.sequence(e1, e2).group(), e3))
+        def result = fail(parser, input)
+        result.tokens == tokens
+        result.failure == message
+
+        where:
+        input       | tokens           | message
+        ""          | []               | '''line 1: expected letter
+
+^'''
+        "a"         | ["a"]            | '''line 1: expected ".", ";" or letter
+a
+ ^'''
+        "ab"        | ["ab"]           | '''line 1: expected ".", ";" or letter
+ab
+  ^'''
+        "a."        | ["a."]           | '''line 1: expected letter
+a.
+  ^'''
+        "a.b"       | ["a.b"]          | '''line 1: expected ".", ";" or letter
+a.b
+   ^'''
+        "a;x"       | ["a", ";"]       | '''line 1: unexpected characters
+a;x
+  ^'''
+        "abc.abc;x" | ["abc.abc", ";"] | '''line 1: unexpected characters
+abc.abc;x
+        ^'''
+        "a.;"       | ["a."]           | '''line 1: expected letter
 a.;
   ^'''
     }

@@ -287,9 +287,8 @@ interface Thing implements A { }
 x
 ^'''
 
-        // TODO - 'a.b' and '.' should be in same token
         def r10 = fail("package a.b.{")
-        r10.tokens == ["package", " ", "a.b", "."]
+        r10.tokens == ["package", " ", "a.b."]
         r10.failure == '''line 1: expected letter
 package a.b.{
             ^'''
@@ -306,10 +305,9 @@ package a.b import c.d
 package a.b; import a.b{}
                        ^'''
 
-        // TODO - 'a.b' and '.' should be same token
         // TODO missing whitespace alternatives
         def r13 = fail("package a.b; import a.b.%;\nclass Thing { }")
-        r13.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b", "."]
+        r13.tokens == ["package", " ", "a.b", ";", " ", "import", " ", "a.b."]
         r13.failure == '''line 1: expected "*" or letter
 package a.b; import a.b.%;
                         ^'''
@@ -336,7 +334,7 @@ package a
 
         // TODO - should allow whitespace after '.'
         def r16a = fail("package a.")
-        r16a.tokens == ["package", " ", "a", "."]
+        r16a.tokens == ["package", " ", "a."]
         r16a.failure == '''line 1: expected letter
 package a.
           ^'''
@@ -349,7 +347,7 @@ package a.b
 
         // TODO - missing whitespace alternatives
         def r18 = fail("import a.")
-        r18.tokens == ["import", " ", "a", "."]
+        r18.tokens == ["import", " ", "a."]
         r18.failure == '''line 1: expected "*" or letter
 import a.
          ^'''
@@ -473,10 +471,10 @@ class X {String m(){return this}
 class X {String m(){return new}
                               ^'''
 
-        // TODO should suggest letter, should not suggest ';'
+        // TODO should not suggest ';' (new should be a keyword)
         def r36 = fail("class X {String m(){return new 78}")
         r36.tokens == ["class", " ", "X", " ", "{", "String", " ", "m", "(", ")", "{", "return", " ", "new", " "]
-        r36.failure == '''line 1: expected " ", "/*", "//", ";" or "\\n"
+        r36.failure == '''line 1: expected " ", "/*", "//", ";", "\\n" or letter
 class X {String m(){return new 78}
                                ^'''
 
